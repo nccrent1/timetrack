@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TimeTrack Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --gray: #64748b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        .login-screen, .app-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            min-height: 90vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            -webkit-appearance: none;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--dark);
+            border: 2px solid #e2e8f0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .nav-tabs {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-tab {
+            flex-shrink: 0;
+            padding: 12px 20px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 25px;
+            color: var(--gray);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        .entry-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .entry-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .entry-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-work { background: #dbeafe; color: #1e40af; }
+        .badge-holiday { background: #fce7f3; color: #be185d; }
+        .badge-rest { background: #d1fae5; color: #065f46; }
+        .badge-festive { background: #fef3c7; color: #92400e; }
+
+        .btn-icon {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .employee-item {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-height: 90vh;
+            border-radius: 20px 20px 0 0;
+            padding: 25px;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: #f1f5f9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .share-box {
+            background: #f0f9ff;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        table {
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .time-display {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login -->
+    <div id="loginScreen" class="container">
+        <div class="login-screen">
+            <div class="header">
+                <h1>⏰ TimeTrack</h1>
+                <p>Gestione Presenze</p>
+            </div>
+            <div class="content">
+                <div id="loginAlert"></div>
+                
+                <div class="form-group">
+                    <label>📧 Email</label>
+                    <input type="email" id="loginEmail" placeholder="la tua email">
+                </div>
+                
+                <div class="form-group">
+                    <label>🔑 Password</label>
+                    <input type="password" id="loginPassword" placeholder="password">
+                </div>
+                
+                <button class="btn-primary" onclick="login()">Accedi</button>
+                <button class="btn-secondary" onclick="showSetup()">Primo accesso Admin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Admin -->
+    <div id="setupModal" class="modal hidden">
+        <div class="modal-content" style="position: relative;">
+            <div class="close-btn" onclick="closeSetup()">×</div>
+            <h2 style="margin-bottom: 20px;">Configura Admin</h2>
+            
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="setupEmail" placeholder="admin@azienda.it">
+            </div>
+            
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="setupPassword" placeholder="min 6 caratteri">
+            </div>
+            
+            <div class="form-group">
+                <label>Nome Azienda</label>
+                <input type="text" id="setupCompany" placeholder="Es: NCC Rent">
+            </div>
+            
+            <button class="btn-success" onclick="setupAdmin()">Crea Account</button>
+        </div>
+    </div>
+
+    <!-- Share Credentials Modal -->
+    <div id="shareModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 15px;">✅ Dipendente Creato</h2>
+            
+            <div class="alert alert-success">
+                Invia queste credenziali al dipendente
+            </div>
+
+            <div class="section-title">Link App</div>
+            <div class="share-box" id="shareLink"></div>
+            <button class="btn-secondary" onclick="copyLink()">📋 Copia Link</button>
+
+            <div class="section-title" style="margin-top: 20px;">Credenziali</div>
+            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
+                <p style="margin-bottom: 8px;"><strong>Email:</strong> <span id="shareEmail"></span></p>
+                <p><strong>Password:</strong> <span id="sharePassword"></span></p>
+            </div>
+
+            <button class="btn-success" onclick="shareWhatsApp()">📱 Condividi su WhatsApp</button>
+            <button class="btn-primary" onclick="shareEmail()">📧 Condividi via Email</button>
+            <button class="btn-secondary" onclick="closeShareModal()">Chiudi</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="appContainer" class="container hidden">
+        <div class="app-container">
+            <div class="header">
+                <h1>TimeTrack</h1>
+                <p id="welcomeText">Benvenuto</p>
+            </div>
+            
+            <div class="content">
+                <!-- Admin Nav -->
+                <div id="adminNav" class="nav-tabs hidden">
+                    <button class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+                    <button class="nav-tab" onclick="showTab('team')">👥 Team</button>
+                    <button class="nav-tab" onclick="showTab('reports')">📈 Report</button>
+                </div>
+
+                <!-- Employee Nav -->
+                <div id="employeeNav" class="nav-tabs hidden">
+                    <button class="nav-tab active" onclick="showTab('clock')">⏰ Timbra</button>
+                    <button class="nav-tab" onclick="showTab('history')">📋 Storico</button>
+                </div>
+
+                <!-- Admin: Dashboard -->
+                <div id="dashboard" class="tab-content active">
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <div class="stat-number" id="statEmployees">0</div>
+                            <div class="stat-label">Dipendenti</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number" id="statToday">0</div>
+                            <div class="stat-label">Oggi</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number" id="statMonth">0</div>
+                            <div class="stat-label">Ore Mese</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">🕐 Oggi</div>
+                        <div id="todayList"></div>
+                    </div>
+
+                    <button class="btn-danger" onclick="logout()" style="margin-top: 20px;">Logout</button>
+                </div>
+
+                <!-- Admin: Team -->
+                <div id="team" class="tab-content">
+                    <div class="card">
+                        <div class="card-title">➕ Nuovo Dipendente</div>
+                        <div id="teamAlert"></div>
+                        
+                        <div class="form-group">
+                            <label>Nome</label>
+                            <input type="text" id="newName" placeholder="Mario Rossi">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="newEmail" placeholder="mario@email.it">
+                        </div>
+                        
+                        <button class="btn-success" onclick="addEmployee()">Crea Dipendente</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">👥 Lista Dipendenti</div>
+                        <div id="teamList"></div>
+                    </div>
+                </div>
+
+                <!-- Admin: Reports -->
+                <div id="reports" class="tab-content">
+                    <div class="card">
+                        <div class="card-title">📈 Report Mensile</div>
+                        
+                        <div class="form-group">
+                            <label>Dipendente</label>
+                            <select id="reportEmployee" style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #e2e8f0;"></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Mese</label>
+                            <input type="month" id="reportMonth" style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #e2e8f0;">
+                        </div>
+                        
+                        <button class="btn-primary" onclick="generateReport()">Genera Report</button>
+                        <button class="btn-secondary" onclick="exportExcel()">📊 Excel</button>
+                        
+                        <div id="reportResult" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+
+                <!-- Employee: Clock In/Out -->
+                <div id="clock" class="tab-content">
+                    <div class="card" style="text-align: center; padding: 30px;">
+                        <div class="section-title">Data</div>
+                        <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 20px;" id="currentDate"></div>
+                        
+                        <div class="form-group" style="text-align: left;">
+                            <label>Tipo</label>
+                            <select id="clockType" onchange="toggleClockTime()" style="font-size: 1.1rem;">
+                                <option value="work">💼 Lavoro</option>
+                                <option value="holiday">🏖️ Ferie</option>
+                                <option value="rest">😴 Riposo</option>
+                                <option value="festive">🎉 Festivo</option>
+                            </select>
+                        </div>
+
+                        <div id="clockTimeSection">
+                            <div class="form-group" style="text-align: left;">
+                                <label>Ora Inizio</label>
+                                <input type="time" id="clockStart" value="09:00" style="font-size: 1.3rem; text-align: center;">
+                            </div>
+                            
+                            <div class="form-group" style="text-align: left;">
+                                <label>Ora Fine</label>
+                                <input type="time" id="clockEnd" value="18:00" style="font-size: 1.3rem; text-align: center;">
+                            </div>
+                        </div>
+
+                        <button class="btn-success" onclick="saveClock()" style="font-size: 1.2rem; padding: 20px; margin-top: 10px;">
+                            💾 Salva Registrazione
+                        </button>
+                    </div>
+
+                    <button class="btn-danger" onclick="logout()" style="margin-top: 20px;">Logout</button>
+                </div>
+
+                <!-- Employee: History -->
+                <div id="history" class="tab-content">
+                    <div class="card">
+                        <div class="card-title">📋 Storico</div>
+                        
+                        <div class="form-group">
+                            <label>Mese</label>
+                            <input type="month" id="historyMonth" onchange="loadHistory()" style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #e2e8f0;">
+                        </div>
+
+                        <div id="historyList"></div>
+                        
+                        <div style="background: var(--primary); color: white; padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center;">
+                            <div style="font-size: 0.9rem; opacity: 0.9;">Totale Ore</div>
+                            <div style="font-size: 2rem; font-weight: 700;" id="historyTotal">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        let currentUser = null;
+        let users = JSON.parse(localStorage.getItem('tt_users')) || [];
+        let entries = JSON.parse(localStorage.getItem('tt_entries')) || [];
+        let lastEmployee = null;
+
+        // Init
+        window.onload = function() {
+            const saved = localStorage.getItem('tt_current');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                showApp();
+            }
+            
+            // Set today's date
+            const today = new Date();
+            document.getElementById('currentDate').textContent = today.toLocaleDateString('it-IT', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+            
+            const monthStr = today.toISOString().slice(0, 7);
+            document.getElementById('reportMonth').value = monthStr;
+            document.getElementById('historyMonth').value = monthStr;
+        };
+
+        // Auth
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPassword').value;
+            
+            const user = users.find(u => u.email === email && u.password === pass);
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('tt_current', JSON.stringify(user));
+                showApp();
+            } else {
+                showAlert('loginAlert', 'Credenziali errate', 'error');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('tt_current');
+            location.reload();
+        }
+
+        function showApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            document.getElementById('welcomeText').textContent = 
+                `${currentUser.name} • ${currentUser.role === 'admin' ? 'Admin' : 'Dipendente'}`;
+            
+            if (currentUser.role === 'admin') {
+                document.getElementById('adminNav').classList.remove('hidden');
+                document.getElementById('employeeNav').classList.add('hidden');
+                loadDashboard();
+                loadTeam();
+            } else {
+                document.getElementById('adminNav').classList.add('hidden');
+                document.getElementById('employeeNav').classList.remove('hidden');
+                showTab('clock');
+            }
+        }
+
+        // Setup
+        function showSetup() {
+            document.getElementById('setupModal').classList.remove('hidden');
+        }
+
+        function closeSetup() {
+            document.getElementById('setupModal').classList.add('hidden');
+        }
+
+        function setupAdmin() {
+            const email = document.getElementById('setupEmail').value;
+            const pass = document.getElementById('setupPassword').value;
+            const company = document.getElementById('setupCompany').value;
+
+            if (!email || !pass || pass.length < 6) {
+                alert('Inserisci email e password (min 6 caratteri)');
+                return;
+            }
+
+            users.push({
+                id: Date.now(),
+                email: email,
+                password: pass,
+                name: 'Admin',
+                role: 'admin',
+                company: company || 'Azienda'
+            });
+            
+            localStorage.setItem('tt_users', JSON.stringify(users));
+            alert('Admin creato! Ora accedi.');
+            closeSetup();
+        }
+
+        // Navigation
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tab === 'dashboard') loadDashboard();
+            if (tab === 'team') loadTeam();
+            if (tab === 'history') loadHistory();
+        }
+
+        // Admin: Dashboard
+        function loadDashboard() {
+            const employees = users.filter(u => u.role === 'employee');
+            document.getElementById('statEmployees').textContent = employees.length;
+
+            const today = new Date().toISOString().split('T')[0];
+            const todayEntries = entries.filter(e => e.date === today);
+            document.getElementById('statToday').textContent = todayEntries.length;
+
+            const month = new Date().toISOString().slice(0, 7);
+            const monthEntries = entries.filter(e => e.date.startsWith(month) && e.type === 'work');
+            const hours = monthEntries.reduce((sum, e) => sum + calcHours(e.start, e.end), 0);
+            document.getElementById('statMonth').textContent = hours.toFixed(0);
+
+            // List
+            const list = document.getElementById('todayList');
+            if (todayEntries.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div>Nessuna registrazione oggi</div></div>';
+            } else {
+                list.innerHTML = todayEntries.map(e => {
+                    const user = users.find(u => u.id === e.userId);
+                    return `
+                        <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px;">
+                            <div class="flex-between">
+                                <strong>${user ? user.name : '?'}</strong>
+                                <span class="badge badge-${e.type}">${label(e.type)}</span>
+                            </div>
+                            ${e.type === 'work' ? `<div style="color: var(--gray); margin-top: 5px;">${e.start} - ${e.end}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Admin: Team
+        function loadTeam() {
+            const list = document.getElementById('teamList');
+            const employees = users.filter(u => u.role === 'employee');
+            
+            if (employees.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👤</div><div>Nessun dipendente</div></div>';
+            } else {
+                list.innerHTML = employees.map(e => `
+                    <div class="employee-item">
+                        <div>
+                            <div style="font-weight: 600;">${e.name}</div>
+                            <div style="font-size: 0.85rem; color: var(--gray);">${e.email}</div>
+                        </div>
+                        <button class="btn-icon btn-danger" onclick="deleteEmployee(${e.id})">🗑️</button>
+                    </div>
+                `).join('');
+            }
+
+            // Update select
+            const select = document.getElementById('reportEmployee');
+            select.innerHTML = employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+        }
+
+        function addEmployee() {
+            const name = document.getElementById('newName').value;
+            const email = document.getElementById('newEmail').value;
+
+            if (!name || !email) {
+                showAlert('teamAlert', 'Inserisci nome e email', 'error');
+                return;
+            }
+
+            if (users.find(u => u.email === email)) {
+                showAlert('teamAlert', 'Email già esistente', 'error');
+                return;
+            }
+
+            const password = Math.random().toString(36).substring(2, 10);
+
+            const employee = {
+                id: Date.now(),
+                email: email,
+                password: password,
+                name: name,
+                role: 'employee'
+            };
+
+            users.push(employee);
+            localStorage.setItem('tt_users', JSON.stringify(users));
+            
+            lastEmployee = { name, email, password };
+            
+            document.getElementById('newName').value = '';
+            document.getElementById('newEmail').value = '';
+            
+            loadTeam();
+            showShareModal();
+        }
+
+        function deleteEmployee(id) {
+            if (confirm('Eliminare dipendente?')) {
+                users = users.filter(u => u.id !== id);
+                localStorage.setItem('tt_users', JSON.stringify(users));
+                loadTeam();
+            }
+        }
+
+        // Share
+        function showShareModal() {
+            if (!lastEmployee) return;
+            
+            const link = window.location.href.split('?')[0];
+            
+            document.getElementById('shareLink').textContent = link;
+            document.getElementById('shareEmail').textContent = lastEmployee.email;
+            document.getElementById('sharePassword').textContent = lastEmployee.password;
+            
+            document.getElementById('shareModal').classList.remove('hidden');
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.add('hidden');
+        }
+
+        function copyLink() {
+            const link = document.getElementById('shareLink').textContent;
+            navigator.clipboard.writeText(link);
+            alert('Link copiato!');
+        }
+
+        function shareWhatsApp() {
+            const link = document.getElementById('shareLink').textContent;
+            const text = `Ciao ${lastEmployee.name}, ecco le credenziali per l'app presenze:\n\nLink: ${link}\nEmail: ${lastEmployee.email}\nPassword: ${lastEmployee.password}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function shareEmail() {
+            const link = document.getElementById('shareLink').textContent;
+            const subject = encodeURIComponent('Credenziali Accesso App Presenze');
+            const body = encodeURIComponent(`Ciao ${lastEmployee.name},\n\nLink: ${link}\nEmail: ${lastEmployee.email}\nPassword: ${lastEmployee.password}`);
+            window.open(`mailto:${lastEmployee.email}?subject=${subject}&body=${body}`, '_blank');
+        }
+
+        // Employee: Clock
+        function toggleClockTime() {
+            const type = document.getElementById('clockType').value;
+            document.getElementById('clockTimeSection').style.display = 
+                type === 'work' ? 'block' : 'none';
+        }
+
+        function saveClock() {
+            const type = document.getElementById('clockType').value;
+            const date = new Date().toISOString().split('T')[0];
+            
+            let start = null, end = null;
+            
+            if (type === 'work') {
+                start = document.getElementById('clockStart').value;
+                end = document.getElementById('clockEnd').value;
+                
+                if (!start || !end) {
+                    alert('Inserisci orari');
+                    return;
+                }
+            }
+
+            entries.push({
+                id: Date.now(),
+                userId: currentUser.id,
+                date: date,
+                type: type,
+                start: start,
+                end: end
+            });
+
+            localStorage.setItem('tt_entries', JSON.stringify(entries));
+            
+            // Feedback
+            const btn = event.target;
+            const original = btn.textContent;
+            btn.textContent = '✅ Salvato!';
+            btn.style.background = '#10b981';
+            
+            setTimeout(() => {
+                btn.textContent = original;
+                btn.style.background = '';
+            }, 2000);
+        }
+
+        // Employee: History
+        function loadHistory() {
+            const month = document.getElementById('historyMonth').value;
+            const myEntries = entries.filter(e => 
+                e.userId === currentUser.id && e.date.startsWith(month)
+            ).sort((a, b) => b.date.localeCompare(a.date));
+
+            const list = document.getElementById('historyList');
+            
+            if (myEntries.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div>Nessuna registrazione</div></div>';
+            } else {
+                list.innerHTML = myEntries.map(e => `
+                    <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px;">
+                        <div class="flex-between">
+                            <strong>${formatDate(e.date)}</strong>
+                            <span class="badge badge-${e.type}">${label(e.type)}</span>
+                        </div>
+                        ${e.type === 'work' ? `
+                            <div style="color: var(--gray); margin-top: 5px;">
+                                ${e.start} - ${e.end} • ${calcHours(e.start, e.end).toFixed(1)}h
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+
+            const total = myEntries
+                .filter(e => e.type === 'work')
+                .reduce((sum, e) => sum + calcHours(e.start, e.end), 0);
+            
+            document.getElementById('historyTotal').textContent = total.toFixed(1);
+        }
+
+        // Reports
+        function generateReport() {
+            const empId = parseInt(document.getElementById('reportEmployee').value);
+            const month = document.getElementById('reportMonth').value;
+            
+            const employee = users.find(u => u.id === empId);
+            const empEntries = entries.filter(e => 
+                e.userId === empId && e.date.startsWith(month)
+            );
+
+            const work = empEntries.filter(e => e.type === 'work');
+            const hours = work.reduce((sum, e) => sum + calcHours(e.start, e.end), 0);
+
+            const div = document.getElementById('reportResult');
+            div.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 12px; margin-top: 15px;">
+                    <h3 style="margin-bottom: 15px;">${employee.name} - ${month}</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
+                        <div style="background: #dbeafe; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #1e40af;">${hours.toFixed(1)}</div>
+                            <div style="font-size: 0.8rem; color: #1e40af;">Ore</div>
+                        </div>
+                        <div style="background: #fce7f3; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #be185d;">${empEntries.filter(e => e.type === 'holiday').length}</div>
+                            <div style="font-size: 0.8rem; color: #be185d;">Ferie</div>
+                        </div>
+                    </div>
+
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        ${empEntries.map(e => `
+                            <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+                                <div class="flex-between">
+                                    <span>${formatDate(e.date)}</span>
+                                    <span class="badge badge-${e.type}">${label(e.type)}</span>
+                                </div>
+                                ${e.type === 'work' ? `<div style="color: var(--gray); font-size: 0.9rem;">${e.start}-${e.end}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function exportExcel() {
+            const empId = parseInt(document.getElementById('reportEmployee').value);
+            const month = document.getElementById('reportMonth').value;
+            const employee = users.find(u => u.id === empId);
+            
+            const data = entries
+                .filter(e => e.userId === empId && e.date.startsWith(month))
+                .map(e => ({
+                    Data: formatDate(e.date),
+                    Tipo: label(e.type),
+                    Inizio: e.start || '-',
+                    Fine: e.end || '-',
+                    Ore: e.type === 'work' ? calcHours(e.start, e.end).toFixed(2) : '-'
+                }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Report");
+            XLSX.writeFile(wb, `Report_${employee.name}_${month}.xlsx`);
+        }
+
+        // Utils
+        function calcHours(start, end) {
+            if (!start || !end) return 0;
+            const [h1, m1] = start.split(':').map(Number);
+            const [h2, m2] = end.split(':').map(Number);
+            return ((h2 * 60 + m2) - (h1 * 60 + m1)) / 60;
+        }
+
+        function label(type) {
+            const labels = { work: 'Lavoro', holiday: 'Ferie', rest: 'Riposo', festive: 'Festivo' };
+            return labels[type] || type;
+        }
+
+        function formatDate(d) {
+            const [y, m, day] = d.split('-');
+            return `${day}/${m}/${y}`;
+        }
+
+        function showAlert(id, msg, type) {
+            const el = document.getElementById(id);
+            el.className = `alert alert-${type}`;
+            el.textContent = msg;
+            setTimeout(() => el.textContent = '', 3000);
+        }
+    </script>
+</body>
+</html>
