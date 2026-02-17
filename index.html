@@ -137,30 +137,35 @@
             display: none !important;
         }
 
+        /* MENU COMPATTO - TUTTO SU UNA RIGA */
         .nav-tabs {
             display: flex;
-            overflow-x: auto;
-            gap: 8px;
+            justify-content: space-between;
+            gap: 5px;
             margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e2e8f0;
-            -webkit-overflow-scrolling: touch;
+            padding: 5px;
+            background: #f1f5f9;
+            border-radius: 12px;
         }
 
         .nav-tab {
-            flex-shrink: 0;
-            padding: 12px 20px;
-            background: #f1f5f9;
+            flex: 1;
+            padding: 10px 5px;
+            background: transparent;
             border: none;
-            border-radius: 25px;
+            border-radius: 8px;
             color: var(--gray);
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
+            text-align: center;
+            line-height: 1.2;
+            min-width: 0;
         }
 
         .nav-tab.active {
             background: var(--primary);
             color: white;
+            box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
         }
 
         .tab-content {
@@ -329,7 +334,23 @@
             margin: 15px 0;
             word-break: break-all;
             font-family: monospace;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .code-box {
+            background: #1e293b;
+            color: #10b981;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 0.75rem;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+            line-height: 1.4;
         }
 
         .alert {
@@ -378,35 +399,30 @@
             margin-bottom: 10px;
         }
 
-        .fab {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .time-display {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
         .section-title {
             font-size: 0.85rem;
             color: var(--gray);
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .sync-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 0.85rem;
+            padding: 12px 8px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            min-height: 120px;
+            font-family: monospace;
+            resize: vertical;
         }
     </style>
 </head>
@@ -462,7 +478,7 @@
         </div>
     </div>
 
-    <!-- Share Credentials Modal -->
+    <!-- Share Modal -->
     <div id="shareModal" class="modal hidden">
         <div class="modal-content">
             <h2 style="margin-bottom: 15px;">✅ Dipendente Creato</h2>
@@ -487,6 +503,32 @@
         </div>
     </div>
 
+    <!-- Sync Modal -->
+    <div id="syncModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="close-btn" onclick="closeSyncModal()">×</div>
+            <h2 style="margin-bottom: 15px;">☁️ Sincronizza Dati</h2>
+            
+            <div class="card">
+                <div class="card-title">📤 Esporta (da questo dispositivo)</div>
+                <p style="margin-bottom: 15px; color: var(--gray); font-size: 0.9rem;">
+                    Genera un codice da inviare ad altri dispositivi
+                </p>
+                <button class="btn-success" onclick="exportData()">Genera Codice</button>
+                <div id="exportBox" style="margin-top: 15px;"></div>
+            </div>
+
+            <div class="card" style="margin-top: 15px;">
+                <div class="card-title">📥 Importa (su altro dispositivo)</div>
+                <p style="margin-bottom: 15px; color: var(--gray); font-size: 0.9rem;">
+                    Incolla qui il codice ricevuto
+                </p>
+                <textarea id="importCode" placeholder="Incolla il codice lungo qui..."></textarea>
+                <button class="btn-primary" onclick="importData()" style="margin-top: 10px;">Importa Dati</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main App -->
     <div id="appContainer" class="container hidden">
         <div class="app-container">
@@ -496,17 +538,18 @@
             </div>
             
             <div class="content">
-                <!-- Admin Nav -->
+                <!-- Admin Nav - 4 TAB COMPATTI SU UNA RIGA -->
                 <div id="adminNav" class="nav-tabs hidden">
-                    <button class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
-                    <button class="nav-tab" onclick="showTab('team')">👥 Team</button>
-                    <button class="nav-tab" onclick="showTab('reports')">📈 Report</button>
+                    <button class="nav-tab active" onclick="showTab('dashboard')">📊<br>Dash</button>
+                    <button class="nav-tab" onclick="showTab('team')">👥<br>Team</button>
+                    <button class="nav-tab" onclick="showTab('reports')">📈<br>Report</button>
+                    <button class="nav-tab sync-btn" onclick="showSyncModal()">☁️<br>Sync</button>
                 </div>
 
                 <!-- Employee Nav -->
                 <div id="employeeNav" class="nav-tabs hidden">
-                    <button class="nav-tab active" onclick="showTab('clock')">⏰ Timbra</button>
-                    <button class="nav-tab" onclick="showTab('history')">📋 Storico</button>
+                    <button class="nav-tab active" onclick="showTab('clock')">⏰<br>Timbra</button>
+                    <button class="nav-tab" onclick="showTab('history')">📋<br>Storico</button>
                 </div>
 
                 <!-- Admin: Dashboard -->
@@ -581,7 +624,21 @@
                     </div>
                 </div>
 
-                <!-- Employee: Clock In/Out -->
+                <!-- Admin/Employee: Sync (accessibile da entrambi) -->
+                <div id="sync" class="tab-content">
+                    <div class="card">
+                        <div class="card-title">☁️ Sincronizza Dati</div>
+                        <p style="margin-bottom: 20px; color: var(--gray);">
+                            Usa questa funzione per condividere i dati tra PC e smartphone.
+                        </p>
+                        
+                        <button class="btn-success" onclick="showSyncModal()" style="font-size: 1.1rem; padding: 20px;">
+                            Apri Pannello Sincronizza
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Employee: Clock -->
                 <div id="clock" class="tab-content">
                     <div class="card" style="text-align: center; padding: 30px;">
                         <div class="section-title">Data</div>
@@ -654,7 +711,6 @@
                 showApp();
             }
             
-            // Set today's date
             const today = new Date();
             document.getElementById('currentDate').textContent = today.toLocaleDateString('it-IT', {
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -764,7 +820,6 @@
             const hours = monthEntries.reduce((sum, e) => sum + calcHours(e.start, e.end), 0);
             document.getElementById('statMonth').textContent = hours.toFixed(0);
 
-            // List
             const list = document.getElementById('todayList');
             if (todayEntries.length === 0) {
                 list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div>Nessuna registrazione oggi</div></div>';
@@ -803,7 +858,6 @@
                 `).join('');
             }
 
-            // Update select
             const select = document.getElementById('reportEmployee');
             select.innerHTML = employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
         }
@@ -922,7 +976,6 @@
 
             localStorage.setItem('tt_entries', JSON.stringify(entries));
             
-            // Feedback
             const btn = event.target;
             const original = btn.textContent;
             btn.textContent = '✅ Salvato!';
@@ -1031,6 +1084,71 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Report");
             XLSX.writeFile(wb, `Report_${employee.name}_${month}.xlsx`);
+        }
+
+        // SYNC FUNCTIONS
+        function showSyncModal() {
+            document.getElementById('syncModal').classList.remove('hidden');
+        }
+
+        function closeSyncModal() {
+            document.getElementById('syncModal').classList.add('hidden');
+        }
+
+        function exportData() {
+            const data = {
+                users: users,
+                entries: entries,
+                date: new Date().toISOString()
+            };
+            
+            const jsonString = JSON.stringify(data);
+            const base64 = btoa(unescape(encodeURIComponent(jsonString)));
+            
+            const exportBox = document.getElementById('exportBox');
+            exportBox.innerHTML = `
+                <div class="code-box">${base64}</div>
+                <button class="btn-secondary" onclick="copyExportCode()" style="margin-top: 10px;">📋 Copia Codice</button>
+                <p style="margin-top: 10px; font-size: 0.85rem; color: var(--gray);">
+                    Invia questo codice al dipendente via WhatsApp/Email
+                </p>
+            `;
+        }
+
+        function copyExportCode() {
+            const code = document.querySelector('.code-box').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Codice copiato! Incollalo in WhatsApp o Email.');
+            });
+        }
+
+        function importData() {
+            try {
+                const base64 = document.getElementById('importCode').value.trim();
+                if (!base64) {
+                    alert('Incolla prima il codice');
+                    return;
+                }
+                
+                const jsonString = decodeURIComponent(escape(atob(base64)));
+                const data = JSON.parse(jsonString);
+                
+                if (!confirm(`Importare ${data.users.length} utenti e ${data.entries.length} registrazioni? I dati attuali verranno sostituiti.`)) {
+                    return;
+                }
+                
+                users = data.users;
+                entries = data.entries;
+                
+                localStorage.setItem('tt_users', JSON.stringify(users));
+                localStorage.setItem('tt_entries', JSON.stringify(entries));
+                
+                alert('✅ Dati importati! Ricarico la pagina...');
+                location.reload();
+            } catch (error) {
+                alert('❌ Errore: codice non valido. Assicurati di aver copiato tutto il codice.');
+                console.error(error);
+            }
         }
 
         // Utils
