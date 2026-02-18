@@ -622,7 +622,7 @@
                                 <span class="icon">⚠️</span>
                                 <div class="text">
                                     <div class="title">Attenzione: Registrazione Esistente</div>
-                                    <div class="desc">Hai già timbrato oggi. Sovrascrivendo perderai i dati precedenti.</div>
+                                    <div class="desc">Hai già timbrato in questa data. Sovrascrivendo perderai i dati precedenti.</div>
                                 </div>
                             </div>
                         </div>
@@ -636,8 +636,6 @@
                         </div>
                         
                         <div class="card" style="text-align: center;">
-                            <div id="currentDate" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; color: var(--primary);"></div>
-                            
                             <div class="day-selector">
                                 <div class="form-group" style="text-align: left; margin: 0;">
                                     <label>📅 Data</label>
@@ -728,7 +726,7 @@
         // CONFIGURAZIONE
         // ==========================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbzCHH0x-8Gw1YNOoBqJ_rZH74PYBAfKUeczK8H1SXYXCSvhRCVSMHa6_coHPhypUArR/exec';
-        const APP_URL = window.location.href.split('?')[0];
+        const APP_URL = window.location.href.split('?')[0].replace(/\/$/, ''); // Rimuovi slash finale
         
         let currentUser = null;
         let allEntries = [];
@@ -736,23 +734,19 @@
         let lastCreated = null;
         let hasEntryToday = false;
         let currentReportData = [];
-        let dateEntries = []; // Entries per la data selezionata
+        let dateEntries = [];
 
         // ==========================================
         // INIZIALIZZAZIONE
         // ==========================================
         window.onload = function() {
             const today = new Date();
-            document.getElementById('currentDate').textContent = today.toLocaleDateString('it-IT', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-            });
-            
-            // Imposta data di oggi nel selettore
-            document.getElementById('clockDate').value = today.toISOString().split('T')[0];
-            
             const monthStr = today.toISOString().slice(0, 7);
             document.getElementById('reportMonth').value = monthStr;
             document.getElementById('historyMonth').value = monthStr;
+            
+            // Imposta data di oggi
+            document.getElementById('clockDate').value = today.toISOString().split('T')[0];
             
             // Event listeners
             document.getElementById('clockStart').addEventListener('change', updateHoursPreview);
@@ -761,7 +755,7 @@
         };
 
         // ==========================================
-        // UTILITY - CORRETTE
+        // UTILITY
         // ==========================================
         function calculateHours(start, end) {
             if (!start || !end || typeof start !== 'string' || typeof end !== 'string') return 0;
@@ -851,9 +845,6 @@
             }
         }
 
-        // ==========================================
-        // VALIDAZIONE SOVRAPPOSIZIONE ORARI
-        // ==========================================
         function validateTime() {
             const type = document.getElementById('clockType').value;
             if (type !== 'work') {
@@ -872,21 +863,18 @@
             const newStartMin = timeToMinutes(newStart);
             const newEndMin = timeToMinutes(newEnd);
             
-            // Controlla sovrapposizioni con entries esistenti per questa data
             for (let entry of dateEntries) {
                 if (entry.tipo !== 'work') continue;
                 
                 const existStart = timeToMinutes(entry.inizio);
                 const existEnd = timeToMinutes(entry.fine);
                 
-                // Se esiste un orario notturno, aggiungi 24h
                 let adjustedExistEnd = existEnd;
                 if (existEnd < existStart) adjustedExistEnd += 24 * 60;
                 
                 let adjustedNewEnd = newEndMin;
                 if (newEndMin < newStartMin) adjustedNewEnd += 24 * 60;
                 
-                // Controlla sovrapposizione
                 const overlap = (newStartMin < adjustedExistEnd && adjustedNewEnd > existStart);
                 
                 if (overlap) {
@@ -1013,7 +1001,7 @@
         }
 
         // ==========================================
-        // DASHBOARD
+        // DASHBOARD - CORRETTO
         // ==========================================
         async function loadDashboard() {
             const result = await apiCall('get');
@@ -1026,11 +1014,19 @@
             const today = new Date().toISOString().split('T')[0];
             const currentMonth = new Date().toISOString().slice(0, 7);
             
-            const todayEntries = allEntries.filter(e => e.data === today);
+            // CORRETTO: Filtra timbrature di oggi (tutti i dipendenti)
+            const todayEntries = allEntries.filter(e => {
+                // Gestisce sia formato YYYY-MM-DD che date complete
+                const entryDate = e.data ? e.data.split('T')[0] : '';
+                return entryDate === today;
+            });
+            
             document.getElementById('statToday').textContent = todayEntries.length;
             
+            // Ore mese
             const monthWorkEntries = allEntries.filter(e => {
-                return e.data && e.data.startsWith(currentMonth) && e.tipo === 'work';
+                const entryMonth = e.data ? e.data.substring(0, 7) : '';
+                return entryMonth === currentMonth && e.tipo === 'work';
             });
             
             const totalHours = monthWorkEntries.reduce((sum, e) => {
@@ -1039,9 +1035,11 @@
             
             document.getElementById('statMonth').textContent = formatHoursDecimal(totalHours);
             
-            const uniqueEmployees = new Set(allEntries.map(e => e.userId)).size;
+            // Dipendenti attivi (unici)
+            const uniqueEmployees = new Set(allEntries.map(e => e.userId).filter(id => id)).size;
             document.getElementById('statEmployees').textContent = uniqueEmployees || 0;
             
+            // Lista oggi - CORRETTA
             const list = document.getElementById('todayList');
             if (todayEntries.length === 0) {
                 list.innerHTML = `
@@ -1067,7 +1065,7 @@
         }
 
         // ==========================================
-        // TEAM
+        // TEAM - CON ID SEQUENZIALE
         // ==========================================
         async function loadTeam() {
             const result = await apiCall('get_users');
@@ -1079,6 +1077,13 @@
             }
             
             allUsers = result.users || [];
+            
+            // Ordina per ID numerico
+            allUsers.sort((a, b) => {
+                const idA = parseInt(a.id) || 0;
+                const idB = parseInt(b.id) || 0;
+                return idA - idB;
+            });
             
             const employees = allUsers.filter(u => 
                 u.ruolo === 'dipendente' || u.ruolo === 'employee' || !u.ruolo || u.ruolo !== 'admin'
@@ -1095,7 +1100,7 @@
                 list.innerHTML = employees.map(u => `
                     <div class="entry-item">
                         <div class="entry-info">
-                            <div class="entry-date">${u.nome || 'Senza nome'}</div>
+                            <div class="entry-date">${u.nome || 'Senza nome'} <span style="color: var(--gray); font-size: 0.8rem;">(ID: ${u.id || 'N/A'})</span></div>
                             <div class="entry-time">${u.email || 'Email non disponibile'}</div>
                         </div>
                         <span class="badge badge-work">Attivo</span>
@@ -1118,6 +1123,13 @@
                 return;
             }
             
+            // Trova il prossimo ID sequenziale
+            const maxId = allUsers.reduce((max, u) => {
+                const uid = parseInt(u.id);
+                return uid > max ? uid : max;
+            }, 0);
+            const nextId = maxId + 1;
+            
             const password = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 4);
             
             const btn = event.target;
@@ -1126,6 +1138,7 @@
             btn.disabled = true;
             
             const result = await apiCall('add_user', { 
+                id: nextId, // Invia ID suggerito al backend
                 nome: name, 
                 email: email, 
                 password: password,
@@ -1137,6 +1150,11 @@
             
             if (result.success && result.user) {
                 lastCreated = result.user;
+                // Assicurati che l'ID sia numerico sequenziale
+                if (!lastCreated.id) {
+                    lastCreated.id = nextId;
+                }
+                
                 document.getElementById('newName').value = '';
                 document.getElementById('newEmail').value = '';
                 document.getElementById('appUrl').textContent = APP_URL;
@@ -1150,15 +1168,39 @@
             }
         }
 
+        // ==========================================
+        // WHATSAPP - CORRETTO
+        // ==========================================
         function shareWhatsApp() {
             if (!lastCreated) return;
-            const text = `🎉 Benvenuto in TimeTrack Pro!\\n\\nCiao ${lastCreated.nome || ''},\\nhai ricevuto l'accesso all'app per registrare le tue ore di lavoro.\\n\\n📱 Link: ${APP_URL}\\n\\n🔐 Credenziali:\\nEmail: ${lastCreated.email}\\nPassword: ${lastCreated.password || document.getElementById('credPass').textContent}\\n\\nConsiglia: salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             
-            window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+            const nome = lastCreated.nome || 'Utente';
+            const email = lastCreated.email || '';
+            const password = lastCreated.password || document.getElementById('credPass').textContent || '';
+            const link = APP_URL;
+            
+            // Messaggio formattato correttamente con emoji e spazi
+            const text = `Benvenuto in TimeTrack Pro!
+
+Ciao ${nome},
+hai ricevuto l'accesso all'app per registrare le tue ore di lavoro.
+
+Link accesso:
+${link}
+
+Credenziali:
+Email: ${email}
+Password: ${password}
+
+Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
+            
+            // Codifica corretta per URL
+            const encodedText = encodeURIComponent(text);
+            window.open('https://wa.me/?text=' + encodedText, '_blank');
         }
 
         // ==========================================
-        // TIMBRATURA CON DATA SELEZIONABILE
+        // TIMBRATURA
         // ==========================================
         async function checkDateEntries() {
             if (!currentUser) return;
@@ -1171,14 +1213,13 @@
             
             const userId = String(currentUser.id);
             
-            // Trova tutte le entries per questa data (per controllo sovrapposizione)
             dateEntries = result.data.filter(e => {
                 const entryUserId = String(e.userId);
-                return entryUserId === userId && e.data === selectedDate;
+                const entryDate = e.data ? e.data.split('T')[0] : '';
+                return entryUserId === userId && entryDate === selectedDate;
             });
             
-            // Controlla se esiste già una entry (per warning sovrascrittura)
-            const existing = dateEntries[0]; // Prendi la prima se esiste
+            const existing = dateEntries[0];
             
             hasEntryToday = !!existing;
             const warning = document.getElementById('existingEntryWarning');
@@ -1194,7 +1235,6 @@
                 updateHoursPreview();
             } else {
                 warning.classList.add('hidden');
-                // Resetta ai valori default
                 document.getElementById('clockType').value = 'work';
                 document.getElementById('clockStart').value = '09:00';
                 document.getElementById('clockEnd').value = '18:00';
@@ -1202,14 +1242,12 @@
                 updateHoursPreview();
             }
             
-            // Valida subito per mostrare eventuali sovrapposizioni
             validateTime();
         }
 
         async function saveClock() {
             if (!currentUser) return;
             
-            // Validazione sovrapposizione
             if (!validateTime()) {
                 showAlert('clock', '⚠️ Correggi gli orari sovrapposti prima di salvare', 'error');
                 return;
@@ -1282,7 +1320,7 @@
                 btn.innerHTML = '✅ Salvato!';
                 btn.style.background = '#10b981';
                 hasEntryToday = true;
-                checkDateEntries(); // Ricarica entries
+                checkDateEntries();
                 setTimeout(() => {
                     btn.innerHTML = originalText;
                     btn.style.background = '';
@@ -1316,9 +1354,14 @@
             const myEntries = result.data
                 .filter(e => {
                     const entryUserId = String(e.userId);
-                    return entryUserId === userId && e.data && e.data.startsWith(month);
+                    const entryMonth = e.data ? e.data.substring(0, 7) : '';
+                    return entryUserId === userId && entryMonth === month;
                 })
-                .sort((a, b) => b.data.localeCompare(a.data));
+                .sort((a, b) => {
+                    const dateA = a.data || '';
+                    const dateB = b.data || '';
+                    return dateB.localeCompare(dateA);
+                });
             
             const list = document.getElementById('historyList');
             if (myEntries.length === 0) {
@@ -1364,7 +1407,7 @@
         }
 
         // ==========================================
-        // REPORT ADMIN - CORRETTO
+        // REPORT
         // ==========================================
         async function loadReportEmployees() {
             const result = await apiCall('get_users');
@@ -1373,7 +1416,6 @@
             allUsers = result.users || [];
             const select = document.getElementById('reportEmployee');
             
-            // Mantieni l'opzione "Tutti"
             select.innerHTML = '<option value="all">Tutti i dipendenti</option>';
             
             const employees = allUsers.filter(u => 
@@ -1405,17 +1447,17 @@
             
             allEntries = result.data || [];
             
-            // Filtra per mese
-            let entries = allEntries.filter(e => e.data && e.data.startsWith(month));
+            let entries = allEntries.filter(e => {
+                const entryMonth = e.data ? e.data.substring(0, 7) : '';
+                return entryMonth === month;
+            });
             
-            // Filtra per dipendente se selezionato
             if (employeeFilter !== 'all') {
                 entries = entries.filter(e => String(e.userId) === String(employeeFilter));
             }
             
             currentReportData = entries;
             
-            // Calcola statistiche
             const workEntries = entries.filter(e => e.tipo === 'work');
             const totalHours = workEntries.reduce((sum, e) => {
                 return sum + parseHoursField(e.ore, e.inizio, e.fine);
@@ -1424,7 +1466,6 @@
             const holidays = entries.filter(e => e.tipo === 'holiday').length;
             const rest = entries.filter(e => e.tipo === 'rest' || e.tipo === 'festive').length;
             
-            // Mostra riepilogo
             const summaryDiv = document.getElementById('reportSummary');
             summaryDiv.innerHTML = `
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
@@ -1447,21 +1488,19 @@
                 </div>
             `;
             
-            // Mostra dettaglio giornaliero
             const div = document.getElementById('reportResult');
             if (entries.length === 0) {
                 div.innerHTML = '<div class="empty-state">Nessun dato per i filtri selezionati</div>';
                 return;
             }
             
-            // Raggruppa per data
             const byDate = {};
             entries.forEach(e => {
-                if (!byDate[e.data]) byDate[e.data] = [];
-                byDate[e.data].push(e);
+                const dateKey = e.data ? e.data.split('T')[0] : 'unknown';
+                if (!byDate[dateKey]) byDate[dateKey] = [];
+                byDate[dateKey].push(e);
             });
             
-            // Ordina per data
             const sortedDates = Object.keys(byDate).sort();
             
             let html = '<div class="card" style="margin-top: 20px;"><div class="card-title">📅 Dettaglio Giornaliero</div>';
@@ -1504,14 +1543,13 @@
         }
 
         // ==========================================
-        // EXPORT EXCEL
+        // EXPORT
         // ==========================================
         function exportExcelCurrent() {
             if (!currentReportData || currentReportData.length === 0) {
                 alert('Nessun dato da esportare. Carica prima un report.');
                 return;
             }
-            
             exportToExcel(currentReportData, 'Report_Selezione');
         }
 
@@ -1520,12 +1558,10 @@
                 alert('Nessun dato disponibile');
                 return;
             }
-            
             exportToExcel(allEntries, 'Report_Completo');
         }
 
         function exportToExcel(data, filename) {
-            // Prepara dati per Excel
             const exportData = data.map(e => ({
                 'Data': e.data,
                 'Dipendente': e.nome || 'Sconosciuto',
@@ -1536,25 +1572,15 @@
                 'User ID': e.userId || ''
             }));
             
-            // Crea workbook
             const ws = XLSX.utils.json_to_sheet(exportData);
-            
-            // Formatta colonne
             const wscols = [
-                {wch: 12},  // Data
-                {wch: 25},  // Dipendente
-                {wch: 12},  // Tipo
-                {wch: 12},  // Ora Inizio
-                {wch: 12},  // Ora Fine
-                {wch: 12},  // Ore Totali
-                {wch: 15}   // User ID
+                {wch: 12}, {wch: 25}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 15}
             ];
             ws['!cols'] = wscols;
             
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Presenze");
             
-            // Download
             const date = new Date().toISOString().split('T')[0];
             XLSX.writeFile(wb, `${filename}_${date}.xlsx`);
         }
