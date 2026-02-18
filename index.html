@@ -33,7 +33,7 @@
             line-height: 1.6;
         }
         
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         
         .app-container { 
             background: white; 
@@ -66,11 +66,11 @@
             padding: 25px; 
             flex: 1;
             display: grid;
-            grid-template-columns: 1fr 320px;
+            grid-template-columns: 1fr 350px;
             gap: 25px;
         }
         
-        @media (max-width: 968px) {
+        @media (max-width: 1024px) {
             .content { grid-template-columns: 1fr; }
             .sidebar { order: -1; }
         }
@@ -412,8 +412,22 @@
             border-radius: 3px;
         }
         
-        /* Mobile optimizations */
+        .hours-display {
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .report-filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+        
         @media (max-width: 640px) {
+            .report-filters { grid-template-columns: 1fr; }
             .container { padding: 0; }
             .app-container { border-radius: 0; min-height: 100vh; }
             .header { padding: 25px 20px; }
@@ -424,10 +438,55 @@
             .time-inputs { grid-template-columns: 1fr; }
         }
         
-        .hours-display {
-            font-variant-numeric: tabular-nums;
-            font-weight: 600;
-            color: var(--primary);
+        .employee-selector {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .employee-option {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .employee-option:last-child { border-bottom: none; }
+        .employee-option:hover { background: #f8fafc; }
+        .employee-option.selected { 
+            background: #eff6ff; 
+            border-left: 4px solid var(--primary);
+        }
+        
+        .export-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .overlap-warning {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+            color: #991b1b;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .overlap-warning.show { display: flex; align-items: center; gap: 12px; }
+        
+        .day-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -528,15 +587,32 @@
 
                     <div id="reports" class="tab-content">
                         <div class="card">
-                            <div class="card-title">📊 Report Mensile Dettagliato</div>
-                            <div style="display: grid; grid-template-columns: 1fr auto; gap: 15px; align-items: end; margin-bottom: 20px;">
+                            <div class="card-title">📊 Report e Export</div>
+                            
+                            <div class="report-filters">
                                 <div class="form-group" style="margin: 0;">
-                                    <label>Seleziona Mese</label>
-                                    <input type="month" id="reportMonth">
+                                    <label>Mese</label>
+                                    <input type="month" id="reportMonth" onchange="loadReport()">
                                 </div>
-                                <button class="btn-primary" onclick="loadReport()" style="margin: 0; padding: 14px 24px;">Carica</button>
+                                <div class="form-group" style="margin: 0;">
+                                    <label>Dipendente</label>
+                                    <select id="reportEmployee" onchange="loadReport()">
+                                        <option value="all">Tutti i dipendenti</option>
+                                    </select>
+                                </div>
+                                <button class="btn-primary" onclick="loadReport()" style="margin: 0; padding: 14px 24px; height: fit-content;">
+                                    🔄 Aggiorna
+                                </button>
                             </div>
-                            <div id="reportResult"></div>
+
+                            <div id="reportSummary" style="margin-bottom: 20px;"></div>
+                            
+                            <div class="export-buttons">
+                                <button class="btn-success" onclick="exportExcelCurrent()">📊 Excel Selezione</button>
+                                <button class="btn-secondary" onclick="exportExcelAll()">📁 Excel Completo</button>
+                            </div>
+                            
+                            <div id="reportResult" style="margin-top: 25px;"></div>
                         </div>
                     </div>
 
@@ -551,28 +627,42 @@
                             </div>
                         </div>
                         
+                        <div id="overlapWarning" class="overlap-warning">
+                            <span style="font-size: 1.5rem;">🚫</span>
+                            <div>
+                                <div style="font-weight: 600;">Orario non valido</div>
+                                <div id="overlapMessage">Esiste già una registrazione che si sovrappone a questo orario.</div>
+                            </div>
+                        </div>
+                        
                         <div class="card" style="text-align: center;">
                             <div id="currentDate" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; color: var(--primary);"></div>
                             
-                            <div class="form-group" style="text-align: left; max-width: 300px; margin: 0 auto 20px;">
-                                <label>Tipo Presenza</label>
-                                <select id="clockType" onchange="toggleClockTime()" style="font-size: 1rem;">
-                                    <option value="work">💼 Lavoro Ordinario</option>
-                                    <option value="holiday">🏖️ Ferie</option>
-                                    <option value="rest">😴 Riposo</option>
-                                    <option value="festive">🎉 Festivo</option>
-                                </select>
+                            <div class="day-selector">
+                                <div class="form-group" style="text-align: left; margin: 0;">
+                                    <label>📅 Data</label>
+                                    <input type="date" id="clockDate" onchange="checkDateEntries()">
+                                </div>
+                                <div class="form-group" style="text-align: left; margin: 0;">
+                                    <label>Tipo Presenza</label>
+                                    <select id="clockType" onchange="toggleClockTime()" style="font-size: 1rem;">
+                                        <option value="work">💼 Lavoro Ordinario</option>
+                                        <option value="holiday">🏖️ Ferie</option>
+                                        <option value="rest">😴 Riposo</option>
+                                        <option value="festive">🎉 Festivo</option>
+                                    </select>
+                                </div>
                             </div>
                             
-                            <div id="clockTimeSection" style="max-width: 400px; margin: 0 auto;">
+                            <div id="clockTimeSection" style="max-width: 400px; margin: 20px auto 0;">
                                 <div class="time-inputs">
                                     <div class="form-group" style="text-align: left;">
                                         <label>Ora Entrata</label>
-                                        <input type="time" id="clockStart" value="09:00" style="font-size: 1.2rem; text-align: center;">
+                                        <input type="time" id="clockStart" value="09:00" style="font-size: 1.2rem; text-align: center;" onchange="validateTime()">
                                     </div>
                                     <div class="form-group" style="text-align: left;">
                                         <label>Ora Uscita</label>
-                                        <input type="time" id="clockEnd" value="18:00" style="font-size: 1.2rem; text-align: center;">
+                                        <input type="time" id="clockEnd" value="18:00" style="font-size: 1.2rem; text-align: center;" onchange="validateTime()">
                                     </div>
                                 </div>
                                 <div id="hoursPreview" style="margin: 15px 0; padding: 15px; background: #f0fdf4; border-radius: 12px; color: var(--success); font-weight: 600;">
@@ -635,7 +725,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURAZIONE API
+        // CONFIGURAZIONE
         // ==========================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbzCHH0x-8Gw1YNOoBqJ_rZH74PYBAfKUeczK8H1SXYXCSvhRCVSMHa6_coHPhypUArR/exec';
         const APP_URL = window.location.href.split('?')[0];
@@ -645,6 +735,8 @@
         let allUsers = [];
         let lastCreated = null;
         let hasEntryToday = false;
+        let currentReportData = [];
+        let dateEntries = []; // Entries per la data selezionata
 
         // ==========================================
         // INIZIALIZZAZIONE
@@ -655,32 +747,28 @@
                 weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
             });
             
+            // Imposta data di oggi nel selettore
+            document.getElementById('clockDate').value = today.toISOString().split('T')[0];
+            
             const monthStr = today.toISOString().slice(0, 7);
             document.getElementById('reportMonth').value = monthStr;
             document.getElementById('historyMonth').value = monthStr;
             
-            // Aggiorna preview ore in tempo reale
+            // Event listeners
             document.getElementById('clockStart').addEventListener('change', updateHoursPreview);
             document.getElementById('clockEnd').addEventListener('change', updateHoursPreview);
             updateHoursPreview();
         };
 
         // ==========================================
-        // FUNZIONI UTILITY - CORRETTE
+        // UTILITY - CORRETTE
         // ==========================================
-        
-        /**
-         * Calcola le ore tra due orari (formato HH:MM)
-         * Gestisce anche turni notturni (es. 22:00 - 06:00)
-         */
         function calculateHours(start, end) {
             if (!start || !end || typeof start !== 'string' || typeof end !== 'string') return 0;
             
-            // Pulisci eventuali spazi o caratteri extra
             start = start.trim();
             end = end.trim();
             
-            // Estrai ore e minuti
             const startParts = start.split(':');
             const endParts = end.split(':');
             
@@ -696,7 +784,6 @@
             let startMinutes = h1 * 60 + m1;
             let endMinutes = h2 * 60 + m2;
             
-            // Se l'orario di fine è minore di quello di inizio, assumiamo turno notturno (+24h)
             if (endMinutes < startMinutes) {
                 endMinutes += 24 * 60;
             }
@@ -704,42 +791,33 @@
             const diffMinutes = endMinutes - startMinutes;
             const hours = diffMinutes / 60;
             
-            // Validazione: deve essere tra 0 e 24 ore
             return (hours > 0 && hours <= 24) ? hours : 0;
         }
 
-        /**
-         * Estrae le ore valide da un campo che potrebbe contenere:
-         * - Un numero (es. 8.5)
-         * - Una stringa con numero (es. "8.5")
-         * - Una data ISO (es. "1899-12-30T23:00:00.000Z") -> IGNORATA
-         * - Stringa vuota o null -> usa fallback
-         */
         function parseHoursField(oreValue, inizio, fine) {
-            // Se è un numero valido diretto
             if (typeof oreValue === 'number' && !isNaN(oreValue) && oreValue > 0 && oreValue <= 24) {
                 return oreValue;
             }
             
-            // Se è una stringa
             if (typeof oreValue === 'string') {
                 const trimmed = oreValue.trim();
-                
-                // Se sembra una data ISO (contiene T o - in posizione 4), ignora
                 if (trimmed.includes('T') || /^\\d{4}-/.test(trimmed)) {
-                    // Usa fallback
                     return calculateHours(inizio, fine);
                 }
-                
-                // Prova a parsare come numero
                 const parsed = parseFloat(trimmed);
                 if (!isNaN(parsed) && parsed > 0 && parsed <= 24) {
                     return parsed;
                 }
             }
             
-            // Fallback: calcola da inizio/fine
             return calculateHours(inizio, fine);
+        }
+
+        function timeToMinutes(timeStr) {
+            if (!timeStr || typeof timeStr !== 'string') return 0;
+            const parts = timeStr.split(':');
+            if (parts.length < 2) return 0;
+            return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
         }
 
         function formatHoursDecimal(hours) {
@@ -759,6 +837,7 @@
             const end = document.getElementById('clockEnd').value;
             const hours = calculateHours(start, end);
             document.getElementById('previewHours').textContent = formatHoursDecimal(hours);
+            validateTime();
         }
 
         function toggleClockTime() {
@@ -773,7 +852,65 @@
         }
 
         // ==========================================
-        // API CALLS
+        // VALIDAZIONE SOVRAPPOSIZIONE ORARI
+        // ==========================================
+        function validateTime() {
+            const type = document.getElementById('clockType').value;
+            if (type !== 'work') {
+                hideOverlapWarning();
+                return true;
+            }
+            
+            const newStart = document.getElementById('clockStart').value;
+            const newEnd = document.getElementById('clockEnd').value;
+            
+            if (!newStart || !newEnd) {
+                hideOverlapWarning();
+                return true;
+            }
+            
+            const newStartMin = timeToMinutes(newStart);
+            const newEndMin = timeToMinutes(newEnd);
+            
+            // Controlla sovrapposizioni con entries esistenti per questa data
+            for (let entry of dateEntries) {
+                if (entry.tipo !== 'work') continue;
+                
+                const existStart = timeToMinutes(entry.inizio);
+                const existEnd = timeToMinutes(entry.fine);
+                
+                // Se esiste un orario notturno, aggiungi 24h
+                let adjustedExistEnd = existEnd;
+                if (existEnd < existStart) adjustedExistEnd += 24 * 60;
+                
+                let adjustedNewEnd = newEndMin;
+                if (newEndMin < newStartMin) adjustedNewEnd += 24 * 60;
+                
+                // Controlla sovrapposizione
+                const overlap = (newStartMin < adjustedExistEnd && adjustedNewEnd > existStart);
+                
+                if (overlap) {
+                    showOverlapWarning(`Esiste già una registrazione dalle ${entry.inizio} alle ${entry.fine}`);
+                    return false;
+                }
+            }
+            
+            hideOverlapWarning();
+            return true;
+        }
+
+        function showOverlapWarning(msg) {
+            const warning = document.getElementById('overlapWarning');
+            document.getElementById('overlapMessage').textContent = msg;
+            warning.classList.add('show');
+        }
+
+        function hideOverlapWarning() {
+            document.getElementById('overlapWarning').classList.remove('show');
+        }
+
+        // ==========================================
+        // API
         // ==========================================
         async function apiCall(action, params = {}) {
             try {
@@ -789,9 +926,7 @@
                     method: 'GET',
                     mode: 'cors',
                     cache: 'no-cache',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
+                    headers: { 'Accept': 'application/json' }
                 });
                 
                 if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -847,10 +982,11 @@
                 document.getElementById('employeeNav').classList.add('hidden');
                 loadDashboard();
                 loadTeam();
+                loadReportEmployees();
             } else {
                 document.getElementById('adminNav').classList.add('hidden');
                 document.getElementById('employeeNav').classList.remove('hidden');
-                checkExistingEntry();
+                checkDateEntries();
                 showTab('clock');
             }
         }
@@ -862,9 +998,6 @@
             location.reload();
         }
 
-        // ==========================================
-        // NAVIGAZIONE
-        // ==========================================
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -875,11 +1008,12 @@
             if (tabName === 'dashboard') loadDashboard();
             if (tabName === 'team') loadTeam();
             if (tabName === 'history') loadHistory();
-            if (tabName === 'clock') checkExistingEntry();
+            if (tabName === 'reports') loadReport();
+            if (tabName === 'clock') checkDateEntries();
         }
 
         // ==========================================
-        // DASHBOARD ADMIN
+        // DASHBOARD
         // ==========================================
         async function loadDashboard() {
             const result = await apiCall('get');
@@ -892,27 +1026,22 @@
             const today = new Date().toISOString().split('T')[0];
             const currentMonth = new Date().toISOString().slice(0, 7);
             
-            // Timbrature oggi
             const todayEntries = allEntries.filter(e => e.data === today);
             document.getElementById('statToday').textContent = todayEntries.length;
             
-            // Ore mese - CORRETTO: usa parseHoursField per ogni entry
             const monthWorkEntries = allEntries.filter(e => {
                 return e.data && e.data.startsWith(currentMonth) && e.tipo === 'work';
             });
             
             const totalHours = monthWorkEntries.reduce((sum, e) => {
-                const ore = parseHoursField(e.ore, e.inizio, e.fine);
-                return sum + ore;
+                return sum + parseHoursField(e.ore, e.inizio, e.fine);
             }, 0);
             
             document.getElementById('statMonth').textContent = formatHoursDecimal(totalHours);
             
-            // Dipendenti attivi
             const uniqueEmployees = new Set(allEntries.map(e => e.userId)).size;
             document.getElementById('statEmployees').textContent = uniqueEmployees || 0;
             
-            // Lista oggi
             const list = document.getElementById('todayList');
             if (todayEntries.length === 0) {
                 list.innerHTML = `
@@ -938,7 +1067,7 @@
         }
 
         // ==========================================
-        // GESTIONE TEAM
+        // TEAM
         // ==========================================
         async function loadTeam() {
             const result = await apiCall('get_users');
@@ -1015,6 +1144,7 @@
                 document.getElementById('credPass').textContent = lastCreated.password || password;
                 document.getElementById('newCreds').classList.remove('hidden');
                 loadTeam();
+                loadReportEmployees();
             } else {
                 showAlert('addAlert', '❌ ' + (result.error || 'Errore creazione dipendente'), 'error');
             }
@@ -1028,21 +1158,27 @@
         }
 
         // ==========================================
-        // TIMBRATURA DIPENDENTE
+        // TIMBRATURA CON DATA SELEZIONABILE
         // ==========================================
-        async function checkExistingEntry() {
-            if (!currentUser || currentUser.ruolo === 'admin') return;
+        async function checkDateEntries() {
+            if (!currentUser) return;
+            
+            const selectedDate = document.getElementById('clockDate').value;
+            if (!selectedDate) return;
             
             const result = await apiCall('get');
             if (!result.success) return;
             
-            const today = new Date().toISOString().split('T')[0];
             const userId = String(currentUser.id);
             
-            const existing = result.data.find(e => {
+            // Trova tutte le entries per questa data (per controllo sovrapposizione)
+            dateEntries = result.data.filter(e => {
                 const entryUserId = String(e.userId);
-                return entryUserId === userId && e.data === today;
+                return entryUserId === userId && e.data === selectedDate;
             });
+            
+            // Controlla se esiste già una entry (per warning sovrascrittura)
+            const existing = dateEntries[0]; // Prendi la prima se esiste
             
             hasEntryToday = !!existing;
             const warning = document.getElementById('existingEntryWarning');
@@ -1058,11 +1194,26 @@
                 updateHoursPreview();
             } else {
                 warning.classList.add('hidden');
+                // Resetta ai valori default
+                document.getElementById('clockType').value = 'work';
+                document.getElementById('clockStart').value = '09:00';
+                document.getElementById('clockEnd').value = '18:00';
+                toggleClockTime();
+                updateHoursPreview();
             }
+            
+            // Valida subito per mostrare eventuali sovrapposizioni
+            validateTime();
         }
 
         async function saveClock() {
             if (!currentUser) return;
+            
+            // Validazione sovrapposizione
+            if (!validateTime()) {
+                showAlert('clock', '⚠️ Correggi gli orari sovrapposti prima di salvare', 'error');
+                return;
+            }
             
             const btn = document.getElementById('saveBtn');
             const originalText = btn.innerHTML;
@@ -1070,7 +1221,14 @@
             btn.disabled = true;
             
             const type = document.getElementById('clockType').value;
-            const date = new Date().toISOString().split('T')[0];
+            const date = document.getElementById('clockDate').value;
+            
+            if (!date) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showAlert('clock', '⚠️ Seleziona una data', 'warning');
+                return;
+            }
             
             let inizio = '', fine = '', ore = 0;
             
@@ -1103,7 +1261,7 @@
             }
             
             if (hasEntryToday) {
-                if (!confirm('Hai già una registrazione per oggi. Vuoi sovrascriverla?')) {
+                if (!confirm('Hai già una registrazione per questa data. Vuoi sovrascriverla?')) {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     return;
@@ -1124,7 +1282,7 @@
                 btn.innerHTML = '✅ Salvato!';
                 btn.style.background = '#10b981';
                 hasEntryToday = true;
-                checkExistingEntry();
+                checkDateEntries(); // Ricarica entries
                 setTimeout(() => {
                     btn.innerHTML = originalText;
                     btn.style.background = '';
@@ -1141,7 +1299,7 @@
         }
 
         // ==========================================
-        // STORICO DIPENDENTE - CORRETTO
+        // STORICO
         // ==========================================
         async function loadHistory() {
             if (!currentUser) return;
@@ -1171,9 +1329,7 @@
                     </div>`;
             } else {
                 list.innerHTML = myEntries.map(e => {
-                    // CORRETTO: usa parseHoursField invece di parseFloat diretto
                     const ore = parseHoursField(e.ore, e.inizio, e.fine);
-                    
                     return `
                     <div class="entry-item">
                         <div class="entry-info">
@@ -1192,7 +1348,6 @@
                 }).join('');
             }
             
-            // Calcola riepilogo CORRETTO
             const workEntries = myEntries.filter(e => e.tipo === 'work');
             const totalHours = workEntries.reduce((sum, e) => {
                 return sum + parseHoursField(e.ore, e.inizio, e.fine);
@@ -1201,7 +1356,6 @@
             const holidays = myEntries.filter(e => e.tipo === 'holiday').length;
             const rest = myEntries.filter(e => e.tipo === 'rest' || e.tipo === 'festive').length;
             
-            // Aggiorna sidebar
             document.getElementById('sidebarTotalHours').textContent = formatHoursTime(totalHours);
             document.getElementById('sidebarDecimalHours').textContent = formatHoursDecimal(totalHours) + ' h';
             document.getElementById('sidebarWorkDays').textContent = workEntries.length;
@@ -1210,70 +1364,137 @@
         }
 
         // ==========================================
-        // REPORT ADMIN
+        // REPORT ADMIN - CORRETTO
         // ==========================================
+        async function loadReportEmployees() {
+            const result = await apiCall('get_users');
+            if (!result.success) return;
+            
+            allUsers = result.users || [];
+            const select = document.getElementById('reportEmployee');
+            
+            // Mantieni l'opzione "Tutti"
+            select.innerHTML = '<option value="all">Tutti i dipendenti</option>';
+            
+            const employees = allUsers.filter(u => 
+                u.ruolo === 'dipendente' || u.ruolo === 'employee' || !u.ruolo || u.ruolo !== 'admin'
+            );
+            
+            employees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.id || emp.email;
+                option.textContent = emp.nome || emp.email;
+                select.appendChild(option);
+            });
+        }
+
         async function loadReport() {
+            const month = document.getElementById('reportMonth').value;
+            const employeeFilter = document.getElementById('reportEmployee').value;
+            
+            if (!month) {
+                showAlert('reports', '⚠️ Seleziona un mese', 'warning');
+                return;
+            }
+            
             const result = await apiCall('get');
             if (!result.success) {
                 document.getElementById('reportResult').innerHTML = '<div class="alert alert-error">Errore caricamento report</div>';
                 return;
             }
             
-            const month = document.getElementById('reportMonth').value;
-            const entries = result.data.filter(e => e.data && e.data.startsWith(month));
+            allEntries = result.data || [];
             
-            // Raggruppa per dipendente
-            const byEmployee = {};
-            entries.forEach(e => {
-                const id = e.userId || e.nome;
-                if (!byEmployee[id]) {
-                    byEmployee[id] = { 
-                        nome: e.nome || 'Sconosciuto', 
-                        entries: [],
-                        totalHours: 0,
-                        holidays: 0,
-                        rest: 0
-                    };
-                }
-                byEmployee[id].entries.push(e);
-                if (e.tipo === 'work') {
-                    const ore = parseHoursField(e.ore, e.inizio, e.fine);
-                    byEmployee[id].totalHours += ore;
-                } else if (e.tipo === 'holiday') {
-                    byEmployee[id].holidays++;
-                } else {
-                    byEmployee[id].rest++;
-                }
-            });
+            // Filtra per mese
+            let entries = allEntries.filter(e => e.data && e.data.startsWith(month));
             
+            // Filtra per dipendente se selezionato
+            if (employeeFilter !== 'all') {
+                entries = entries.filter(e => String(e.userId) === String(employeeFilter));
+            }
+            
+            currentReportData = entries;
+            
+            // Calcola statistiche
+            const workEntries = entries.filter(e => e.tipo === 'work');
+            const totalHours = workEntries.reduce((sum, e) => {
+                return sum + parseHoursField(e.ore, e.inizio, e.fine);
+            }, 0);
+            
+            const holidays = entries.filter(e => e.tipo === 'holiday').length;
+            const rest = entries.filter(e => e.tipo === 'rest' || e.tipo === 'festive').length;
+            
+            // Mostra riepilogo
+            const summaryDiv = document.getElementById('reportSummary');
+            summaryDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div class="stat-box" style="padding: 15px;">
+                        <div class="stat-number" style="font-size: 1.4rem;">${formatHoursDecimal(totalHours)}</div>
+                        <div class="stat-label">Ore Totali</div>
+                    </div>
+                    <div class="stat-box" style="padding: 15px;">
+                        <div class="stat-number" style="font-size: 1.4rem;">${workEntries.length}</div>
+                        <div class="stat-label">Giorni Lavoro</div>
+                    </div>
+                    <div class="stat-box" style="padding: 15px;">
+                        <div class="stat-number" style="font-size: 1.4rem; color: #be185d;">${holidays}</div>
+                        <div class="stat-label">Ferie</div>
+                    </div>
+                    <div class="stat-box" style="padding: 15px;">
+                        <div class="stat-number" style="font-size: 1.4rem; color: #065f46;">${rest}</div>
+                        <div class="stat-label">Riposo/Festivo</div>
+                    </div>
+                </div>
+            `;
+            
+            // Mostra dettaglio giornaliero
             const div = document.getElementById('reportResult');
-            if (Object.keys(byEmployee).length === 0) {
-                div.innerHTML = '<div class="empty-state" style="margin-top: 20px;">Nessun dato per questo mese</div>';
+            if (entries.length === 0) {
+                div.innerHTML = '<div class="empty-state">Nessun dato per i filtri selezionati</div>';
                 return;
             }
             
-            let html = '<div class="card" style="margin-top: 20px;"><div class="card-title">📊 Dettaglio per Dipendente</div>';
+            // Raggruppa per data
+            const byDate = {};
+            entries.forEach(e => {
+                if (!byDate[e.data]) byDate[e.data] = [];
+                byDate[e.data].push(e);
+            });
             
-            Object.values(byEmployee).forEach(emp => {
+            // Ordina per data
+            const sortedDates = Object.keys(byDate).sort();
+            
+            let html = '<div class="card" style="margin-top: 20px;"><div class="card-title">📅 Dettaglio Giornaliero</div>';
+            
+            sortedDates.forEach(date => {
+                const dayEntries = byDate[date];
+                const dayTotal = dayEntries
+                    .filter(e => e.tipo === 'work')
+                    .reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
+                
                 html += `
-                <div style="margin-bottom: 20px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <strong style="font-size: 1.1rem;">${emp.nome}</strong>
-                        <span class="badge badge-work">${formatHoursDecimal(emp.totalHours)}h</span>
+                <div style="margin-bottom: 15px; padding: 15px; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
+                        <strong style="color: var(--dark);">${formatDate(date)}</strong>
+                        <span class="badge badge-work">${formatHoursDecimal(dayTotal)}h</span>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 0.9rem;">
-                        <div style="text-align: center; padding: 10px; background: white; border-radius: 8px;">
-                            <div style="font-weight: 600; color: var(--primary);">${emp.entries.filter(e => e.tipo === 'work').length}</div>
-                            <div style="color: var(--gray); font-size: 0.8rem;">Giorni Lavoro</div>
-                        </div>
-                        <div style="text-align: center; padding: 10px; background: white; border-radius: 8px;">
-                            <div style="font-weight: 600; color: #be185d;">${emp.holidays}</div>
-                            <div style="color: var(--gray); font-size: 0.8rem;">Ferie</div>
-                        </div>
-                        <div style="text-align: center; padding: 10px; background: white; border-radius: 8px;">
-                            <div style="font-weight: 600; color: #065f46;">${emp.rest}</div>
-                            <div style="color: var(--gray); font-size: 0.8rem;">Riposo/Festivo</div>
-                        </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        ${dayEntries.map(e => {
+                            const ore = parseHoursField(e.ore, e.inizio, e.fine);
+                            return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+                                <span>${e.nome || 'Sconosciuto'}</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    ${e.tipo === 'work' ? 
+                                        `<span style="color: var(--gray); font-variant-numeric: tabular-nums;">${e.inizio}-${e.fine}</span>` 
+                                        : ''}
+                                    <span class="badge badge-${e.tipo}" style="font-size: 0.7rem;">${label(e.tipo)}</span>
+                                    ${e.tipo === 'work' ? 
+                                        `<span style="font-weight: 600; min-width: 50px; text-align: right;">${formatHoursDecimal(ore)}h</span>` 
+                                        : ''}
+                                </div>
+                            </div>`;
+                        }).join('')}
                     </div>
                 </div>`;
             });
@@ -1283,7 +1504,63 @@
         }
 
         // ==========================================
-        // UTILITY UI
+        // EXPORT EXCEL
+        // ==========================================
+        function exportExcelCurrent() {
+            if (!currentReportData || currentReportData.length === 0) {
+                alert('Nessun dato da esportare. Carica prima un report.');
+                return;
+            }
+            
+            exportToExcel(currentReportData, 'Report_Selezione');
+        }
+
+        function exportExcelAll() {
+            if (!allEntries || allEntries.length === 0) {
+                alert('Nessun dato disponibile');
+                return;
+            }
+            
+            exportToExcel(allEntries, 'Report_Completo');
+        }
+
+        function exportToExcel(data, filename) {
+            // Prepara dati per Excel
+            const exportData = data.map(e => ({
+                'Data': e.data,
+                'Dipendente': e.nome || 'Sconosciuto',
+                'Tipo': label(e.tipo),
+                'Ora Inizio': e.inizio || '',
+                'Ora Fine': e.fine || '',
+                'Ore Totali': e.tipo === 'work' ? parseHoursField(e.ore, e.inizio, e.fine) : 0,
+                'User ID': e.userId || ''
+            }));
+            
+            // Crea workbook
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            
+            // Formatta colonne
+            const wscols = [
+                {wch: 12},  // Data
+                {wch: 25},  // Dipendente
+                {wch: 12},  // Tipo
+                {wch: 12},  // Ora Inizio
+                {wch: 12},  // Ora Fine
+                {wch: 12},  // Ore Totali
+                {wch: 15}   // User ID
+            ];
+            ws['!cols'] = wscols;
+            
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Presenze");
+            
+            // Download
+            const date = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `${filename}_${date}.xlsx`);
+        }
+
+        // ==========================================
+        // UTILITY
         // ==========================================
         function label(type) {
             const labels = { 
@@ -1297,14 +1574,12 @@
 
         function formatDate(dateStr) {
             if (!dateStr || typeof dateStr !== 'string') return '-';
-            // Se la data contiene 'T', è una data ISO completa
             if (dateStr.includes('T')) {
                 const d = new Date(dateStr);
                 if (!isNaN(d.getTime())) {
                     return d.toLocaleDateString('it-IT');
                 }
             }
-            // Formato YYYY-MM-DD
             const parts = dateStr.split('-');
             if (parts.length === 3) {
                 return `${parts[2]}/${parts[1]}/${parts[0]}`;
