@@ -392,48 +392,6 @@
         .warning-box .title { font-weight: 600; color: #92400e; margin-bottom: 4px; }
         .warning-box .desc { font-size: 0.9rem; color: #a16207; }
         
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-        
-        .modal {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-            animation: modalIn 0.3s;
-        }
-        
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        
-        .modal h3 { margin-bottom: 15px; color: var(--dark); }
-        .modal p { color: var(--gray); margin-bottom: 25px; line-height: 1.6; }
-        .modal-buttons { display: flex; gap: 10px; }
-        
-        /* Mobile optimizations */
-        @media (max-width: 640px) {
-            .container { padding: 0; }
-            .app-container { border-radius: 0; min-height: 100vh; }
-            .header { padding: 25px 20px; }
-            .header h1 { font-size: 1.5rem; }
-            .content { padding: 20px; }
-            .card { padding: 20px; }
-            .summary-card { position: static; }
-            .time-inputs { grid-template-columns: 1fr; }
-        }
-        
         .compact-list {
             max-height: 400px;
             overflow-y: auto;
@@ -454,31 +412,22 @@
             border-radius: 3px;
         }
         
-        .today-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            .container { padding: 0; }
+            .app-container { border-radius: 0; min-height: 100vh; }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.5rem; }
+            .content { padding: 20px; }
+            .card { padding: 20px; }
+            .summary-card { position: static; }
+            .time-inputs { grid-template-columns: 1fr; }
+        }
+        
+        .hours-display {
+            font-variant-numeric: tabular-nums;
             font-weight: 600;
-            margin-bottom: 20px;
-        }
-        
-        .today-indicator::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: #ef4444;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            color: var(--primary);
         }
     </style>
 </head>
@@ -717,22 +666,89 @@
         };
 
         // ==========================================
-        // FUNZIONI UTILITY
+        // FUNZIONI UTILITY - CORRETTE
         // ==========================================
+        
+        /**
+         * Calcola le ore tra due orari (formato HH:MM)
+         * Gestisce anche turni notturni (es. 22:00 - 06:00)
+         */
         function calculateHours(start, end) {
-            if (!start || !end) return 0;
-            const [h1, m1] = start.split(':').map(Number);
-            const [h2, m2] = end.split(':').map(Number);
-            let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
-            if (diff < 0) diff += 24 * 60; // Gestione turno notturno
-            return diff / 60;
+            if (!start || !end || typeof start !== 'string' || typeof end !== 'string') return 0;
+            
+            // Pulisci eventuali spazi o caratteri extra
+            start = start.trim();
+            end = end.trim();
+            
+            // Estrai ore e minuti
+            const startParts = start.split(':');
+            const endParts = end.split(':');
+            
+            if (startParts.length < 2 || endParts.length < 2) return 0;
+            
+            const h1 = parseInt(startParts[0], 10);
+            const m1 = parseInt(startParts[1], 10);
+            const h2 = parseInt(endParts[0], 10);
+            const m2 = parseInt(endParts[1], 10);
+            
+            if (isNaN(h1) || isNaN(m1) || isNaN(h2) || isNaN(m2)) return 0;
+            
+            let startMinutes = h1 * 60 + m1;
+            let endMinutes = h2 * 60 + m2;
+            
+            // Se l'orario di fine è minore di quello di inizio, assumiamo turno notturno (+24h)
+            if (endMinutes < startMinutes) {
+                endMinutes += 24 * 60;
+            }
+            
+            const diffMinutes = endMinutes - startMinutes;
+            const hours = diffMinutes / 60;
+            
+            // Validazione: deve essere tra 0 e 24 ore
+            return (hours > 0 && hours <= 24) ? hours : 0;
+        }
+
+        /**
+         * Estrae le ore valide da un campo che potrebbe contenere:
+         * - Un numero (es. 8.5)
+         * - Una stringa con numero (es. "8.5")
+         * - Una data ISO (es. "1899-12-30T23:00:00.000Z") -> IGNORATA
+         * - Stringa vuota o null -> usa fallback
+         */
+        function parseHoursField(oreValue, inizio, fine) {
+            // Se è un numero valido diretto
+            if (typeof oreValue === 'number' && !isNaN(oreValue) && oreValue > 0 && oreValue <= 24) {
+                return oreValue;
+            }
+            
+            // Se è una stringa
+            if (typeof oreValue === 'string') {
+                const trimmed = oreValue.trim();
+                
+                // Se sembra una data ISO (contiene T o - in posizione 4), ignora
+                if (trimmed.includes('T') || /^\\d{4}-/.test(trimmed)) {
+                    // Usa fallback
+                    return calculateHours(inizio, fine);
+                }
+                
+                // Prova a parsare come numero
+                const parsed = parseFloat(trimmed);
+                if (!isNaN(parsed) && parsed > 0 && parsed <= 24) {
+                    return parsed;
+                }
+            }
+            
+            // Fallback: calcola da inizio/fine
+            return calculateHours(inizio, fine);
         }
 
         function formatHoursDecimal(hours) {
+            if (typeof hours !== 'number' || isNaN(hours)) return '0.00';
             return hours.toFixed(2);
         }
 
         function formatHoursTime(hours) {
+            if (typeof hours !== 'number' || isNaN(hours) || hours < 0) return '00:00';
             const h = Math.floor(hours);
             const m = Math.round((hours - h) * 60);
             return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
@@ -809,7 +825,6 @@
             
             if (result.success && result.user) {
                 currentUser = result.user;
-                // Verifica che l'utente abbia i campi necessari
                 if (!currentUser.id || !currentUser.ruolo) {
                     showAlert('loginAlert', '⚠️ Errore dati utente', 'error');
                     return;
@@ -881,18 +896,13 @@
             const todayEntries = allEntries.filter(e => e.data === today);
             document.getElementById('statToday').textContent = todayEntries.length;
             
-            // Ore mese - CORRETTO: solo ore lavoro, calcolo preciso
+            // Ore mese - CORRETTO: usa parseHoursField per ogni entry
             const monthWorkEntries = allEntries.filter(e => {
                 return e.data && e.data.startsWith(currentMonth) && e.tipo === 'work';
             });
             
             const totalHours = monthWorkEntries.reduce((sum, e) => {
-                // Usa ore già calcolate se presenti e valide
-                let ore = parseFloat(e.ore);
-                if (isNaN(ore) || ore < 0 || ore > 24) {
-                    // Altrimenti ricalcola da inizio/fine
-                    ore = calculateHours(e.inizio, e.fine);
-                }
+                const ore = parseHoursField(e.ore, e.inizio, e.fine);
                 return sum + ore;
             }, 0);
             
@@ -912,7 +922,7 @@
                     </div>`;
             } else {
                 list.innerHTML = todayEntries.map(e => {
-                    const ore = e.tipo === 'work' ? (parseFloat(e.ore) || calculateHours(e.inizio, e.fine)) : 0;
+                    const ore = parseHoursField(e.ore, e.inizio, e.fine);
                     return `
                     <div class="entry-item">
                         <div class="entry-info">
@@ -941,7 +951,6 @@
             
             allUsers = result.users || [];
             
-            // Filtro dipendenti (ruolo = 'dipendente' o non admin)
             const employees = allUsers.filter(u => 
                 u.ruolo === 'dipendente' || u.ruolo === 'employee' || !u.ruolo || u.ruolo !== 'admin'
             );
@@ -952,7 +961,6 @@
                     <div class="empty-state">
                         <div class="empty-state-icon">👤</div>
                         <div>Nessun dipendente registrato</div>
-                        <div style="font-size: 0.85rem; margin-top: 10px;">Aggiungi il primo dipendente usando il form sopra</div>
                     </div>`;
             } else {
                 list.innerHTML = employees.map(u => `
@@ -1014,7 +1022,7 @@
 
         function shareWhatsApp() {
             if (!lastCreated) return;
-            const text = `🎉 Benvenuto in TimeTrack Pro!\n\nCiao ${lastCreated.nome || ''},\nhai ricevuto l'accesso all'app per registrare le tue ore di lavoro.\n\n📱 Link: ${APP_URL}\n\n🔐 Credenziali:\nEmail: ${lastCreated.email}\nPassword: ${lastCreated.password || document.getElementById('credPass').textContent}\n\nConsiglia: salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
+            const text = `🎉 Benvenuto in TimeTrack Pro!\\n\\nCiao ${lastCreated.nome || ''},\\nhai ricevuto l'accesso all'app per registrare le tue ore di lavoro.\\n\\n📱 Link: ${APP_URL}\\n\\n🔐 Credenziali:\\nEmail: ${lastCreated.email}\\nPassword: ${lastCreated.password || document.getElementById('credPass').textContent}\\n\\nConsiglia: salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             
             window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
         }
@@ -1031,7 +1039,6 @@
             const today = new Date().toISOString().split('T')[0];
             const userId = String(currentUser.id);
             
-            // CORRETTO: Controllo esplicito con conversione stringa
             const existing = result.data.find(e => {
                 const entryUserId = String(e.userId);
                 return entryUserId === userId && e.data === today;
@@ -1042,7 +1049,6 @@
             
             if (hasEntryToday) {
                 warning.classList.remove('hidden');
-                // Pre-compila con dati esistenti
                 if (existing.tipo) {
                     document.getElementById('clockType').value = existing.tipo;
                     toggleClockTime();
@@ -1079,27 +1085,23 @@
                     return;
                 }
                 
-                // Validazione orari
-                const startMinutes = parseInt(inizio.split(':')[0]) * 60 + parseInt(inizio.split(':')[1]);
-                const endMinutes = parseInt(fine.split(':')[0]) * 60 + parseInt(fine.split(':')[1]);
+                ore = calculateHours(inizio, fine);
                 
-                if (endMinutes <= startMinutes) {
+                if (ore <= 0) {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                    showAlert('clock', '⚠️ L\'ora di fine deve essere successiva all\'inizio', 'warning');
+                    showAlert('clock', '⚠️ Orario non valido', 'warning');
                     return;
                 }
                 
-                ore = calculateHours(inizio, fine);
                 if (ore > 16) {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                    showAlert('clock', '⚠️ Attenzione: hai inserito più di 16 ore. Controlla gli orari.', 'warning');
+                    showAlert('clock', '⚠️ Attenzione: hai inserito più di 16 ore', 'warning');
                     return;
                 }
             }
             
-            // CORRETTO: Se esiste già una entry, chiedi conferma
             if (hasEntryToday) {
                 if (!confirm('Hai già una registrazione per oggi. Vuoi sovrascriverla?')) {
                     btn.innerHTML = originalText;
@@ -1122,7 +1124,7 @@
                 btn.innerHTML = '✅ Salvato!';
                 btn.style.background = '#10b981';
                 hasEntryToday = true;
-                checkExistingEntry(); // Aggiorna stato
+                checkExistingEntry();
                 setTimeout(() => {
                     btn.innerHTML = originalText;
                     btn.style.background = '';
@@ -1139,7 +1141,7 @@
         }
 
         // ==========================================
-        // STORICO DIPENDENTE
+        // STORICO DIPENDENTE - CORRETTO
         // ==========================================
         async function loadHistory() {
             if (!currentUser) return;
@@ -1169,7 +1171,9 @@
                     </div>`;
             } else {
                 list.innerHTML = myEntries.map(e => {
-                    const ore = e.tipo === 'work' ? (parseFloat(e.ore) || calculateHours(e.inizio, e.fine)) : 0;
+                    // CORRETTO: usa parseHoursField invece di parseFloat diretto
+                    const ore = parseHoursField(e.ore, e.inizio, e.fine);
+                    
                     return `
                     <div class="entry-item">
                         <div class="entry-info">
@@ -1181,17 +1185,17 @@
                         <div style="text-align: right;">
                             <span class="badge badge-${e.tipo}">${label(e.tipo)}</span>
                             ${e.tipo === 'work' ? 
-                                `<div style="font-size: 0.85rem; color: var(--gray); margin-top: 4px; font-weight: 600;">${formatHoursDecimal(ore)}h</div>` 
+                                `<div class="hours-display" style="margin-top: 4px;">${formatHoursDecimal(ore)}h</div>` 
                                 : ''}
                         </div>
                     </div>`;
                 }).join('');
             }
             
-            // Calcola riepilogo
+            // Calcola riepilogo CORRETTO
             const workEntries = myEntries.filter(e => e.tipo === 'work');
             const totalHours = workEntries.reduce((sum, e) => {
-                return sum + (parseFloat(e.ore) || calculateHours(e.inizio, e.fine) || 0);
+                return sum + parseHoursField(e.ore, e.inizio, e.fine);
             }, 0);
             
             const holidays = myEntries.filter(e => e.tipo === 'holiday').length;
@@ -1233,7 +1237,7 @@
                 }
                 byEmployee[id].entries.push(e);
                 if (e.tipo === 'work') {
-                    const ore = parseFloat(e.ore) || calculateHours(e.inizio, e.fine) || 0;
+                    const ore = parseHoursField(e.ore, e.inizio, e.fine);
                     byEmployee[id].totalHours += ore;
                 } else if (e.tipo === 'holiday') {
                     byEmployee[id].holidays++;
@@ -1279,35 +1283,6 @@
         }
 
         // ==========================================
-        // EXPORT EXCEL
-        // ==========================================
-        function exportExcel() {
-            if (!allEntries || allEntries.length === 0) {
-                alert('Nessun dato da esportare');
-                return;
-            }
-            
-            // Prepara dati
-            const data = allEntries.map(e => ({
-                Data: e.data,
-                Dipendente: e.nome,
-                Tipo: label(e.tipo),
-                'Ora Inizio': e.inizio || '',
-                'Ora Fine': e.fine || '',
-                'Ore Totali': e.tipo === 'work' ? (parseFloat(e.ore) || calculateHours(e.inizio, e.fine)) : 0
-            }));
-            
-            // Crea workbook
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Presenze");
-            
-            // Download
-            const date = new Date().toISOString().split('T')[0];
-            XLSX.writeFile(wb, `TimeTrack_Export_${date}.xlsx`);
-        }
-
-        // ==========================================
         // UTILITY UI
         // ==========================================
         function label(type) {
@@ -1321,16 +1296,25 @@
         }
 
         function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const [y, m, d] = dateStr.split('-');
-            return `${d}/${m}/${y}`;
+            if (!dateStr || typeof dateStr !== 'string') return '-';
+            // Se la data contiene 'T', è una data ISO completa
+            if (dateStr.includes('T')) {
+                const d = new Date(dateStr);
+                if (!isNaN(d.getTime())) {
+                    return d.toLocaleDateString('it-IT');
+                }
+            }
+            // Formato YYYY-MM-DD
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
         }
 
         function showAlert(containerId, msg, type) {
-            // Trova il container o usa il body se non trovato
             let el = document.getElementById(containerId);
             if (!el) {
-                // Crea alert temporaneo
                 const div = document.createElement('div');
                 div.className = `alert alert-${type}`;
                 div.innerHTML = msg;
