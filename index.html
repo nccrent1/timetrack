@@ -145,6 +145,13 @@
             border: 2px solid var(--border);
         }
         
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            width: auto;
+            display: inline-flex;
+        }
+        
         .hidden { display: none !important; }
         
         .nav-tabs { 
@@ -280,6 +287,12 @@
         .entry-item:hover {
             border-color: var(--primary);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        
+        .entry-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 10px;
         }
         
         .entry-info { flex: 1; }
@@ -436,61 +449,129 @@
             .card { padding: 20px; }
             .summary-card { position: static; }
             .time-inputs { grid-template-columns: 1fr; }
+            .entry-actions { flex-direction: column; gap: 4px; }
         }
         
-        .employee-selector {
-            max-height: 200px;
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal-overlay.show { display: flex; }
+        
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
             overflow-y: auto;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 20px;
+            animation: modalIn 0.3s;
         }
         
-        .employee-option {
-            padding: 12px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border);
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .modal-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s;
         }
         
-        .employee-option:last-child { border-bottom: none; }
-        .employee-option:hover { background: #f8fafc; }
-        .employee-option.selected { 
-            background: #eff6ff; 
-            border-left: 4px solid var(--primary);
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: auto;
+            padding: 0;
         }
         
-        .export-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .overlap-warning {
+        .delete-confirm {
             background: #fee2e2;
             border: 2px solid #ef4444;
-            color: #991b1b;
-            padding: 16px;
             border-radius: 12px;
-            margin-bottom: 20px;
-            display: none;
+            padding: 20px;
+            text-align: center;
         }
         
-        .overlap-warning.show { display: flex; align-items: center; gap: 12px; }
+        .delete-confirm h3 {
+            color: #991b1b;
+            margin-bottom: 10px;
+        }
         
-        .day-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        .delete-confirm p {
+            color: #7f1d1d;
             margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
+    <!-- Modal Modifica -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <span>✏️ Modifica Registrazione</span>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <div id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="editDate">
+                </div>
+                <div class="form-group">
+                    <label>Tipo Presenza</label>
+                    <select id="editType" onchange="toggleEditTime()">
+                        <option value="work">Lavoro Ordinario</option>
+                        <option value="holiday">Ferie</option>
+                        <option value="rest">Riposo</option>
+                        <option value="festive">Giorno Festivo</option>
+                    </select>
+                </div>
+                <div id="editTimeSection">
+                    <div class="time-inputs">
+                        <div class="form-group">
+                            <label>Ora Entrata</label>
+                            <input type="time" id="editStart">
+                        </div>
+                        <div class="form-group">
+                            <label>Ora Uscita</label>
+                            <input type="time" id="editEnd">
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-success" onclick="saveEdit()">Salva Modifiche</button>
+                <button class="btn-secondary" onclick="closeEditModal()" style="margin-top: 10px;">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Elimina -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal" style="max-width: 400px;">
+            <div class="delete-confirm">
+                <h3>🗑️ Conferma Eliminazione</h3>
+                <p>Sei sicuro di voler eliminare questa registrazione? L'azione è irreversibile.</p>
+                <input type="hidden" id="deleteId">
+                <button class="btn-danger" onclick="confirmDelete()">Elimina Definitivamente</button>
+                <button class="btn-secondary" onclick="closeDeleteModal()" style="margin-top: 10px;">Annulla</button>
+            </div>
+        </div>
+    </div>
+
     <div id="loginScreen" class="container">
         <div class="app-container">
             <div class="header">
@@ -644,10 +725,10 @@
                                 <div class="form-group" style="text-align: left; margin: 0;">
                                     <label>Tipo Presenza</label>
                                     <select id="clockType" onchange="toggleClockTime()" style="font-size: 1rem;">
-                                        <option value="work">💼 Lavoro Ordinario</option>
-                                        <option value="holiday">🏖️ Ferie</option>
-                                        <option value="rest">😴 Riposo</option>
-                                        <option value="festive">🎉 Festivo</option>
+                                        <option value="work">Lavoro Ordinario</option>
+                                        <option value="rest">Riposo</option>
+                                        <option value="holiday">Ferie</option>
+                                        <option value="festive">Giorno Festivo</option>
                                     </select>
                                 </div>
                             </div>
@@ -695,7 +776,7 @@
                     </div>
                     
                     <div class="card" style="padding: 20px;">
-                        <div class="card-title" style="font-size: 1rem; margin-bottom: 15px;">📅 Riepilogo</div>
+                        <div class="card-title" style="font-size: 1rem; margin-bottom: 15px;">📅 Riepilogo Mese</div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
                             <span style="color: var(--gray); font-size: 0.9rem;">Giorni Lavorati</span>
                             <span style="font-weight: 600;" id="sidebarWorkDays">0</span>
@@ -704,9 +785,13 @@
                             <span style="color: var(--gray); font-size: 0.9rem;">Ferie</span>
                             <span style="font-weight: 600;" id="sidebarHolidays">0</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: var(--gray); font-size: 0.9rem;">Riposo/Festivo</span>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
+                            <span style="color: var(--gray); font-size: 0.9rem;">Riposo</span>
                             <span style="font-weight: 600;" id="sidebarRest">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--gray); font-size: 0.9rem;">Giorni Festivi</span>
+                            <span style="font-weight: 600;" id="sidebarFestive">0</span>
                         </div>
                     </div>
                     
@@ -726,7 +811,7 @@
         // CONFIGURAZIONE
         // ==========================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbzCHH0x-8Gw1YNOoBqJ_rZH74PYBAfKUeczK8H1SXYXCSvhRCVSMHa6_coHPhypUArR/exec';
-        const APP_URL = window.location.href.split('?')[0].replace(/\/$/, ''); // Rimuovi slash finale
+        const APP_URL = window.location.href.split('?')[0].replace(/\/$/, '');
         
         let currentUser = null;
         let allEntries = [];
@@ -735,6 +820,7 @@
         let hasEntryToday = false;
         let currentReportData = [];
         let dateEntries = [];
+        let currentHistoryEntries = []; // Per modifica/cancellazione
 
         // ==========================================
         // INIZIALIZZAZIONE
@@ -744,11 +830,8 @@
             const monthStr = today.toISOString().slice(0, 7);
             document.getElementById('reportMonth').value = monthStr;
             document.getElementById('historyMonth').value = monthStr;
-            
-            // Imposta data di oggi
             document.getElementById('clockDate').value = today.toISOString().split('T')[0];
             
-            // Event listeners
             document.getElementById('clockStart').addEventListener('change', updateHoursPreview);
             document.getElementById('clockEnd').addEventListener('change', updateHoursPreview);
             updateHoursPreview();
@@ -759,51 +842,32 @@
         // ==========================================
         function calculateHours(start, end) {
             if (!start || !end || typeof start !== 'string' || typeof end !== 'string') return 0;
-            
             start = start.trim();
             end = end.trim();
-            
             const startParts = start.split(':');
             const endParts = end.split(':');
-            
             if (startParts.length < 2 || endParts.length < 2) return 0;
-            
             const h1 = parseInt(startParts[0], 10);
             const m1 = parseInt(startParts[1], 10);
             const h2 = parseInt(endParts[0], 10);
             const m2 = parseInt(endParts[1], 10);
-            
             if (isNaN(h1) || isNaN(m1) || isNaN(h2) || isNaN(m2)) return 0;
-            
             let startMinutes = h1 * 60 + m1;
             let endMinutes = h2 * 60 + m2;
-            
-            if (endMinutes < startMinutes) {
-                endMinutes += 24 * 60;
-            }
-            
+            if (endMinutes < startMinutes) endMinutes += 24 * 60;
             const diffMinutes = endMinutes - startMinutes;
             const hours = diffMinutes / 60;
-            
             return (hours > 0 && hours <= 24) ? hours : 0;
         }
 
         function parseHoursField(oreValue, inizio, fine) {
-            if (typeof oreValue === 'number' && !isNaN(oreValue) && oreValue > 0 && oreValue <= 24) {
-                return oreValue;
-            }
-            
+            if (typeof oreValue === 'number' && !isNaN(oreValue) && oreValue > 0 && oreValue <= 24) return oreValue;
             if (typeof oreValue === 'string') {
                 const trimmed = oreValue.trim();
-                if (trimmed.includes('T') || /^\\d{4}-/.test(trimmed)) {
-                    return calculateHours(inizio, fine);
-                }
+                if (trimmed.includes('T') || /^\\d{4}-/.test(trimmed)) return calculateHours(inizio, fine);
                 const parsed = parseFloat(trimmed);
-                if (!isNaN(parsed) && parsed > 0 && parsed <= 24) {
-                    return parsed;
-                }
+                if (!isNaN(parsed) && parsed > 0 && parsed <= 24) return parsed;
             }
-            
             return calculateHours(inizio, fine);
         }
 
@@ -836,13 +900,12 @@
 
         function toggleClockTime() {
             const type = document.getElementById('clockType').value;
-            const timeSection = document.getElementById('clockTimeSection');
-            if (type === 'work') {
-                timeSection.style.display = 'block';
-                updateHoursPreview();
-            } else {
-                timeSection.style.display = 'none';
-            }
+            document.getElementById('clockTimeSection').style.display = type === 'work' ? 'block' : 'none';
+        }
+
+        function toggleEditTime() {
+            const type = document.getElementById('editType').value;
+            document.getElementById('editTimeSection').style.display = type === 'work' ? 'block' : 'none';
         }
 
         function validateTime() {
@@ -851,38 +914,29 @@
                 hideOverlapWarning();
                 return true;
             }
-            
             const newStart = document.getElementById('clockStart').value;
             const newEnd = document.getElementById('clockEnd').value;
-            
             if (!newStart || !newEnd) {
                 hideOverlapWarning();
                 return true;
             }
-            
             const newStartMin = timeToMinutes(newStart);
             const newEndMin = timeToMinutes(newEnd);
             
             for (let entry of dateEntries) {
                 if (entry.tipo !== 'work') continue;
-                
                 const existStart = timeToMinutes(entry.inizio);
                 const existEnd = timeToMinutes(entry.fine);
-                
                 let adjustedExistEnd = existEnd;
                 if (existEnd < existStart) adjustedExistEnd += 24 * 60;
-                
                 let adjustedNewEnd = newEndMin;
                 if (newEndMin < newStartMin) adjustedNewEnd += 24 * 60;
-                
                 const overlap = (newStartMin < adjustedExistEnd && adjustedNewEnd > existStart);
-                
                 if (overlap) {
                     showOverlapWarning(`Esiste già una registrazione dalle ${entry.inizio} alle ${entry.fine}`);
                     return false;
                 }
             }
-            
             hideOverlapWarning();
             return true;
         }
@@ -909,14 +963,12 @@
                         url.searchParams.append(key, params[key]);
                     }
                 });
-                
                 const response = await fetch(url, {
                     method: 'GET',
                     mode: 'cors',
                     cache: 'no-cache',
                     headers: { 'Accept': 'application/json' }
                 });
-                
                 if (!response.ok) throw new Error('HTTP ' + response.status);
                 return await response.json();
             } catch (e) {
@@ -926,39 +978,34 @@
         }
 
         // ==========================================
-        // AUTENTICAZIONE
+        // AUTENTICAZIONE CON AGGIORNAMENTO AUTOMATICO
         // ==========================================
         async function login() {
             const email = document.getElementById('loginEmail').value.trim().toLowerCase();
             const password = document.getElementById('loginPassword').value;
-            
             if (!email || !password) {
                 showAlert('loginAlert', '⚠️ Inserisci email e password', 'error');
                 return;
             }
-            
             const btn = event.target;
             btn.innerHTML = '<span class="loading"></span> Accesso...';
             btn.disabled = true;
-            
             const result = await apiCall('login', { email, password });
-            
             btn.innerHTML = 'Accedi all\'App';
             btn.disabled = false;
-            
             if (result.success && result.user) {
                 currentUser = result.user;
                 if (!currentUser.id || !currentUser.ruolo) {
                     showAlert('loginAlert', '⚠️ Errore dati utente', 'error');
                     return;
                 }
-                showApp();
+                await showApp();
             } else {
                 showAlert('loginAlert', '❌ ' + (result.error || 'Credenziali errate'), 'error');
             }
         }
 
-        function showApp() {
+        async function showApp() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('appContainer').classList.remove('hidden');
             document.getElementById('welcomeText').textContent = 
@@ -968,13 +1015,20 @@
             if (currentUser.ruolo === 'admin') {
                 document.getElementById('adminNav').classList.remove('hidden');
                 document.getElementById('employeeNav').classList.add('hidden');
-                loadDashboard();
-                loadTeam();
-                loadReportEmployees();
+                // Caricamento parallelo per velocità
+                await Promise.all([
+                    loadDashboard(),
+                    loadTeam(),
+                    loadReportEmployees()
+                ]);
             } else {
                 document.getElementById('adminNav').classList.add('hidden');
                 document.getElementById('employeeNav').classList.remove('hidden');
-                checkDateEntries();
+                // Carica dati iniziali dipendente
+                await Promise.all([
+                    checkDateEntries(),
+                    loadHistory()
+                ]);
                 showTab('clock');
             }
         }
@@ -986,22 +1040,21 @@
             location.reload();
         }
 
-        function showTab(tabName) {
+        async function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
             
-            if (tabName === 'dashboard') loadDashboard();
-            if (tabName === 'team') loadTeam();
-            if (tabName === 'history') loadHistory();
-            if (tabName === 'reports') loadReport();
-            if (tabName === 'clock') checkDateEntries();
+            if (tabName === 'dashboard') await loadDashboard();
+            if (tabName === 'team') await loadTeam();
+            if (tabName === 'history') await loadHistory();
+            if (tabName === 'reports') await loadReport();
+            if (tabName === 'clock') await checkDateEntries();
         }
 
         // ==========================================
-        // DASHBOARD - CORRETTO
+        // DASHBOARD
         // ==========================================
         async function loadDashboard() {
             const result = await apiCall('get');
@@ -1009,37 +1062,28 @@
                 showAlert('dashboard', 'Errore caricamento dati', 'error');
                 return;
             }
-            
             allEntries = result.data || [];
             const today = new Date().toISOString().split('T')[0];
             const currentMonth = new Date().toISOString().slice(0, 7);
             
-            // CORRETTO: Filtra timbrature di oggi (tutti i dipendenti)
             const todayEntries = allEntries.filter(e => {
-                // Gestisce sia formato YYYY-MM-DD che date complete
                 const entryDate = e.data ? e.data.split('T')[0] : '';
                 return entryDate === today;
             });
-            
             document.getElementById('statToday').textContent = todayEntries.length;
             
-            // Ore mese
             const monthWorkEntries = allEntries.filter(e => {
                 const entryMonth = e.data ? e.data.substring(0, 7) : '';
                 return entryMonth === currentMonth && e.tipo === 'work';
             });
-            
             const totalHours = monthWorkEntries.reduce((sum, e) => {
                 return sum + parseHoursField(e.ore, e.inizio, e.fine);
             }, 0);
-            
             document.getElementById('statMonth').textContent = formatHoursDecimal(totalHours);
             
-            // Dipendenti attivi (unici)
             const uniqueEmployees = new Set(allEntries.map(e => e.userId).filter(id => id)).size;
             document.getElementById('statEmployees').textContent = uniqueEmployees || 0;
             
-            // Lista oggi - CORRETTA
             const list = document.getElementById('todayList');
             if (todayEntries.length === 0) {
                 list.innerHTML = `
@@ -1065,30 +1109,24 @@
         }
 
         // ==========================================
-        // TEAM - CON ID SEQUENZIALE
+        // TEAM
         // ==========================================
         async function loadTeam() {
             const result = await apiCall('get_users');
-            
             if (!result.success) {
                 document.getElementById('teamList').innerHTML = `
                     <div class="alert alert-error">Errore caricamento team: ${result.error || 'Unknown'}</div>`;
                 return;
             }
-            
             allUsers = result.users || [];
-            
-            // Ordina per ID numerico
             allUsers.sort((a, b) => {
                 const idA = parseInt(a.id) || 0;
                 const idB = parseInt(b.id) || 0;
                 return idA - idB;
             });
-            
             const employees = allUsers.filter(u => 
                 u.ruolo === 'dipendente' || u.ruolo === 'employee' || !u.ruolo || u.ruolo !== 'admin'
             );
-            
             const list = document.getElementById('teamList');
             if (employees.length === 0) {
                 list.innerHTML = `
@@ -1112,74 +1150,55 @@
         async function addEmployee() {
             const name = document.getElementById('newName').value.trim();
             const email = document.getElementById('newEmail').value.trim().toLowerCase();
-            
             if (!name || !email) {
                 showAlert('addAlert', '⚠️ Inserisci nome e email', 'error');
                 return;
             }
-            
             if (!email.includes('@')) {
                 showAlert('addAlert', '⚠️ Inserisci una email valida', 'error');
                 return;
             }
-            
-            // Trova il prossimo ID sequenziale
             const maxId = allUsers.reduce((max, u) => {
                 const uid = parseInt(u.id);
                 return uid > max ? uid : max;
             }, 0);
             const nextId = maxId + 1;
-            
             const password = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 4);
-            
             const btn = event.target;
             const originalText = btn.innerHTML;
             btn.innerHTML = '<span class="loading"></span> Creazione...';
             btn.disabled = true;
-            
             const result = await apiCall('add_user', { 
-                id: nextId, // Invia ID suggerito al backend
+                id: nextId,
                 nome: name, 
                 email: email, 
                 password: password,
                 ruolo: 'dipendente'
             });
-            
             btn.innerHTML = originalText;
             btn.disabled = false;
-            
             if (result.success && result.user) {
                 lastCreated = result.user;
-                // Assicurati che l'ID sia numerico sequenziale
-                if (!lastCreated.id) {
-                    lastCreated.id = nextId;
-                }
-                
+                if (!lastCreated.id) lastCreated.id = nextId;
                 document.getElementById('newName').value = '';
                 document.getElementById('newEmail').value = '';
                 document.getElementById('appUrl').textContent = APP_URL;
                 document.getElementById('credEmail').textContent = lastCreated.email;
                 document.getElementById('credPass').textContent = lastCreated.password || password;
                 document.getElementById('newCreds').classList.remove('hidden');
-                loadTeam();
-                loadReportEmployees();
+                await loadTeam();
+                await loadReportEmployees();
             } else {
                 showAlert('addAlert', '❌ ' + (result.error || 'Errore creazione dipendente'), 'error');
             }
         }
 
-        // ==========================================
-        // WHATSAPP - CORRETTO
-        // ==========================================
         function shareWhatsApp() {
             if (!lastCreated) return;
-            
             const nome = lastCreated.nome || 'Utente';
             const email = lastCreated.email || '';
             const password = lastCreated.password || document.getElementById('credPass').textContent || '';
             const link = APP_URL;
-            
-            // Messaggio formattato correttamente con emoji e spazi
             const text = `Benvenuto in TimeTrack Pro!
 
 Ciao ${nome},
@@ -1193,8 +1212,6 @@ Email: ${email}
 Password: ${password}
 
 Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
-            
-            // Codifica corretta per URL
             const encodedText = encodeURIComponent(text);
             window.open('https://wa.me/?text=' + encodedText, '_blank');
         }
@@ -1204,26 +1221,19 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         // ==========================================
         async function checkDateEntries() {
             if (!currentUser) return;
-            
             const selectedDate = document.getElementById('clockDate').value;
             if (!selectedDate) return;
-            
             const result = await apiCall('get');
             if (!result.success) return;
-            
             const userId = String(currentUser.id);
-            
             dateEntries = result.data.filter(e => {
                 const entryUserId = String(e.userId);
                 const entryDate = e.data ? e.data.split('T')[0] : '';
                 return entryUserId === userId && entryDate === selectedDate;
             });
-            
             const existing = dateEntries[0];
-            
             hasEntryToday = !!existing;
             const warning = document.getElementById('existingEntryWarning');
-            
             if (hasEntryToday) {
                 warning.classList.remove('hidden');
                 if (existing.tipo) {
@@ -1241,55 +1251,44 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 toggleClockTime();
                 updateHoursPreview();
             }
-            
             validateTime();
         }
 
         async function saveClock() {
             if (!currentUser) return;
-            
             if (!validateTime()) {
                 showAlert('clock', '⚠️ Correggi gli orari sovrapposti prima di salvare', 'error');
                 return;
             }
-            
             const btn = document.getElementById('saveBtn');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<span class="loading"></span> Salvataggio...';
             btn.disabled = true;
-            
             const type = document.getElementById('clockType').value;
             const date = document.getElementById('clockDate').value;
-            
             if (!date) {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 showAlert('clock', '⚠️ Seleziona una data', 'warning');
                 return;
             }
-            
             let inizio = '', fine = '', ore = 0;
-            
             if (type === 'work') {
                 inizio = document.getElementById('clockStart').value;
                 fine = document.getElementById('clockEnd').value;
-                
                 if (!inizio || !fine) {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     showAlert('clock', '⚠️ Inserisci orari di inizio e fine', 'warning');
                     return;
                 }
-                
                 ore = calculateHours(inizio, fine);
-                
                 if (ore <= 0) {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     showAlert('clock', '⚠️ Orario non valido', 'warning');
                     return;
                 }
-                
                 if (ore > 16) {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
@@ -1297,7 +1296,6 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     return;
                 }
             }
-            
             if (hasEntryToday) {
                 if (!confirm('Hai già una registrazione per questa data. Vuoi sovrascriverla?')) {
                     btn.innerHTML = originalText;
@@ -1305,7 +1303,6 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     return;
                 }
             }
-            
             const result = await apiCall('save', {
                 userId: String(currentUser.id),
                 nome: currentUser.nome || currentUser.email,
@@ -1315,12 +1312,13 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 fine: fine,
                 ore: type === 'work' ? ore : 0
             });
-            
             if (result.success) {
                 btn.innerHTML = '✅ Salvato!';
                 btn.style.background = '#10b981';
                 hasEntryToday = true;
-                checkDateEntries();
+                await checkDateEntries();
+                // Aggiorna anche lo storico e riepilogo
+                await loadHistory();
                 setTimeout(() => {
                     btn.innerHTML = originalText;
                     btn.style.background = '';
@@ -1337,21 +1335,18 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // STORICO
+        // STORICO CON MODIFICA/ELIMINAZIONE
         // ==========================================
         async function loadHistory() {
             if (!currentUser) return;
-            
             const result = await apiCall('get');
             if (!result.success) {
                 document.getElementById('historyList').innerHTML = '<div class="alert alert-error">Errore caricamento</div>';
                 return;
             }
-            
             const month = document.getElementById('historyMonth').value;
             const userId = String(currentUser.id);
-            
-            const myEntries = result.data
+            currentHistoryEntries = result.data
                 .filter(e => {
                     const entryUserId = String(e.userId);
                     const entryMonth = e.data ? e.data.substring(0, 7) : '';
@@ -1362,17 +1357,17 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     const dateB = b.data || '';
                     return dateB.localeCompare(dateA);
                 });
-            
             const list = document.getElementById('historyList');
-            if (myEntries.length === 0) {
+            if (currentHistoryEntries.length === 0) {
                 list.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📭</div>
                         <div>Nessuna registrazione questo mese</div>
                     </div>`;
             } else {
-                list.innerHTML = myEntries.map(e => {
+                list.innerHTML = currentHistoryEntries.map((e, index) => {
                     const ore = parseHoursField(e.ore, e.inizio, e.fine);
+                    const entryId = e.id || index; // Usa ID se disponibile, altrimenti indice
                     return `
                     <div class="entry-item">
                         <div class="entry-info">
@@ -1381,29 +1376,141 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                                 `<div class="entry-time">${e.inizio || '--:--'} - ${e.fine || '--:--'}</div>` 
                                 : ''}
                         </div>
-                        <div style="text-align: right;">
-                            <span class="badge badge-${e.tipo}">${label(e.tipo)}</span>
-                            ${e.tipo === 'work' ? 
-                                `<div class="hours-display" style="margin-top: 4px;">${formatHoursDecimal(ore)}h</div>` 
-                                : ''}
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="text-align: right;">
+                                <span class="badge badge-${e.tipo}">${label(e.tipo)}</span>
+                                ${e.tipo === 'work' ? 
+                                    `<div class="hours-display" style="margin-top: 4px;">${formatHoursDecimal(ore)}h</div>` 
+                                    : ''}
+                            </div>
+                            <div class="entry-actions">
+                                <button class="btn-small btn-primary" onclick="openEditModal('${entryId}')" style="padding: 6px 10px; font-size: 0.75rem;">✏️</button>
+                                <button class="btn-small btn-danger" onclick="openDeleteModal('${entryId}')" style="padding: 6px 10px; font-size: 0.75rem;">🗑️</button>
+                            </div>
                         </div>
                     </div>`;
                 }).join('');
             }
-            
-            const workEntries = myEntries.filter(e => e.tipo === 'work');
+            updateSidebarSummary(currentHistoryEntries);
+        }
+
+        function updateSidebarSummary(entries) {
+            const workEntries = entries.filter(e => e.tipo === 'work');
             const totalHours = workEntries.reduce((sum, e) => {
                 return sum + parseHoursField(e.ore, e.inizio, e.fine);
             }, 0);
-            
-            const holidays = myEntries.filter(e => e.tipo === 'holiday').length;
-            const rest = myEntries.filter(e => e.tipo === 'rest' || e.tipo === 'festive').length;
+            const holidays = entries.filter(e => e.tipo === 'holiday').length;
+            const rest = entries.filter(e => e.tipo === 'rest').length;
+            const festive = entries.filter(e => e.tipo === 'festive').length;
             
             document.getElementById('sidebarTotalHours').textContent = formatHoursTime(totalHours);
             document.getElementById('sidebarDecimalHours').textContent = formatHoursDecimal(totalHours) + ' h';
             document.getElementById('sidebarWorkDays').textContent = workEntries.length;
             document.getElementById('sidebarHolidays').textContent = holidays;
             document.getElementById('sidebarRest').textContent = rest;
+            document.getElementById('sidebarFestive').textContent = festive;
+        }
+
+        // ==========================================
+        // MODALE MODIFICA
+        // ==========================================
+        function openEditModal(entryId) {
+            const entry = currentHistoryEntries.find((e, idx) => (e.id || idx.toString()) === entryId);
+            if (!entry) return;
+            
+            document.getElementById('editId').value = entryId;
+            document.getElementById('editDate').value = entry.data ? entry.data.split('T')[0] : '';
+            document.getElementById('editType').value = entry.tipo || 'work';
+            document.getElementById('editStart').value = entry.inizio || '09:00';
+            document.getElementById('editEnd').value = entry.fine || '18:00';
+            
+            toggleEditTime();
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+        }
+
+        async function saveEdit() {
+            const entryId = document.getElementById('editId').value;
+            const entry = currentHistoryEntries.find((e, idx) => (e.id || idx.toString()) === entryId);
+            if (!entry) return;
+            
+            const newDate = document.getElementById('editDate').value;
+            const newType = document.getElementById('editType').value;
+            const newStart = document.getElementById('editStart').value;
+            const newEnd = document.getElementById('editEnd').value;
+            
+            if (!newDate) {
+                alert('Seleziona una data');
+                return;
+            }
+            
+            let ore = 0;
+            if (newType === 'work') {
+                if (!newStart || !newEnd) {
+                    alert('Inserisci orari di inizio e fine');
+                    return;
+                }
+                ore = calculateHours(newStart, newEnd);
+                if (ore <= 0) {
+                    alert('Orario non valido');
+                    return;
+                }
+            }
+            
+            // Chiama API per aggiornare (richiede backend aggiornato)
+            const result = await apiCall('update', {
+                id: entry.id || entryId,
+                userId: String(currentUser.id),
+                data: newDate,
+                tipo: newType,
+                inizio: newType === 'work' ? newStart : '',
+                fine: newType === 'work' ? newEnd : '',
+                ore: newType === 'work' ? ore : 0
+            });
+            
+            if (result.success) {
+                closeEditModal();
+                await loadHistory();
+                // Aggiorna anche la timbratura se stiamo modificando la data corrente
+                await checkDateEntries();
+                alert('✅ Modifica salvata con successo!');
+            } else {
+                alert('❌ Errore durante la modifica: ' + (result.error || 'Errore sconosciuto'));
+            }
+        }
+
+        // ==========================================
+        // MODALE ELIMINAZIONE
+        // ==========================================
+        function openDeleteModal(entryId) {
+            document.getElementById('deleteId').value = entryId;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+        }
+
+        async function confirmDelete() {
+            const entryId = document.getElementById('deleteId').value;
+            const entry = currentHistoryEntries.find((e, idx) => (e.id || idx.toString()) === entryId);
+            
+            const result = await apiCall('delete', {
+                id: entry ? (entry.id || entryId) : entryId,
+                userId: String(currentUser.id)
+            });
+            
+            if (result.success) {
+                closeDeleteModal();
+                await loadHistory();
+                await checkDateEntries(); // Aggiorna stato timbratura
+                alert('✅ Registrazione eliminata con successo!');
+            } else {
+                alert('❌ Errore durante l\'eliminazione: ' + (result.error || 'Errore sconosciuto'));
+            }
         }
 
         // ==========================================
@@ -1412,16 +1519,12 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         async function loadReportEmployees() {
             const result = await apiCall('get_users');
             if (!result.success) return;
-            
             allUsers = result.users || [];
             const select = document.getElementById('reportEmployee');
-            
             select.innerHTML = '<option value="all">Tutti i dipendenti</option>';
-            
             const employees = allUsers.filter(u => 
                 u.ruolo === 'dipendente' || u.ruolo === 'employee' || !u.ruolo || u.ruolo !== 'admin'
             );
-            
             employees.forEach(emp => {
                 const option = document.createElement('option');
                 option.value = emp.id || emp.email;
@@ -1433,84 +1536,75 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         async function loadReport() {
             const month = document.getElementById('reportMonth').value;
             const employeeFilter = document.getElementById('reportEmployee').value;
-            
             if (!month) {
                 showAlert('reports', '⚠️ Seleziona un mese', 'warning');
                 return;
             }
-            
             const result = await apiCall('get');
             if (!result.success) {
                 document.getElementById('reportResult').innerHTML = '<div class="alert alert-error">Errore caricamento report</div>';
                 return;
             }
-            
             allEntries = result.data || [];
-            
             let entries = allEntries.filter(e => {
                 const entryMonth = e.data ? e.data.substring(0, 7) : '';
                 return entryMonth === month;
             });
-            
             if (employeeFilter !== 'all') {
                 entries = entries.filter(e => String(e.userId) === String(employeeFilter));
             }
-            
             currentReportData = entries;
-            
             const workEntries = entries.filter(e => e.tipo === 'work');
             const totalHours = workEntries.reduce((sum, e) => {
                 return sum + parseHoursField(e.ore, e.inizio, e.fine);
             }, 0);
-            
             const holidays = entries.filter(e => e.tipo === 'holiday').length;
-            const rest = entries.filter(e => e.tipo === 'rest' || e.tipo === 'festive').length;
+            const rest = entries.filter(e => e.tipo === 'rest').length;
+            const festive = entries.filter(e => e.tipo === 'festive').length;
             
             const summaryDiv = document.getElementById('reportSummary');
             summaryDiv.innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;">
                     <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.4rem;">${formatHoursDecimal(totalHours)}</div>
+                        <div class="stat-number" style="font-size: 1.2rem;">${formatHoursDecimal(totalHours)}</div>
                         <div class="stat-label">Ore Totali</div>
                     </div>
                     <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.4rem;">${workEntries.length}</div>
+                        <div class="stat-number" style="font-size: 1.2rem;">${workEntries.length}</div>
                         <div class="stat-label">Giorni Lavoro</div>
                     </div>
                     <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.4rem; color: #be185d;">${holidays}</div>
+                        <div class="stat-number" style="font-size: 1.2rem; color: #be185d;">${holidays}</div>
                         <div class="stat-label">Ferie</div>
                     </div>
                     <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.4rem; color: #065f46;">${rest}</div>
-                        <div class="stat-label">Riposo/Festivo</div>
+                        <div class="stat-number" style="font-size: 1.2rem; color: #065f46;">${rest}</div>
+                        <div class="stat-label">Riposo</div>
+                    </div>
+                    <div class="stat-box" style="padding: 15px;">
+                        <div class="stat-number" style="font-size: 1.2rem; color: #d97706;">${festive}</div>
+                        <div class="stat-label">Festivi</div>
                     </div>
                 </div>
             `;
-            
             const div = document.getElementById('reportResult');
             if (entries.length === 0) {
                 div.innerHTML = '<div class="empty-state">Nessun dato per i filtri selezionati</div>';
                 return;
             }
-            
             const byDate = {};
             entries.forEach(e => {
                 const dateKey = e.data ? e.data.split('T')[0] : 'unknown';
                 if (!byDate[dateKey]) byDate[dateKey] = [];
                 byDate[dateKey].push(e);
             });
-            
             const sortedDates = Object.keys(byDate).sort();
-            
             let html = '<div class="card" style="margin-top: 20px;"><div class="card-title">📅 Dettaglio Giornaliero</div>';
-            
             sortedDates.forEach(date => {
                 const dayEntries = byDate[date];
                 const dayTotal = dayEntries
                     .filter(e => e.tipo === 'work')
                     .reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
-                
                 html += `
                 <div style="margin-bottom: 15px; padding: 15px; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
@@ -1537,7 +1631,6 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     </div>
                 </div>`;
             });
-            
             html += '</div>';
             div.innerHTML = html;
         }
@@ -1571,16 +1664,13 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 'Ore Totali': e.tipo === 'work' ? parseHoursField(e.ore, e.inizio, e.fine) : 0,
                 'User ID': e.userId || ''
             }));
-            
             const ws = XLSX.utils.json_to_sheet(exportData);
             const wscols = [
                 {wch: 12}, {wch: 25}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 15}
             ];
             ws['!cols'] = wscols;
-            
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Presenze");
-            
             const date = new Date().toISOString().split('T')[0];
             XLSX.writeFile(wb, `${filename}_${date}.xlsx`);
         }
@@ -1590,10 +1680,10 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         // ==========================================
         function label(type) {
             const labels = { 
-                work: 'Lavoro', 
+                work: 'Lavoro Ordinario', 
                 holiday: 'Ferie', 
                 rest: 'Riposo', 
-                festive: 'Festivo' 
+                festive: 'Giorno Festivo' 
             };
             return labels[type] || type;
         }
@@ -1629,7 +1719,6 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 setTimeout(() => div.remove(), 5000);
                 return;
             }
-            
             el.className = 'alert alert-' + type;
             el.innerHTML = msg;
             el.style.display = 'flex';
