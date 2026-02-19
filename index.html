@@ -535,6 +535,18 @@
         }
         
         .error-box.show { display: flex; }
+        
+        .day-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 640px) {
+            .day-selector { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -886,7 +898,7 @@
             if (typeof oreValue === 'number' && !isNaN(oreValue) && oreValue > 0 && oreValue <= 24) return oreValue;
             if (typeof oreValue === 'string') {
                 const trimmed = oreValue.trim();
-                if (trimmed.includes('T') || /^\\d{4}-/.test(trimmed)) return calculateHours(inizio, fine);
+                if (trimmed.includes('T') || /^\d{4}-/.test(trimmed)) return calculateHours(inizio, fine);
                 const parsed = parseFloat(trimmed);
                 if (!isNaN(parsed) && parsed > 0 && parsed <= 24) return parsed;
             }
@@ -925,8 +937,13 @@
             if (type === 'work') checkOverlap();
         }
 
+        function toggleEditTime() {
+            const type = document.getElementById('editType').value;
+            document.getElementById('editTimeSection').style.display = type === 'work' ? 'block' : 'none';
+        }
+
         // ==========================================
-        // CONTROLLO SOVRAPPOSIZIONE - CORRETTO
+        // CONTROLLO SOVRAPPOSIZIONE
         // ==========================================
         function checkOverlap() {
             const type = document.getElementById('clockType').value;
@@ -953,7 +970,6 @@
             const newStartMin = timeToMinutes(newStart);
             const newEndMin = timeToMinutes(newEnd);
             
-            // Controlla sovrapposizioni con entries esistenti per questa data
             for (let entry of dateEntries) {
                 if (entry.tipo !== 'work') continue;
                 
@@ -1062,7 +1078,6 @@
                     loadTeam(),
                     loadReportEmployees()
                 ]);
-                // Carica riepilogo admin
                 await loadAdminSummary();
             } else {
                 document.getElementById('adminNav').classList.add('hidden');
@@ -1075,9 +1090,6 @@
             }
         }
 
-        // ==========================================
-        // RIEPILOGO ADMIN - NUOVO
-        // ==========================================
         async function loadAdminSummary() {
             const result = await apiCall('get');
             if (!result.success) return;
@@ -1295,14 +1307,13 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // TIMBRATURA - CORRETTA
+        // TIMBRATURA
         // ==========================================
         async function checkDateEntries() {
             if (!currentUser) return;
             const selectedDate = document.getElementById('clockDate').value;
             if (!selectedDate) return;
             
-            // Reset stato
             isOverlap = false;
             document.getElementById('overlapError').classList.remove('show');
             document.getElementById('saveBtn').disabled = false;
@@ -1312,7 +1323,6 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             
             const userId = String(currentUser.id);
             
-            // Trova tutte le entries per questa data (escludendo quella corrente se in modifica)
             dateEntries = result.data.filter(e => {
                 const entryUserId = String(e.userId);
                 const entryDate = e.data ? e.data.split('T')[0] : '';
@@ -1347,7 +1357,6 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         async function saveClock() {
             if (!currentUser) return;
             
-            // BLOCCA se c'è sovrapposizione
             if (isOverlap) {
                 showAlert('clock', '⚠️ Non puoi salvare: esiste una sovrapposizione oraria. Modifica gli orari o cambia data.', 'error');
                 return;
@@ -1398,10 +1407,9 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 }
             }
             
-            // Verifica sovrapposizione una seconda volta prima di salvare
             if (!checkOverlap()) {
                 btn.innerHTML = originalText;
-                btn.disabled = true; // Rimane disabilitato finché non corregge
+                btn.disabled = true;
                 showAlert('clock', '⚠️ Sovrapposizione oraria rilevata. Correggi prima di salvare.', 'error');
                 return;
             }
@@ -1480,9 +1488,9 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             } else {
                 list.innerHTML = currentHistoryEntries.map((e, index) => {
                     const ore = parseHoursField(e.ore, e.inizio, e.fine);
-                    // Usa ID reale se disponibile, altrimenti usa indice + timestamp come fallback
-                    const entryId = e.id || e.timestamp || index;
-                    const entryUserId = e.userId || currentUser.id;
+                    // USA SEMPRE e.id - se non esiste, usa l'indice come fallback
+                    const entryId = e.id !== undefined ? String(e.id) : String(index);
+                    const entryUserId = e.userId !== undefined ? String(e.userId) : String(currentUser.id);
                     
                     return `
                     <div class="entry-item">
@@ -1500,8 +1508,8 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                                     : ''}
                             </div>
                             <div class="entry-actions">
-                                <button class="btn-small btn-primary" onclick='openEditModal("${entryId}", "${entryUserId}")' style="padding: 6px 10px; font-size: 0.75rem;">✏️</button>
-                                <button class="btn-small btn-danger" onclick='openDeleteModal("${entryId}", "${entryUserId}")' style="padding: 6px 10px; font-size: 0.75rem;">🗑️</button>
+                                <button class="btn-small btn-primary" onclick="openEditModal('${entryId}', '${entryUserId}')" style="padding: 6px 10px; font-size: 0.75rem;">✏️</button>
+                                <button class="btn-small btn-danger" onclick="openDeleteModal('${entryId}', '${entryUserId}')" style="padding: 6px 10px; font-size: 0.75rem;">🗑️</button>
                             </div>
                         </div>
                     </div>`;
@@ -1531,14 +1539,22 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         // MODALE MODIFICA - CORRETTO
         // ==========================================
         function openEditModal(entryId, entryUserId) {
-            // Trova l'entry corretta
+            console.log('=== EDIT MODAL ===');
+            console.log('entryId ricevuto:', entryId, 'tipo:', typeof entryId);
+            console.log('entryUserId ricevuto:', entryUserId, 'tipo:', typeof entryUserId);
+            
+            // Trova l'entry corretta confrontando come stringhe
             const entry = currentHistoryEntries.find(e => {
-                const eid = e.id || e.timestamp || '';
-                return String(eid) === String(entryId);
+                const eid = e.id !== undefined ? String(e.id) : '';
+                const targetId = String(entryId);
+                console.log('Confronto:', eid, '===', targetId, '?', eid === targetId);
+                return eid === targetId;
             });
             
             if (!entry) {
-                alert('Errore: voce non trovata');
+                console.error('Entry non trovata. ID cercato:', entryId);
+                console.log('Entries disponibili:', currentHistoryEntries);
+                alert('Errore: voce non trovata (ID: ' + entryId + ')');
                 return;
             }
             
@@ -1560,6 +1576,10 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         async function saveEdit() {
             const entryId = document.getElementById('editId').value;
             const userId = document.getElementById('editUserId').value;
+            
+            console.log('=== SAVE EDIT ===');
+            console.log('Invio ID:', entryId, 'tipo:', typeof entryId);
+            console.log('Invio userId:', userId);
             
             const newDate = document.getElementById('editDate').value;
             const newType = document.getElementById('editType').value;
@@ -1594,6 +1614,8 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 ore: newType === 'work' ? ore : 0
             });
             
+            console.log('Risposta update:', result);
+            
             if (result.success) {
                 closeEditModal();
                 await loadHistory();
@@ -1621,10 +1643,16 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             const entryId = document.getElementById('deleteId').value;
             const userId = document.getElementById('deleteUserId').value;
             
+            console.log('=== DELETE ===');
+            console.log('Invio ID:', entryId, 'tipo:', typeof entryId);
+            console.log('Invio userId:', userId);
+            
             const result = await apiCall('delete', {
                 id: entryId,
                 userId: userId
             });
+            
+            console.log('Risposta delete:', result);
             
             if (result.success) {
                 closeDeleteModal();
