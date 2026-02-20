@@ -547,9 +547,31 @@
         @media (max-width: 640px) {
             .day-selector { grid-template-columns: 1fr; }
         }
+        
+        /* Debug panel */
+        .debug-panel {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.9);
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 9999;
+            border-radius: 8px;
+            display: none;
+        }
+        .debug-panel.show { display: block; }
     </style>
 </head>
 <body>
+    <!-- Debug Panel -->
+    <div id="debugPanel" class="debug-panel"></div>
+
     <!-- Modal Modifica -->
     <div id="editModal" class="modal-overlay">
         <div class="modal">
@@ -623,6 +645,7 @@
                         <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
                     </div>
                     <button class="btn-primary" onclick="login()">Accedi all'App</button>
+                    <button class="btn-secondary" onclick="toggleDebug()" style="margin-top: 10px;">🐛 Attiva Debug</button>
                 </div>
             </div>
         </div>
@@ -633,6 +656,7 @@
             <div class="header">
                 <h1>TimeTrack Pro</h1>
                 <p id="welcomeText"></p>
+                <button onclick="toggleDebug()" style="position: absolute; top: 10px; right: 10px; width: auto; padding: 5px 10px; font-size: 12px; background: rgba(255,255,255,0.2);">🐛 Debug</button>
             </div>
             <div class="content">
                 <div class="main-area">
@@ -841,7 +865,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURAZIONE
+        // CONFIGURAZIONE - URL CORRETTO (SENZA SPAZIO!)
         // ==========================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbzCHH0x-8Gw1YNOoBqJ_rZH74PYBAfKUeczK8H1SXYXCSvhRCVSMHa6_coHPhypUArR/exec';
         const APP_URL = window.location.href.split('?')[0].replace(/\/$/, '');
@@ -855,6 +879,28 @@
         let dateEntries = [];
         let currentHistoryEntries = [];
         let isOverlap = false;
+        let debugMode = false;
+
+        // ==========================================
+        // DEBUG
+        // ==========================================
+        function toggleDebug() {
+            debugMode = !debugMode;
+            const panel = document.getElementById('debugPanel');
+            panel.classList.toggle('show', debugMode);
+            debugLog('Debug mode: ' + (debugMode ? 'ON' : 'OFF'));
+        }
+
+        function debugLog(msg) {
+            console.log(msg);
+            if (debugMode) {
+                const panel = document.getElementById('debugPanel');
+                const line = document.createElement('div');
+                line.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+                panel.appendChild(line);
+                panel.scrollTop = panel.scrollHeight;
+            }
+        }
 
         // ==========================================
         // INIZIALIZZAZIONE
@@ -869,6 +915,8 @@
             document.getElementById('clockStart').addEventListener('change', updateHoursPreview);
             document.getElementById('clockEnd').addEventListener('change', updateHoursPreview);
             updateHoursPreview();
+            
+            debugLog('App inizializzata. API_URL: ' + API_URL);
         };
 
         // ==========================================
@@ -1003,7 +1051,7 @@
         }
 
         // ==========================================
-        // API
+        // API CON DEBUG
         // ==========================================
         async function apiCall(action, params = {}) {
             try {
@@ -1015,6 +1063,10 @@
                     }
                 });
                 
+                debugLog('API CALL: action=' + action);
+                debugLog('URL: ' + url.toString());
+                debugLog('Params: ' + JSON.stringify(params));
+                
                 const response = await fetch(url, {
                     method: 'GET',
                     mode: 'cors',
@@ -1022,9 +1074,15 @@
                     headers: { 'Accept': 'application/json' }
                 });
                 
+                debugLog('Response status: ' + response.status);
+                
                 if (!response.ok) throw new Error('HTTP ' + response.status);
-                return await response.json();
+                const result = await response.json();
+                
+                debugLog('Response: ' + JSON.stringify(result));
+                return result;
             } catch (e) {
+                debugLog('ERROR: ' + e.message);
                 console.error('Errore API:', e);
                 return { success: false, error: 'Errore di connessione: ' + e.message };
             }
@@ -1053,6 +1111,7 @@
             
             if (result.success && result.user) {
                 currentUser = result.user;
+                debugLog('Login OK: userId=' + currentUser.id);
                 if (!currentUser.id || !currentUser.ruolo) {
                     showAlert('loginAlert', '⚠️ Errore dati utente', 'error');
                     return;
@@ -1478,6 +1537,8 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     return dateB.localeCompare(dateA);
                 });
             
+            debugLog('loadHistory: trovate ' + currentHistoryEntries.length + ' entries');
+            
             const list = document.getElementById('historyList');
             if (currentHistoryEntries.length === 0) {
                 list.innerHTML = `
@@ -1491,6 +1552,8 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     // USA SEMPRE e.id - se non esiste, usa l'indice come fallback
                     const entryId = e.id !== undefined ? String(e.id) : String(index);
                     const entryUserId = e.userId !== undefined ? String(e.userId) : String(currentUser.id);
+                    
+                    debugLog('Entry ' + index + ': id=' + entryId + ', userId=' + entryUserId + ', data=' + e.data);
                     
                     return `
                     <div class="entry-item">
@@ -1536,24 +1599,25 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // MODALE MODIFICA - CORRETTO
+        // MODALE MODIFICA - CORRETTO CON DEBUG
         // ==========================================
         function openEditModal(entryId, entryUserId) {
-            console.log('=== EDIT MODAL ===');
-            console.log('entryId ricevuto:', entryId, 'tipo:', typeof entryId);
-            console.log('entryUserId ricevuto:', entryUserId, 'tipo:', typeof entryUserId);
+            debugLog('=== EDIT MODAL ===');
+            debugLog('entryId ricevuto: ' + entryId + ' (tipo: ' + typeof entryId + ')');
+            debugLog('entryUserId ricevuto: ' + entryUserId + ' (tipo: ' + typeof entryUserId + ')');
             
             // Trova l'entry corretta confrontando come stringhe
             const entry = currentHistoryEntries.find(e => {
                 const eid = e.id !== undefined ? String(e.id) : '';
                 const targetId = String(entryId);
-                console.log('Confronto:', eid, '===', targetId, '?', eid === targetId);
-                return eid === targetId;
+                const match = eid === targetId;
+                debugLog('Confronto: "' + eid + '" === "' + targetId + '" ? ' + match);
+                return match;
             });
             
             if (!entry) {
-                console.error('Entry non trovata. ID cercato:', entryId);
-                console.log('Entries disponibili:', currentHistoryEntries);
+                debugLog('ERRORE: Entry non trovata!');
+                debugLog('Entries disponibili: ' + JSON.stringify(currentHistoryEntries.map(e => ({id: e.id, data: e.data}))));
                 alert('Errore: voce non trovata (ID: ' + entryId + ')');
                 return;
             }
@@ -1577,9 +1641,9 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             const entryId = document.getElementById('editId').value;
             const userId = document.getElementById('editUserId').value;
             
-            console.log('=== SAVE EDIT ===');
-            console.log('Invio ID:', entryId, 'tipo:', typeof entryId);
-            console.log('Invio userId:', userId);
+            debugLog('=== SAVE EDIT ===');
+            debugLog('Invio ID: ' + entryId + ' (tipo: ' + typeof entryId + ')');
+            debugLog('Invio userId: ' + userId);
             
             const newDate = document.getElementById('editDate').value;
             const newType = document.getElementById('editType').value;
@@ -1614,8 +1678,6 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 ore: newType === 'work' ? ore : 0
             });
             
-            console.log('Risposta update:', result);
-            
             if (result.success) {
                 closeEditModal();
                 await loadHistory();
@@ -1627,9 +1689,13 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // MODALE ELIMINAZIONE - CORRETTO
+        // MODALE ELIMINAZIONE - CORRETTO CON DEBUG
         // ==========================================
         function openDeleteModal(entryId, entryUserId) {
+            debugLog('=== DELETE MODAL ===');
+            debugLog('entryId: ' + entryId);
+            debugLog('entryUserId: ' + entryUserId);
+            
             document.getElementById('deleteId').value = entryId;
             document.getElementById('deleteUserId').value = entryUserId;
             document.getElementById('deleteModal').classList.add('show');
@@ -1643,16 +1709,14 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             const entryId = document.getElementById('deleteId').value;
             const userId = document.getElementById('deleteUserId').value;
             
-            console.log('=== DELETE ===');
-            console.log('Invio ID:', entryId, 'tipo:', typeof entryId);
-            console.log('Invio userId:', userId);
+            debugLog('=== CONFIRM DELETE ===');
+            debugLog('Invio ID: ' + entryId + ' (tipo: ' + typeof entryId + ')');
+            debugLog('Invio userId: ' + userId);
             
             const result = await apiCall('delete', {
                 id: entryId,
                 userId: userId
             });
-            
-            console.log('Risposta delete:', result);
             
             if (result.success) {
                 closeDeleteModal();
