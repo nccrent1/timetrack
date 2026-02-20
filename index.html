@@ -505,37 +505,6 @@
             padding: 0;
         }
         
-        .delete-confirm {
-            background: #fee2e2;
-            border: 2px solid #ef4444;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .delete-confirm h3 {
-            color: #991b1b;
-            margin-bottom: 10px;
-        }
-        
-        .delete-confirm p {
-            color: #7f1d1d;
-            margin-bottom: 20px;
-        }
-        
-        .error-box {
-            background: #fee2e2;
-            border: 2px solid #ef4444;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-            display: none;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .error-box.show { display: flex; }
-        
         .day-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -548,30 +517,14 @@
             .day-selector { grid-template-columns: 1fr; }
         }
         
-        /* Debug panel */
-        .debug-panel {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.9);
-            color: #0f0;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 11px;
-            max-height: 150px;
-            overflow-y: auto;
-            z-index: 9999;
-            border-radius: 8px;
-            display: none;
+        .export-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border);
         }
-        .debug-panel.show { display: block; }
     </style>
 </head>
 <body>
-    <!-- Debug Panel -->
-    <div id="debugPanel" class="debug-panel"></div>
-
     <!-- Modal Modifica -->
     <div id="editModal" class="modal-overlay">
         <div class="modal">
@@ -613,20 +566,6 @@
         </div>
     </div>
 
-    <!-- Modal Elimina -->
-    <div id="deleteModal" class="modal-overlay">
-        <div class="modal" style="max-width: 400px;">
-            <div class="delete-confirm">
-                <h3>🗑️ Conferma Eliminazione</h3>
-                <p>Sei sicuro di voler eliminare questa registrazione? L'azione è irreversibile.</p>
-                <input type="hidden" id="deleteId">
-                <input type="hidden" id="deleteUserId">
-                <button class="btn-danger" onclick="confirmDelete()">Elimina Definitivamente</button>
-                <button class="btn-secondary" onclick="closeDeleteModal()" style="margin-top: 10px;">Annulla</button>
-            </div>
-        </div>
-    </div>
-
     <div id="loginScreen" class="container">
         <div class="app-container">
             <div class="header">
@@ -645,7 +584,6 @@
                         <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
                     </div>
                     <button class="btn-primary" onclick="login()">Accedi all'App</button>
-                    <button class="btn-secondary" onclick="toggleDebug()" style="margin-top: 10px;">🐛 Attiva Debug</button>
                 </div>
             </div>
         </div>
@@ -656,7 +594,6 @@
             <div class="header">
                 <h1>TimeTrack Pro</h1>
                 <p id="welcomeText"></p>
-                <button onclick="toggleDebug()" style="position: absolute; top: 10px; right: 10px; width: auto; padding: 5px 10px; font-size: 12px; background: rgba(255,255,255,0.2);">🐛 Debug</button>
             </div>
             <div class="content">
                 <div class="main-area">
@@ -821,6 +758,12 @@
                                 <input type="month" id="historyMonth" onchange="loadHistory()">
                             </div>
                             <div id="historyList" class="compact-list"><div class="loading"></div></div>
+                            
+                            <!-- NUOVA SEZIONE EXPORT PER DIPENDENTI -->
+                            <div class="export-section">
+                                <div class="card-title">📊 Export Mio Riepilogo</div>
+                                <button class="btn-success" onclick="exportEmployeeExcel()">📥 Scarica Excel con Riepilogo</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -865,7 +808,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURAZIONE - URL CORRETTO (SENZA SPAZIO!)
+        // CONFIGURAZIONE
         // ==========================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbzCHH0x-8Gw1YNOoBqJ_rZH74PYBAfKUeczK8H1SXYXCSvhRCVSMHa6_coHPhypUArR/exec';
         const APP_URL = window.location.href.split('?')[0].replace(/\/$/, '');
@@ -879,28 +822,6 @@
         let dateEntries = [];
         let currentHistoryEntries = [];
         let isOverlap = false;
-        let debugMode = false;
-
-        // ==========================================
-        // DEBUG
-        // ==========================================
-        function toggleDebug() {
-            debugMode = !debugMode;
-            const panel = document.getElementById('debugPanel');
-            panel.classList.toggle('show', debugMode);
-            debugLog('Debug mode: ' + (debugMode ? 'ON' : 'OFF'));
-        }
-
-        function debugLog(msg) {
-            console.log(msg);
-            if (debugMode) {
-                const panel = document.getElementById('debugPanel');
-                const line = document.createElement('div');
-                line.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
-                panel.appendChild(line);
-                panel.scrollTop = panel.scrollHeight;
-            }
-        }
 
         // ==========================================
         // INIZIALIZZAZIONE
@@ -915,8 +836,6 @@
             document.getElementById('clockStart').addEventListener('change', updateHoursPreview);
             document.getElementById('clockEnd').addEventListener('change', updateHoursPreview);
             updateHoursPreview();
-            
-            debugLog('App inizializzata. API_URL: ' + API_URL);
         };
 
         // ==========================================
@@ -1051,7 +970,7 @@
         }
 
         // ==========================================
-        // API CON DEBUG
+        // API
         // ==========================================
         async function apiCall(action, params = {}) {
             try {
@@ -1063,10 +982,6 @@
                     }
                 });
                 
-                debugLog('API CALL: action=' + action);
-                debugLog('URL: ' + url.toString());
-                debugLog('Params: ' + JSON.stringify(params));
-                
                 const response = await fetch(url, {
                     method: 'GET',
                     mode: 'cors',
@@ -1074,15 +989,9 @@
                     headers: { 'Accept': 'application/json' }
                 });
                 
-                debugLog('Response status: ' + response.status);
-                
                 if (!response.ok) throw new Error('HTTP ' + response.status);
-                const result = await response.json();
-                
-                debugLog('Response: ' + JSON.stringify(result));
-                return result;
+                return await response.json();
             } catch (e) {
-                debugLog('ERROR: ' + e.message);
                 console.error('Errore API:', e);
                 return { success: false, error: 'Errore di connessione: ' + e.message };
             }
@@ -1111,7 +1020,6 @@
             
             if (result.success && result.user) {
                 currentUser = result.user;
-                debugLog('Login OK: userId=' + currentUser.id);
                 if (!currentUser.id || !currentUser.ruolo) {
                     showAlert('loginAlert', '⚠️ Errore dati utente', 'error');
                     return;
@@ -1513,7 +1421,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // STORICO CON MODIFICA/ELIMINAZIONE - CORRETTO
+        // STORICO CON MODIFICA (SENZA ELIMINAZIONE)
         // ==========================================
         async function loadHistory() {
             if (!currentUser) return;
@@ -1537,8 +1445,6 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     return dateB.localeCompare(dateA);
                 });
             
-            debugLog('loadHistory: trovate ' + currentHistoryEntries.length + ' entries');
-            
             const list = document.getElementById('historyList');
             if (currentHistoryEntries.length === 0) {
                 list.innerHTML = `
@@ -1549,11 +1455,8 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             } else {
                 list.innerHTML = currentHistoryEntries.map((e, index) => {
                     const ore = parseHoursField(e.ore, e.inizio, e.fine);
-                    // USA SEMPRE e.id - se non esiste, usa l'indice come fallback
                     const entryId = e.id !== undefined ? String(e.id) : String(index);
                     const entryUserId = e.userId !== undefined ? String(e.userId) : String(currentUser.id);
-                    
-                    debugLog('Entry ' + index + ': id=' + entryId + ', userId=' + entryUserId + ', data=' + e.data);
                     
                     return `
                     <div class="entry-item">
@@ -1572,7 +1475,6 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                             </div>
                             <div class="entry-actions">
                                 <button class="btn-small btn-primary" onclick="openEditModal('${entryId}', '${entryUserId}')" style="padding: 6px 10px; font-size: 0.75rem;">✏️</button>
-                                <button class="btn-small btn-danger" onclick="openDeleteModal('${entryId}', '${entryUserId}')" style="padding: 6px 10px; font-size: 0.75rem;">🗑️</button>
                             </div>
                         </div>
                     </div>`;
@@ -1599,26 +1501,16 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // MODALE MODIFICA - CORRETTO CON DEBUG
+        // MODALE MODIFICA
         // ==========================================
         function openEditModal(entryId, entryUserId) {
-            debugLog('=== EDIT MODAL ===');
-            debugLog('entryId ricevuto: ' + entryId + ' (tipo: ' + typeof entryId + ')');
-            debugLog('entryUserId ricevuto: ' + entryUserId + ' (tipo: ' + typeof entryUserId + ')');
-            
-            // Trova l'entry corretta confrontando come stringhe
             const entry = currentHistoryEntries.find(e => {
                 const eid = e.id !== undefined ? String(e.id) : '';
-                const targetId = String(entryId);
-                const match = eid === targetId;
-                debugLog('Confronto: "' + eid + '" === "' + targetId + '" ? ' + match);
-                return match;
+                return eid === String(entryId);
             });
             
             if (!entry) {
-                debugLog('ERRORE: Entry non trovata!');
-                debugLog('Entries disponibili: ' + JSON.stringify(currentHistoryEntries.map(e => ({id: e.id, data: e.data}))));
-                alert('Errore: voce non trovata (ID: ' + entryId + ')');
+                alert('Errore: voce non trovata');
                 return;
             }
             
@@ -1640,10 +1532,6 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         async function saveEdit() {
             const entryId = document.getElementById('editId').value;
             const userId = document.getElementById('editUserId').value;
-            
-            debugLog('=== SAVE EDIT ===');
-            debugLog('Invio ID: ' + entryId + ' (tipo: ' + typeof entryId + ')');
-            debugLog('Invio userId: ' + userId);
             
             const newDate = document.getElementById('editDate').value;
             const newType = document.getElementById('editType').value;
@@ -1689,43 +1577,74 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // MODALE ELIMINAZIONE - CORRETTO CON DEBUG
+        // EXPORT EXCEL PER DIPENDENTE CON RIEPILOGO
         // ==========================================
-        function openDeleteModal(entryId, entryUserId) {
-            debugLog('=== DELETE MODAL ===');
-            debugLog('entryId: ' + entryId);
-            debugLog('entryUserId: ' + entryUserId);
+        function exportEmployeeExcel() {
+            if (!currentHistoryEntries || currentHistoryEntries.length === 0) {
+                alert('Nessun dato da esportare per questo mese');
+                return;
+            }
             
-            document.getElementById('deleteId').value = entryId;
-            document.getElementById('deleteUserId').value = entryUserId;
-            document.getElementById('deleteModal').classList.add('show');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.remove('show');
-        }
-
-        async function confirmDelete() {
-            const entryId = document.getElementById('deleteId').value;
-            const userId = document.getElementById('deleteUserId').value;
+            const month = document.getElementById('historyMonth').value;
+            const employeeName = currentUser.nome || currentUser.email;
             
-            debugLog('=== CONFIRM DELETE ===');
-            debugLog('Invio ID: ' + entryId + ' (tipo: ' + typeof entryId + ')');
-            debugLog('Invio userId: ' + userId);
+            // Prepara dati per l'export
+            const exportData = [];
             
-            const result = await apiCall('delete', {
-                id: entryId,
-                userId: userId
+            // Intestazione
+            exportData.push({
+                'Data': 'DATA',
+                'Tipo': 'TIPO',
+                'Entrata': 'ENTRATA',
+                'Uscita': 'USCITA',
+                'Ore': 'ORE'
             });
             
-            if (result.success) {
-                closeDeleteModal();
-                await loadHistory();
-                await checkDateEntries();
-                alert('✅ Registrazione eliminata con successo!');
-            } else {
-                alert('❌ Errore durante l\'eliminazione: ' + (result.error || 'Errore sconosciuto'));
-            }
+            // Dati
+            currentHistoryEntries.forEach(e => {
+                const ore = parseHoursField(e.ore, e.inizio, e.fine);
+                exportData.push({
+                    'Data': formatDate(e.data),
+                    'Tipo': label(e.tipo),
+                    'Entrata': e.inizio || '-',
+                    'Uscita': e.fine || '-',
+                    'Ore': e.tipo === 'work' ? formatHoursDecimal(ore) : '-'
+                });
+            });
+            
+            // Righe vuote
+            exportData.push({ 'Data': '', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': '' });
+            exportData.push({ 'Data': '', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': '' });
+            
+            // RIEPILOGO
+            const workEntries = currentHistoryEntries.filter(e => e.tipo === 'work');
+            const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
+            const holidays = currentHistoryEntries.filter(e => e.tipo === 'holiday').length;
+            const rest = currentHistoryEntries.filter(e => e.tipo === 'rest').length;
+            const festive = currentHistoryEntries.filter(e => e.tipo === 'festive').length;
+            
+            exportData.push({ 'Data': 'RIEPILOGO', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': '' });
+            exportData.push({ 'Data': 'Totale Ore Lavorate:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': formatHoursDecimal(totalHours) });
+            exportData.push({ 'Data': 'Giorni Lavorati:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': workEntries.length });
+            exportData.push({ 'Data': 'Ferie:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': holidays });
+            exportData.push({ 'Data': 'Riposo:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': rest });
+            exportData.push({ 'Data': 'Giorni Festivi:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': festive });
+            exportData.push({ 'Data': 'TOTALE GIORNI:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': currentHistoryEntries.length });
+            
+            // Crea Excel
+            const ws = XLSX.utils.json_to_sheet(exportData, { skipHeader: true });
+            
+            // Stili per il riepilogo
+            const wscols = [
+                {wch: 15}, {wch: 20}, {wch: 12}, {wch: 12}, {wch: 12}
+            ];
+            ws['!cols'] = wscols;
+            
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Presenze");
+            
+            const filename = `Presenze_${employeeName}_${month}.xlsx`;
+            XLSX.writeFile(wb, filename);
         }
 
         // ==========================================
@@ -1851,7 +1770,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // EXPORT
+        // EXPORT ADMIN
         // ==========================================
         function exportExcelCurrent() {
             if (!currentReportData || currentReportData.length === 0) {
