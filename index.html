@@ -1501,7 +1501,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // MODALE MODIFICA
+        // MODALE MODIFICA CON CONTROLLO SOVRAPPOSIZIONE CORRETTO
         // ==========================================
         function openEditModal(entryId, entryUserId) {
             const entry = currentHistoryEntries.find(e => {
@@ -1553,6 +1553,36 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 if (ore <= 0) {
                     alert('Orario non valido');
                     return;
+                }
+                
+                // Controllo sovrapposizione ESCLUDENDO la registrazione corrente
+                const newStartMin = timeToMinutes(newStart);
+                const newEndMin = timeToMinutes(newEnd);
+                
+                for (let entry of dateEntries) {
+                    // SALTA la registrazione che stiamo modificando (confronta ID)
+                    const entryIdInList = entry.id !== undefined ? String(entry.id) : '';
+                    if (entryIdInList === String(entryId)) continue;
+                    
+                    if (entry.tipo !== 'work') continue;
+                    
+                    const existStart = timeToMinutes(entry.inizio);
+                    const existEnd = timeToMinutes(entry.fine);
+                    
+                    if (existStart === 0 && existEnd === 0) continue;
+                    
+                    let adjustedExistEnd = existEnd;
+                    if (existEnd < existStart) adjustedExistEnd += 24 * 60;
+                    
+                    let adjustedNewEnd = newEndMin;
+                    if (newEndMin < newStartMin) adjustedNewEnd += 24 * 60;
+                    
+                    const overlap = (newStartMin < adjustedExistEnd && adjustedNewEnd > existStart);
+                    
+                    if (overlap) {
+                        alert('⚠️ Esiste già una registrazione che si sovrappone a questo orario: ' + entry.inizio + ' - ' + entry.fine);
+                        return;
+                    }
                 }
             }
             
