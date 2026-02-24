@@ -938,6 +938,11 @@
                 const dateInput = document.getElementById('clockDate').value;
                 if (dateInput && dateEntries.length > 0) {
                     checkOverlap();
+                } else {
+                    // Se non ci sono entries, assicurati che non ci sia errore
+                    document.getElementById('overlapError').classList.remove('show');
+                    isOverlap = false;
+                    document.getElementById('saveBtn').disabled = false;
                 }
             } else {
                 document.getElementById('overlapError').classList.remove('show');
@@ -952,14 +957,23 @@
         }
 
         // ==========================================
-        // CONTROLLO SOVRAPPOSIZIONE
+        // CONTROLLO SOVRAPPOSIZIONE - VERSIONE CORRETTA
         // ==========================================
         function checkOverlap() {
             const type = document.getElementById('clockType').value;
             const errorBox = document.getElementById('overlapError');
             const saveBtn = document.getElementById('saveBtn');
             
+            // Se non è lavoro, non c'è sovrapposizione
             if (type !== 'work') {
+                errorBox.classList.remove('show');
+                isOverlap = false;
+                saveBtn.disabled = false;
+                return true;
+            }
+            
+            // Se non ci sono entries esistenti, non c'è sovrapposizione
+            if (!dateEntries || dateEntries.length === 0) {
                 errorBox.classList.remove('show');
                 isOverlap = false;
                 saveBtn.disabled = false;
@@ -979,21 +993,39 @@
             const newStartMin = timeToMinutes(newStart);
             const newEndMin = timeToMinutes(newEnd);
             
+            // Normalizza il nuovo orario (gestisce passaggio mezzanotte)
+            let normalizedNewStart = newStartMin;
+            let normalizedNewEnd = newEndMin;
+            let newSpansMidnight = false;
+            
+            if (newEndMin < newStartMin) {
+                normalizedNewEnd += 24 * 60;
+                newSpansMidnight = true;
+            }
+            
+            // Controlla ogni entry esistente
             for (let entry of dateEntries) {
+                // Salta se non è lavoro
                 if (entry.tipo !== 'work') continue;
                 
                 const existStart = timeToMinutes(entry.inizio);
                 const existEnd = timeToMinutes(entry.fine);
                 
+                // Se orari esistenti non validi, salta
                 if (existStart === 0 && existEnd === 0) continue;
                 
-                let adjustedExistEnd = existEnd;
-                if (existEnd < existStart) adjustedExistEnd += 24 * 60;
+                // Normalizza orario esistente
+                let normalizedExistStart = existStart;
+                let normalizedExistEnd = existEnd;
                 
-                let adjustedNewEnd = newEndMin;
-                if (newEndMin < newStartMin) adjustedNewEnd += 24 * 60;
+                if (existEnd < existStart) {
+                    normalizedExistEnd += 24 * 60;
+                }
                 
-                const overlap = (newStartMin < adjustedExistEnd && adjustedNewEnd > existStart);
+                // Controllo sovrapposizione:
+                // Due intervalli si sovrappongono se:
+                // (Start1 < End2) AND (End1 > Start2)
+                const overlap = (normalizedNewStart < normalizedExistEnd) && (normalizedNewEnd > normalizedExistStart);
                 
                 if (overlap) {
                     document.getElementById('overlapMessage').textContent = 
@@ -1326,6 +1358,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             const selectedDate = document.getElementById('clockDate').value;
             if (!selectedDate) return;
             
+            // Reset stato
             isOverlap = false;
             document.getElementById('overlapError').classList.remove('show');
             document.getElementById('saveBtn').disabled = false;
@@ -1338,11 +1371,14 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             
             const userId = String(currentUser.id);
             
+            // Filtra entries per utente e data
             dateEntries = result.data.filter(e => {
                 const entryUserId = String(e.userId);
                 const entryDate = e.data ? e.data.split('T')[0] : '';
                 return entryUserId === userId && entryDate === selectedDate;
             });
+            
+            console.log('Entries trovate per', selectedDate, ':', dateEntries.length);
             
             const existing = dateEntries[0];
             hasEntryToday = !!existing;
@@ -1352,12 +1388,11 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 warning.classList.remove('hidden');
                 if (existing.tipo) {
                     document.getElementById('clockType').value = existing.tipo;
-                    toggleClockTime();
                 }
                 if (existing.inizio) document.getElementById('clockStart').value = existing.inizio;
                 if (existing.fine) document.getElementById('clockEnd').value = existing.fine;
                 updateHoursPreview();
-                if (existing.tipo === 'work') checkOverlap();
+                toggleClockTime(); // Questo chiamerà checkOverlap se necessario
             } else {
                 warning.classList.add('hidden');
                 document.getElementById('clockType').value = 'work';
@@ -1365,6 +1400,10 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 document.getElementById('clockEnd').value = '18:00';
                 toggleClockTime();
                 updateHoursPreview();
+                // Assicurati che non ci sia errore se non ci sono entries
+                document.getElementById('overlapError').classList.remove('show');
+                isOverlap = false;
+                document.getElementById('saveBtn').disabled = false;
             }
         }
 
@@ -1421,6 +1460,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 }
             }
             
+            // Controllo finale sovrapposizione
             if (!checkOverlap()) {
                 btn.innerHTML = originalText;
                 btn.disabled = true;
@@ -1606,6 +1646,13 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 const newStartMin = timeToMinutes(newStart);
                 const newEndMin = timeToMinutes(newEnd);
                 
+                // Normalizza nuovo orario
+                let normalizedNewStart = newStartMin;
+                let normalizedNewEnd = newEndMin;
+                if (newEndMin < newStartMin) {
+                    normalizedNewEnd += 24 * 60;
+                }
+                
                 // Ricarica le entries per la data di destinazione
                 const result = await apiCall('get');
                 if (result.success) {
@@ -1624,13 +1671,15 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                         
                         if (existStart === 0 && existEnd === 0) continue;
                         
-                        let adjustedExistEnd = existEnd;
-                        if (existEnd < existStart) adjustedExistEnd += 24 * 60;
+                        // Normalizza orario esistente
+                        let normalizedExistStart = existStart;
+                        let normalizedExistEnd = existEnd;
+                        if (existEnd < existStart) {
+                            normalizedExistEnd += 24 * 60;
+                        }
                         
-                        let adjustedNewEnd = newEndMin;
-                        if (newEndMin < newStartMin) adjustedNewEnd += 24 * 60;
-                        
-                        const overlap = (newStartMin < adjustedExistEnd && adjustedNewEnd > existStart);
+                        // Controllo sovrapposizione
+                        const overlap = (normalizedNewStart < normalizedExistEnd) && (normalizedNewEnd > normalizedExistStart);
                         
                         if (overlap) {
                             alert('⚠️ Esiste già una registrazione che si sovrappone a questo orario: ' + entry.inizio + ' - ' + entry.fine);
