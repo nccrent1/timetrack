@@ -853,7 +853,7 @@
         let currentHistoryEntries = [];
         let isOverlap = false;
         let alertTimeouts = {};
-        let currentEditingId = null; // ID della entry che stiamo modificando (per evitare falso positivo sovrapposizione)
+        let currentEditingId = null;
 
         // ==========================================
         // INIZIALIZZAZIONE
@@ -950,7 +950,7 @@
         }
 
         // ==========================================
-        // CONTROLLO SOVRAPPOSIZIONE - VERSIONE CORRETTA E RIGOROSA
+        // CONTROLLO SOVRAPPOSIZIONE - VERSIONE CORRETTA PER MULTIPLE ENTRY
         // ==========================================
         function checkOverlap() {
             const type = document.getElementById('clockType').value;
@@ -994,30 +994,37 @@
                 normalizedNewEnd += 24 * 60;
             }
             
-            console.log('Controllo sovrapposizione:');
-            console.log('Nuovo:', newStart, '-', newEnd, '(', normalizedNewStart, '-', normalizedNewEnd, ')');
-            console.log('Entries esistenti:', dateEntries.length);
+            console.log('=== CONTROLLO SOVRAPPOSIZIONE ===');
+            console.log('Nuovo orario:', newStart, '-', newEnd);
+            console.log('Normalizzato:', normalizedNewStart, '-', normalizedNewEnd);
+            console.log('Entries esistenti per questa data:', dateEntries.length);
+            console.log('Sto modificando ID:', currentEditingId);
             
-            // Controlla ogni entry esistente
+            // Controlla TUTTE le entry esistenti per quella data
             for (let entry of dateEntries) {
                 // Salta se non è lavoro
                 if (entry.tipo !== 'work') continue;
                 
-                // IMPORTANTE: Se stiamo modificando una entry esistente, salta quella con lo stesso ID
-                // currentEditingId viene impostato quando apriamo il modal di modifica
-                // Per il form principale, hasEntryToday indica che stiamo sovrascrivendo
-                if (hasEntryToday && dateEntries.length === 1) {
-                    console.log('Sovrascrivo entry esistente, salto controllo sovrapposizione con se stessa');
-                    continue;
+                // IMPORTANTE: Se stiamo modificando una entry specifica, saltiamo solo quella
+                // Altrimenti controlliamo TUTTE (perché potrebbero essere multiple)
+                if (currentEditingId) {
+                    const entryId = entry.id !== undefined ? String(entry.id) : '';
+                    if (entryId === String(currentEditingId)) {
+                        console.log('Salto entry ID', entryId, '(stiamo modificando questa)');
+                        continue;
+                    }
                 }
                 
                 const existStart = timeToMinutes(entry.inizio);
                 const existEnd = timeToMinutes(entry.fine);
                 
-                console.log('Confronto con esistente:', entry.inizio, '-', entry.fine, '(', existStart, '-', existEnd, ')');
+                console.log('Confronto con entry ID', entry.id, ':', entry.inizio, '-', entry.fine);
                 
                 // Se orari esistenti non validi, salta
-                if (existStart === 0 && existEnd === 0) continue;
+                if (existStart === 0 && existEnd === 0) {
+                    console.log('Orari esistenti non validi, salto');
+                    continue;
+                }
                 
                 // Normalizza orario esistente
                 let normalizedExistStart = existStart;
@@ -1027,26 +1034,27 @@
                     normalizedExistEnd += 24 * 60;
                 }
                 
-                // Controllo sovrapposizione rigoroso:
-                // Due intervalli [A,B] e [C,D] si sovrappongono se:
-                // A < D AND C < B (cioè: inizio1 < fine2 AND inizio2 < fine1)
-                // Questo è equivalente a: NOT (B <= C OR D <= A)
+                console.log('Esistente normalizzato:', normalizedExistStart, '-', normalizedExistEnd);
                 
+                // Controllo sovrapposizione rigoroso:
+                // Due intervalli si sovrappongono se: (Start1 < End2) AND (Start2 < End1)
                 const overlap = (normalizedNewStart < normalizedExistEnd) && (normalizedExistStart < normalizedNewEnd);
                 
-                console.log('Sovrapposizione?', overlap);
                 console.log('Condizione:', normalizedNewStart, '<', normalizedExistEnd, '&&', normalizedExistStart, '<', normalizedNewEnd);
+                console.log('Risultato:', overlap);
                 
                 if (overlap) {
                     document.getElementById('overlapMessage').textContent = 
-                        `Sovrapposizione con registrazione esistente: ${entry.inizio} - ${entry.fine}`;
+                        `Sovrapposizione con: ${entry.inizio} - ${entry.fine} (ID: ${entry.id || 'N/A'})`;
                     errorBox.classList.add('show');
                     isOverlap = true;
                     saveBtn.disabled = true;
+                    console.log('❌ SOVRAPPOSIZIONE TROVATA - BLOCCO');
                     return false;
                 }
             }
             
+            console.log('✅ NESSUNA SOVRAPPOSIZIONE - OK');
             errorBox.classList.remove('show');
             isOverlap = false;
             saveBtn.disabled = false;
@@ -1370,7 +1378,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             
             // Reset stato
             isOverlap = false;
-            currentEditingId = null; // Reset ID editing
+            currentEditingId = null; // Reset ID editing (siamo in modalità nuova entry)
             document.getElementById('overlapError').classList.remove('show');
             document.getElementById('saveBtn').disabled = false;
             
@@ -1389,22 +1397,30 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 return entryUserId === userId && entryDate === selectedDate;
             });
             
-            console.log('Entries trovate per', selectedDate, ':', dateEntries.length);
+            console.log('=== CHECK DATE ENTRIES ===');
+            console.log('Data selezionata:', selectedDate);
+            console.log('Entries trovate:', dateEntries.length);
             if (dateEntries.length > 0) {
-                console.log('Dettaglio:', dateEntries.map(e => ({id: e.id, tipo: e.tipo, inizio: e.inizio, fine: e.fine})));
+                dateEntries.forEach(e => {
+                    console.log('  - ID:', e.id, '| Tipo:', e.tipo, '| Orario:', e.inizio, '-', e.fine);
+                });
             }
             
-            const existing = dateEntries[0];
-            hasEntryToday = !!existing;
+            // Controlla se esistono entry di tipo work
+            const workEntries = dateEntries.filter(e => e.tipo === 'work');
+            hasEntryToday = workEntries.length > 0;
+            
             const warning = document.getElementById('existingEntryWarning');
             
             if (hasEntryToday) {
                 warning.classList.remove('hidden');
-                if (existing.tipo) {
+                // Se c'è una sola entry, precompila con quella
+                if (workEntries.length === 1) {
+                    const existing = workEntries[0];
                     document.getElementById('clockType').value = existing.tipo;
+                    if (existing.inizio) document.getElementById('clockStart').value = existing.inizio;
+                    if (existing.fine) document.getElementById('clockEnd').value = existing.fine;
                 }
-                if (existing.inizio) document.getElementById('clockStart').value = existing.inizio;
-                if (existing.fine) document.getElementById('clockEnd').value = existing.fine;
                 updateHoursPreview();
                 toggleClockTime();
             } else {
@@ -1479,7 +1495,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             }
             
             if (hasEntryToday) {
-                if (!confirm('Hai già una registrazione per questa data. Vuoi sovrascriverla?')) {
+                if (!confirm('Hai già registrazioni per questa data. Vuoi aggiungere questa nuova entry?')) {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     return;
@@ -1611,7 +1627,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 return;
             }
             
-            // Imposta l'ID che stiamo modificando per escluderlo dal controllo sovrapposizione
+            // Imposta l'ID che stiamo modificando
             currentEditingId = entryId;
             
             document.getElementById('editId').value = entryId;
@@ -1627,7 +1643,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
 
         function closeEditModal() {
             document.getElementById('editModal').classList.remove('show');
-            currentEditingId = null; // Reset ID editing
+            currentEditingId = null;
         }
 
         async function saveEdit() {
@@ -1646,7 +1662,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             
             let ore = 0;
             if (newType === 'work') {
-                if (!newStart || !newEnd) {
+                if (!newStart || !End) {
                     alert('Inserisci orari di inizio e fine');
                     return;
                 }
@@ -1676,7 +1692,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     });
                     
                     for (let entry of targetDateEntries) {
-                        // SALTA la registrazione che stiamo modificando (confronta ID)
+                        // SALTA la registrazione che stiamo modificando
                         const entryIdInList = entry.id !== undefined ? String(entry.id) : '';
                         if (entryIdInList === String(entryId)) continue;
                         
