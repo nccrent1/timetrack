@@ -944,111 +944,97 @@
         }
 
         // ==========================================
-        // CONTROLLO SOVRAPPOSIZIONE UNIVERSALE
+        // CONTROLLO SOVRAPPOSIZIONE - VERSIONE CORRETTA E SEVERA
         // ==========================================
         
         /**
-         * Controlla se un nuovo intervallo di tempo si sovrappone con entries esistenti
-         * @param {Array} existingEntries - Array di entries esistenti
-         * @param {string} newStart - Ora inizio (HH:MM)
-         * @param {string} newEnd - Ora fine (HH:MM)
-         * @param {string|null} excludeId - ID da escludere (per modifiche)
-         * @returns {Object} { overlap: boolean, message: string, entry: Object|null }
+         * Controlla se c'è sovrapposizione tra intervalli di tempo
+         * Ritorna TRUE se c'è sovrapposizione (BLOCCA), FALSE se è OK (PERMETTI)
          */
-        function checkTimeOverlap(existingEntries, newStart, newEnd, excludeId = null) {
-            if (!newStart || !newEnd) {
-                return { overlap: false, message: '', entry: null };
-            }
-            
-            if (!existingEntries || existingEntries.length === 0) {
-                return { overlap: false, message: '', entry: null };
+        function hasTimeOverlap(existingEntries, newStart, newEnd, excludeId) {
+            if (!newStart || !newEnd || !existingEntries || existingEntries.length === 0) {
+                return { hasOverlap: false, conflictingEntry: null };
             }
             
             const newStartMin = timeToMinutes(newStart);
             const newEndMin = timeToMinutes(newEnd);
             
-            // Gestione turno notturno (fine dopo mezzanotte)
-            let normalizedNewStart = newStartMin;
-            let normalizedNewEnd = newEndMin;
+            // Normalizza nuovo intervallo (gestisce turno notturno)
+            let normNewStart = newStartMin;
+            let normNewEnd = newEndMin;
+            if (newEndMin < newStartMin) normNewEnd += 24 * 60;
             
-            if (newEndMin < newStartMin) {
-                normalizedNewEnd += 24 * 60;
-            }
-            
-            console.log('=== CHECK OVERLAP ===');
-            console.log('Nuovo orario:', newStart, '-', newEnd, '(minuti:', normalizedNewStart, '-', normalizedNewEnd, ')');
-            console.log('Escludo ID:', excludeId);
-            console.log('Entries da controllare:', existingEntries.length);
+            console.log('CONTROLLO SOVRAPPOSIZIONE:');
+            console.log('Nuovo:', newStart, '-', newEnd, '-> minuti:', normNewStart, '-', normNewEnd);
             
             for (let entry of existingEntries) {
-                // Salta se non è lavoro
-                if (entry.tipo !== 'work') continue;
-                
-                const entryId = entry.id !== undefined ? String(entry.id) : '';
-                
-                // ESCLUDI l'entry che stiamo modificando
-                if (excludeId && entryId === String(excludeId)) {
-                    console.log('  -> Salto entry ID', entryId, '(stesso ID)');
+                // Salta solo se è l'entry che stiamo modificando
+                if (excludeId && String(entry.id) === String(excludeId)) {
+                    console.log('  Salto entry ID', entry.id, '(esclusione)');
                     continue;
                 }
                 
-                const existStart = timeToMinutes(entry.inizio);
-                const existEnd = timeToMinutes(entry.fine);
+                // Considera SOLO entry di tipo work
+                if (entry.tipo !== 'work') continue;
                 
-                if (existStart === 0 && existEnd === 0) continue;
+                const existStart = entry.inizio;
+                const existEnd = entry.fine;
+                
+                if (!existStart || !existEnd) continue;
+                
+                const existStartMin = timeToMinutes(existStart);
+                const existEndMin = timeToMinutes(existEnd);
                 
                 // Normalizza esistente
-                let normalizedExistStart = existStart;
-                let normalizedExistEnd = existEnd;
+                let normExistStart = existStartMin;
+                let normExistEnd = existEndMin;
+                if (existEndMin < existStartMin) normExistEnd += 24 * 60;
                 
-                if (existEnd < existStart) {
-                    normalizedExistEnd += 24 * 60;
-                }
+                // ALGORITMO SOVRAPPOSIZIONE:
+                // Due intervalli [A,B] e [C,D] si sovrappongono se: A < D AND C < B
+                const overlap = (normNewStart < normExistEnd) && (normExistStart < normNewEnd);
                 
-                // CONTROLLA SOVRAPPOSIZIONE
-                // Due intervalli si sovrappongono se:
-                // (StartA < EndB) AND (StartB < EndA)
-                const overlap = (normalizedNewStart < normalizedExistEnd) && (normalizedExistStart < normalizedNewEnd);
-                
-                console.log('  Confronto con ID', entryId, ':', entry.inizio, '-', entry.fine);
-                console.log('    Normalizzato:', normalizedExistStart, '-', normalizedExistEnd);
+                console.log('  VS entry ID', entry.id, ':', existStart, '-', existEnd);
+                console.log('    Normalizzato:', normExistStart, '-', normExistEnd);
                 console.log('    Sovrapposizione:', overlap);
                 
                 if (overlap) {
-                    return {
-                        overlap: true,
-                        message: `Orario sovrapposto con: ${entry.inizio} - ${entry.fine}`,
-                        entry: entry
+                    return { 
+                        hasOverlap: true, 
+                        conflictingEntry: entry 
                     };
                 }
             }
             
-            return { overlap: false, message: '', entry: null };
+            return { hasOverlap: false, conflictingEntry: null };
         }
 
         // ==========================================
         // VALIDAZIONE FORM CLOCK (NUOVA ENTRY)
         // ==========================================
         async function onDateChange() {
-            // Ricarica le entries per la nuova data
             if (!currentUser) return;
             
             const selectedDate = document.getElementById('clockDate').value;
             if (!selectedDate) return;
             
+            // Sempre ricarica dati fresh quando cambia la data
             const result = await apiCall('get');
-            if (!result.success) return;
+            if (!result.success) {
+                console.error('Errore caricamento dati');
+                return;
+            }
             
             const userId = String(currentUser.id);
             
-            // Filtra SOLO le entries di lavoro per questa data
+            // Filtra entries di lavoro per questa data
             currentDateEntries = result.data.filter(e => {
                 const entryUserId = String(e.userId);
                 const entryDate = e.data ? e.data.split('T')[0] : '';
                 return entryUserId === userId && entryDate === selectedDate && e.tipo === 'work';
             });
             
-            console.log('Data cambiata:', selectedDate);
+            console.log('=== DATA CAMBIATA:', selectedDate, '===');
             console.log('Entries esistenti:', currentDateEntries.length);
             currentDateEntries.forEach(e => {
                 console.log('  - ID:', e.id, '|', e.inizio, '-', e.fine);
@@ -1060,7 +1046,7 @@
             
             // Se ci sono entries, mostra warning
             if (currentDateEntries.length > 0) {
-                showAlert('clockAlert', `⚠️ Attenzione: hai già ${currentDateEntries.length} registrazione/i per questa data`, 'warning');
+                showAlert('clockAlert', `⚠️ Hai già ${currentDateEntries.length} registrazione/i per questa data`, 'warning');
             }
             
             validateClockForm();
@@ -1071,6 +1057,7 @@
             const errorBox = document.getElementById('overlapError');
             const saveBtn = document.getElementById('saveBtn');
             
+            // Se non è lavoro, nessun controllo necessario
             if (type !== 'work') {
                 errorBox.classList.remove('show');
                 saveBtn.disabled = false;
@@ -1086,23 +1073,26 @@
                 return true;
             }
             
-            // Controlla sovrapposizione con TUTTE le entries esistenti (nessuna esclusione)
-            const result = checkTimeOverlap(currentDateEntries, newStart, newEnd, null);
+            // Controllo sovrapposizione (nessuna esclusione per nuove entry)
+            const check = hasTimeOverlap(currentDateEntries, newStart, newEnd, null);
             
-            if (result.overlap) {
-                document.getElementById('overlapMessage').textContent = result.message;
+            if (check.hasOverlap) {
+                const msg = `Sovrapposizione con: ${check.conflictingEntry.inizio} - ${check.conflictingEntry.fine}`;
+                document.getElementById('overlapMessage').textContent = msg;
                 errorBox.classList.add('show');
                 saveBtn.disabled = true;
+                console.log('BLOCCATO: sovrapposizione rilevata');
                 return false;
             } else {
                 errorBox.classList.remove('show');
                 saveBtn.disabled = false;
+                console.log('OK: nessuna sovrapposizione');
                 return true;
             }
         }
 
         // ==========================================
-        // VALIDAZIONE FORM EDIT (MODIFICA)
+        // VALIDAZIONE FORM EDIT
         // ==========================================
         function validateEditForm() {
             const type = document.getElementById('editType').value;
@@ -1125,17 +1115,18 @@
                 return true;
             }
             
-            // Filtra entries della stessa data dallo storico
+            // Filtra entries della stessa data
             const sameDateEntries = currentHistoryEntries.filter(e => {
                 const entryDate = e.data ? e.data.split('T')[0] : '';
                 return entryDate === newDate && e.tipo === 'work';
             });
             
-            // Controlla sovrapposizione ESCLUDENDO l'entry corrente
-            const result = checkTimeOverlap(sameDateEntries, newStart, newEnd, currentEditingId);
+            // Controllo sovrapposizione (esclude l'entry corrente)
+            const check = hasTimeOverlap(sameDateEntries, newStart, newEnd, currentEditingId);
             
-            if (result.overlap) {
-                document.getElementById('editOverlapMessage').textContent = result.message;
+            if (check.hasOverlap) {
+                const msg = `Sovrapposizione con: ${check.conflictingEntry.inizio} - ${check.conflictingEntry.fine}`;
+                document.getElementById('editOverlapMessage').textContent = msg;
                 errorBox.classList.add('show');
                 saveBtn.disabled = true;
                 return false;
@@ -1227,7 +1218,7 @@
                 document.getElementById('adminNav').classList.add('hidden');
                 document.getElementById('employeeNav').classList.remove('hidden');
                 await Promise.all([
-                    onDateChange(), // Carica entries per data corrente
+                    onDateChange(),
                     loadHistory()
                 ]);
                 showTab('clock', document.querySelector('#employeeNav .nav-tab'));
@@ -1454,55 +1445,64 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // TIMBRATURA - VERSIONE OTTIMIZZATA E BLOCCANTE
+        // TIMBRATURA - VERSIONE DEFINITIVA CORRETTA
         // ==========================================
         async function saveClock() {
-            if (!currentUser) return;
+            console.log('=== INIZIO SAVE CLOCK ===');
             
-            // PREVENZIONE DOPPIO CLICK
+            if (!currentUser) {
+                console.log('ERRORE: nessun utente loggato');
+                return;
+            }
+            
+            // Prevenzione doppio click
             if (isSaving) {
-                console.log('Salvataggio già in corso, ignoro click');
+                console.log('Salvataggio già in corso, ignoro');
                 return;
             }
             
             const btn = document.getElementById('saveBtn');
-            
-            // CONTROLLO IMMEDIATO: se il pulsante è disabilitato, c'è un errore di validazione
-            if (btn.disabled) {
-                showAlert('clockAlert', '❌ Correggi gli errori prima di salvare', 'error');
-                return;
-            }
-            
-            // CONTROLLO IMMEDIATO: validazione client-side con dati in memoria
             const type = document.getElementById('clockType').value;
-            const newStart = document.getElementById('clockStart').value;
-            const newEnd = document.getElementById('clockEnd').value;
             const selectedDate = document.getElementById('clockDate').value;
             
+            // Controllo 1: Data obbligatoria
             if (!selectedDate) {
                 showAlert('clockAlert', '⚠️ Seleziona una data', 'warning');
                 return;
             }
             
-            // Se è lavoro, controlla subito con i dati in memoria
+            // Controllo 2: Se è lavoro, ORARI obbligatori e NON DEVONO SOVRAPPORSI
             if (type === 'work') {
+                const newStart = document.getElementById('clockStart').value;
+                const newEnd = document.getElementById('clockEnd').value;
+                
                 if (!newStart || !newEnd) {
                     showAlert('clockAlert', '⚠️ Inserisci orari di inizio e fine', 'warning');
                     return;
                 }
                 
-                // Controllo immediato con dati in memoria (veloce)
-                const quickCheck = checkTimeOverlap(currentDateEntries, newStart, newEnd, null);
-                if (quickCheck.overlap) {
-                    showAlert('clockAlert', '❌ ' + quickCheck.message, 'error');
-                    document.getElementById('overlapMessage').textContent = quickCheck.message;
+                // Controllo CRITICO: sovrapposizione con entries esistenti
+                // Usa i dati in memoria (currentDateEntries) che sono stati caricati da onDateChange()
+                const check = hasTimeOverlap(currentDateEntries, newStart, newEnd, null);
+                
+                if (check.hasOverlap) {
+                    const msg = `❌ IMPOSSIBILE SALVARE: Orario sovrapposto con ${check.conflictingEntry.inizio} - ${check.conflictingEntry.fine}`;
+                    console.log('BLOCCO SALVATAGGIO:', msg);
+                    showAlert('clockAlert', msg, 'error');
+                    
+                    // Mostra errore anche nel box dedicato
+                    document.getElementById('overlapMessage').textContent = msg;
                     document.getElementById('overlapError').classList.add('show');
                     btn.disabled = true;
-                    return; // BLOCCATO - non procede
+                    
+                    // NON PROCEDE CON IL SALVATAGGIO
+                    return;
                 }
             }
             
-            // Inizia salvataggio
+            // Se arriviamo qui, possiamo salvare
+            console.log('Nessuna sovrapposizione, procedo con salvataggio');
+            
             isSaving = true;
             const originalText = btn.innerHTML;
             btn.innerHTML = '<span class="loading"></span> Salvataggio...';
@@ -1511,8 +1511,8 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             let inizio = '', fine = '', ore = 0;
             
             if (type === 'work') {
-                inizio = newStart;
-                fine = newEnd;
+                inizio = document.getElementById('clockStart').value;
+                fine = document.getElementById('clockEnd').value;
                 ore = calculateHours(inizio, fine);
                 
                 if (ore <= 0) {
@@ -1532,7 +1532,8 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 }
             }
             
-            // CHIAMATA API UNICA PER SALVATAGGIO
+            // CHIAMATA API DI SALVATAGGIO
+            console.log('Chiamata API save...');
             const saveResult = await apiCall('save', {
                 userId: String(currentUser.id),
                 nome: currentUser.nome || currentUser.email,
@@ -1544,6 +1545,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             });
             
             if (saveResult.success) {
+                console.log('Salvataggio OK');
                 btn.innerHTML = '✅ Salvato!';
                 btn.style.background = '#10b981';
                 
@@ -1558,6 +1560,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     isSaving = false;
                 }, 2000);
             } else {
+                console.log('Errore salvataggio:', saveResult.error);
                 btn.innerHTML = '❌ Errore';
                 isSaving = false;
                 setTimeout(() => {
@@ -1691,8 +1694,11 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         async function saveEdit() {
-            // VALIDAZIONE FINALE
+            console.log('=== INIZIO SAVE EDIT ===');
+            
+            // Validazione form
             if (!validateEditForm()) {
+                console.log('Validazione form fallita');
                 alert('❌ Correggi gli errori prima di salvare');
                 return;
             }
@@ -1711,34 +1717,47 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             }
             
             let ore = 0;
+            
             if (newType === 'work') {
                 if (!newStart || !newEnd) {
                     alert('Inserisci orari di inizio e fine');
                     return;
                 }
+                
                 ore = calculateHours(newStart, newEnd);
                 if (ore <= 0) {
                     alert('Orario non valido');
                     return;
                 }
                 
-                // Controllo finale con dati fresh
+                // Controllo FINALE con dati fresh dalla API
+                console.log('Controllo sovrapposizione con dati fresh...');
                 const result = await apiCall('get');
+                
                 if (result.success) {
-                    const targetDateEntries = result.data.filter(e => {
+                    // Filtra TUTTE le entries della stessa data (non solo dello storico corrente)
+                    const allDateEntries = result.data.filter(e => {
                         const entryDate = e.data ? e.data.split('T')[0] : '';
                         return entryDate === newDate && e.tipo === 'work';
                     });
                     
-                    const overlapCheck = checkTimeOverlap(targetDateEntries, newStart, newEnd, entryId);
+                    console.log('Entries trovate per data', newDate, ':', allDateEntries.length);
                     
-                    if (overlapCheck.overlap) {
-                        alert('❌ ' + overlapCheck.message);
-                        return; // BLOCCA SALVATAGGIO
+                    const check = hasTimeOverlap(allDateEntries, newStart, newEnd, entryId);
+                    
+                    if (check.hasOverlap) {
+                        const msg = `❌ IMPOSSIBILE SALVARE: Orario sovrapposto con ${check.conflictingEntry.inizio} - ${check.conflictingEntry.fine}`;
+                        console.log('BLOCCO SALVATAGGIO:', msg);
+                        alert(msg);
+                        return; // BLOCCA DEFINITIVAMENTE
                     }
+                    
+                    console.log('Nessuna sovrapposizione, procedo');
                 }
             }
             
+            // Salva
+            console.log('Chiamata API update...');
             const saveResult = await apiCall('update', {
                 id: entryId,
                 userId: userId,
@@ -1750,11 +1769,13 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             });
             
             if (saveResult.success) {
+                console.log('Modifica salvata');
                 closeEditModal();
                 await loadHistory();
                 await onDateChange();
                 alert('✅ Modifica salvata con successo!');
             } else {
+                console.log('Errore:', saveResult.error);
                 alert('❌ Errore durante la modifica: ' + (saveResult.error || 'Errore sconosciuto'));
             }
         }
