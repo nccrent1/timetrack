@@ -850,6 +850,7 @@
         let currentDateEntries = []; // Entries per la data selezionata in clock
         let alertTimeouts = {};
         let currentEditingId = null;
+        let isSaving = false; // Flag per prevenire doppio click
 
         // ==========================================
         // INIZIALIZZAZIONE
@@ -1453,81 +1454,69 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
         }
 
         // ==========================================
-        // TIMBRATURA - SALVATAGGIO BLOCCATO SE SOVRAPPOSIZIONE
+        // TIMBRATURA - VERSIONE OTTIMIZZATA E BLOCCANTE
         // ==========================================
         async function saveClock() {
             if (!currentUser) return;
             
-            const btn = document.getElementById('saveBtn');
-            
-            // VALIDAZIONE FINALE PRIMA DEL SALVATAGGIO
-            // Ricarica dati fresh per essere sicuri
-            const selectedDate = document.getElementById('clockDate').value;
-            const result = await apiCall('get');
-            
-            if (!result.success) {
-                showAlert('clockAlert', 'Errore caricamento dati per validazione', 'error');
+            // PREVENZIONE DOPPIO CLICK
+            if (isSaving) {
+                console.log('Salvataggio già in corso, ignoro click');
                 return;
             }
             
-            const userId = String(currentUser.id);
+            const btn = document.getElementById('saveBtn');
             
-            // Ricarica entries fresh
-            const freshEntries = result.data.filter(e => {
-                const entryUserId = String(e.userId);
-                const entryDate = e.data ? e.data.split('T')[0] : '';
-                return entryUserId === userId && entryDate === selectedDate && e.tipo === 'work';
-            });
-            
-            const type = document.getElementById('clockType').value;
-            
-            // Se è lavoro, controlla sovrapposizione
-            if (type === 'work') {
-                const newStart = document.getElementById('clockStart').value;
-                const newEnd = document.getElementById('clockEnd').value;
-                
-                // Controllo finale con dati fresh
-                const overlapCheck = checkTimeOverlap(freshEntries, newStart, newEnd, null);
-                
-                if (overlapCheck.overlap) {
-                    showAlert('clockAlert', '❌ ' + overlapCheck.message, 'error');
-                    document.getElementById('overlapMessage').textContent = overlapCheck.message;
-                    document.getElementById('overlapError').classList.add('show');
-                    btn.disabled = true;
-                    return; // BLOCCA SALVATAGGIO
-                }
+            // CONTROLLO IMMEDIATO: se il pulsante è disabilitato, c'è un errore di validazione
+            if (btn.disabled) {
+                showAlert('clockAlert', '❌ Correggi gli errori prima di salvare', 'error');
+                return;
             }
             
-            // Procedi con il salvataggio
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="loading"></span> Salvataggio...';
-            btn.disabled = true;
+            // CONTROLLO IMMEDIATO: validazione client-side con dati in memoria
+            const type = document.getElementById('clockType').value;
+            const newStart = document.getElementById('clockStart').value;
+            const newEnd = document.getElementById('clockEnd').value;
+            const selectedDate = document.getElementById('clockDate').value;
             
-            const date = document.getElementById('clockDate').value;
-            
-            if (!date) {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+            if (!selectedDate) {
                 showAlert('clockAlert', '⚠️ Seleziona una data', 'warning');
                 return;
             }
             
-            let inizio = '', fine = '', ore = 0;
-            
+            // Se è lavoro, controlla subito con i dati in memoria
             if (type === 'work') {
-                inizio = document.getElementById('clockStart').value;
-                fine = document.getElementById('clockEnd').value;
-                
-                if (!inizio || !fine) {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
+                if (!newStart || !newEnd) {
                     showAlert('clockAlert', '⚠️ Inserisci orari di inizio e fine', 'warning');
                     return;
                 }
                 
+                // Controllo immediato con dati in memoria (veloce)
+                const quickCheck = checkTimeOverlap(currentDateEntries, newStart, newEnd, null);
+                if (quickCheck.overlap) {
+                    showAlert('clockAlert', '❌ ' + quickCheck.message, 'error');
+                    document.getElementById('overlapMessage').textContent = quickCheck.message;
+                    document.getElementById('overlapError').classList.add('show');
+                    btn.disabled = true;
+                    return; // BLOCCATO - non procede
+                }
+            }
+            
+            // Inizia salvataggio
+            isSaving = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Salvataggio...';
+            btn.disabled = true;
+            
+            let inizio = '', fine = '', ore = 0;
+            
+            if (type === 'work') {
+                inizio = newStart;
+                fine = newEnd;
                 ore = calculateHours(inizio, fine);
                 
                 if (ore <= 0) {
+                    isSaving = false;
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     showAlert('clockAlert', '⚠️ Orario non valido', 'warning');
@@ -1535,6 +1524,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 }
                 
                 if (ore > 16) {
+                    isSaving = false;
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     showAlert('clockAlert', '⚠️ Attenzione: hai inserito più di 16 ore', 'warning');
@@ -1542,10 +1532,11 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 }
             }
             
+            // CHIAMATA API UNICA PER SALVATAGGIO
             const saveResult = await apiCall('save', {
                 userId: String(currentUser.id),
                 nome: currentUser.nome || currentUser.email,
-                data: date,
+                data: selectedDate,
                 tipo: type,
                 inizio: inizio,
                 fine: fine,
@@ -1556,7 +1547,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 btn.innerHTML = '✅ Salvato!';
                 btn.style.background = '#10b981';
                 
-                // Aggiorna lista locale
+                // Aggiorna dati locali
                 await onDateChange();
                 await loadHistory();
                 
@@ -1564,9 +1555,11 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     btn.innerHTML = originalText;
                     btn.style.background = '';
                     btn.disabled = false;
+                    isSaving = false;
                 }, 2000);
             } else {
                 btn.innerHTML = '❌ Errore';
+                isSaving = false;
                 setTimeout(() => {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
