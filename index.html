@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="TimeTrack">
-    <meta name="application-name" content="TimeTrack">
     <meta name="theme-color" content="#6366f1">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>">
     <title>TimeTrack Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -50,16 +47,9 @@
             color: white; 
             padding: 30px 20px; 
             text-align: center;
-            position: relative;
         }
         
-        .header h1 { 
-            font-size: 1.8rem; 
-            font-weight: 700;
-            margin-bottom: 5px;
-            letter-spacing: -0.5px;
-        }
-        
+        .header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 5px; }
         .header p { opacity: 0.9; font-size: 0.95rem; }
         
         .content { 
@@ -135,10 +125,9 @@
             color: white;
             box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
         }
-        .btn-success:hover { filter: brightness(1.1); }
+        .btn-success:hover:not(:disabled) { filter: brightness(1.1); }
         
         .btn-danger { background: var(--danger); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
         .btn-secondary { 
             background: #f1f5f9; 
             color: var(--dark); 
@@ -153,9 +142,10 @@
         }
         
         button:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none !important;
+            background: var(--gray) !important;
         }
         
         .hidden { display: none !important; }
@@ -395,22 +385,6 @@
             gap: 15px;
         }
         
-        .warning-box {
-            background: #fef3c7;
-            border: 2px solid #f59e0b;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .warning-box .icon { font-size: 1.5rem; }
-        .warning-box .text { flex: 1; }
-        .warning-box .title { font-weight: 600; color: #92400e; margin-bottom: 4px; }
-        .warning-box .desc { font-size: 0.9rem; color: #a16207; }
-        
         .error-box {
             background: #fee2e2;
             border: 2px solid #dc2626;
@@ -423,8 +397,12 @@
             color: #991b1b;
         }
         
-        .error-box.show {
-            display: flex;
+        .error-box.show { display: flex; }
+        
+        .error-box.blocking {
+            background: #fecaca;
+            border-color: #991b1b;
+            font-weight: 600;
         }
         
         .compact-list {
@@ -433,19 +411,9 @@
             padding-right: 5px;
         }
         
-        .compact-list::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .compact-list::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 3px;
-        }
-        
-        .compact-list::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
+        .compact-list::-webkit-scrollbar { width: 6px; }
+        .compact-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
+        .compact-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         
         .hours-display {
             font-variant-numeric: tabular-nums;
@@ -471,7 +439,6 @@
             .card { padding: 20px; }
             .summary-card { position: static; }
             .time-inputs { grid-template-columns: 1fr; }
-            .entry-actions { flex-direction: column; gap: 4px; }
         }
         
         .modal-overlay {
@@ -548,6 +515,33 @@
         .export-buttons button {
             flex: 1;
             min-width: 150px;
+        }
+        
+        .existing-entries {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .existing-entries-title {
+            font-weight: 600;
+            color: #0369a1;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .existing-entry-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0f2fe;
+            font-size: 0.9rem;
+        }
+        
+        .existing-entry-item:last-child {
+            border-bottom: none;
         }
     </style>
 </head>
@@ -730,10 +724,16 @@
                     <div id="clock" class="tab-content">
                         <div id="clockAlert"></div>
                         
-                        <div id="overlapError" class="error-box">
+                        <!-- Sezione entry esistenti -->
+                        <div id="existingEntriesSection" class="existing-entries hidden">
+                            <div class="existing-entries-title">📋 Registrazioni esistenti per questa data:</div>
+                            <div id="existingEntriesList"></div>
+                        </div>
+                        
+                        <div id="overlapError" class="error-box blocking">
                             <span style="font-size: 1.5rem;">🚫</span>
                             <div>
-                                <div style="font-weight: 600;">Orario non valido</div>
+                                <div style="font-weight: 600;">SALVATAGGIO BLOCCATO</div>
                                 <div id="overlapMessage">Esiste già una registrazione che si sovrappone a questo orario.</div>
                             </div>
                         </div>
@@ -746,7 +746,7 @@
                                 </div>
                                 <div class="form-group" style="text-align: left; margin: 0;">
                                     <label>Tipo Presenza</label>
-                                    <select id="clockType" onchange="toggleClockTime()" style="font-size: 1rem;">
+                                    <select id="clockType" onchange="onTypeChange()" style="font-size: 1rem;">
                                         <option value="work">Lavoro Ordinario</option>
                                         <option value="rest">Riposo</option>
                                         <option value="holiday">Ferie</option>
@@ -758,12 +758,12 @@
                             <div id="clockTimeSection" style="max-width: 400px; margin: 20px auto 0;">
                                 <div class="time-inputs">
                                     <div class="form-group" style="text-align: left;">
-                                        <label>Ora Entrata</label>
-                                        <input type="time" id="clockStart" value="09:00" style="font-size: 1.2rem; text-align: center;" onchange="updateHoursPreview(); validateClockForm();">
+                                        <label>Ora Entrata *</label>
+                                        <input type="time" id="clockStart" value="09:00" style="font-size: 1.2rem; text-align: center;" onchange="onTimeChange()">
                                     </div>
                                     <div class="form-group" style="text-align: left;">
-                                        <label>Ora Uscita</label>
-                                        <input type="time" id="clockEnd" value="18:00" style="font-size: 1.2rem; text-align: center;" onchange="updateHoursPreview(); validateClockForm();">
+                                        <label>Ora Uscita *</label>
+                                        <input type="time" id="clockEnd" value="18:00" style="font-size: 1.2rem; text-align: center;" onchange="onTimeChange()">
                                     </div>
                                 </div>
                                 <div id="hoursPreview" style="margin: 15px 0; padding: 15px; background: #f0fdf4; border-radius: 12px; color: var(--success); font-weight: 600;">
@@ -774,6 +774,8 @@
                             <button class="btn-success" onclick="saveClock()" id="saveBtn" style="font-size: 1.1rem; padding: 18px; margin-top: 20px; max-width: 400px;">
                                 💾 Salva Registrazione
                             </button>
+                            
+                            <div id="validationMessage" style="margin-top: 15px; color: var(--danger); font-size: 0.9rem; min-height: 20px;"></div>
                         </div>
                         <button class="btn-secondary" onclick="logout()" style="max-width: 200px;">🚪 Logout</button>
                     </div>
@@ -836,22 +838,27 @@
 
     <script>
         // ==========================================
-        // CONFIGURAZIONE
+        // CONFIGURAZIONE E STATO GLOBALE
         // ==========================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbzCHH0x-8Gw1YNOoBqJ_rZH74PYBAfKUeczK8H1SXYXCSvhRCVSMHa6_coHPhypUArR/exec';
         const APP_URL = window.location.href.split('?')[0].replace(/\/$/, '');
         
+        // Stato applicazione
         let currentUser = null;
         let allEntries = [];
         let allUsers = [];
         let lastCreated = null;
         let currentReportData = [];
         let currentHistoryEntries = [];
-        let currentDateEntries = []; // Entries per la data selezionata in clock
+        let currentDateEntries = []; // Entries work per la data selezionata
         let alertTimeouts = {};
         let currentEditingId = null;
-        let isSaving = false; // Flag per prevenire doppio click
-
+        
+        // Flags di controllo
+        let isSaving = false;
+        let isValidating = false;
+        let lastValidationResult = { valid: false, message: '' };
+        
         // ==========================================
         // INIZIALIZZAZIONE
         // ==========================================
@@ -864,117 +871,116 @@
             
             updateHoursPreview();
         };
-
+        
         // ==========================================
-        // UTILITY TIME
+        // UTILITY TIME - VERSIONE ROBUSTA
         // ==========================================
         function calculateHours(start, end) {
-            if (!start || !end || typeof start !== 'string' || typeof end !== 'string') return 0;
+            if (!start || !end || typeof start !== 'string' || typeof end !== 'string') return -1;
+            
             start = start.trim();
             end = end.trim();
+            
             const startParts = start.split(':');
             const endParts = end.split(':');
-            if (startParts.length < 2 || endParts.length < 2) return 0;
+            
+            if (startParts.length < 2 || endParts.length < 2) return -1;
+            
             const h1 = parseInt(startParts[0], 10);
             const m1 = parseInt(startParts[1], 10);
             const h2 = parseInt(endParts[0], 10);
             const m2 = parseInt(endParts[1], 10);
-            if (isNaN(h1) || isNaN(m1) || isNaN(h2) || isNaN(m2)) return 0;
+            
+            if (isNaN(h1) || isNaN(m1) || isNaN(h2) || isNaN(m2)) return -1;
+            if (h1 < 0 || h1 > 23 || m1 < 0 || m1 > 59 || h2 < 0 || h2 > 23 || m2 < 0 || m2 > 59) return -1;
+            
             let startMinutes = h1 * 60 + m1;
             let endMinutes = h2 * 60 + m2;
+            
+            // Turno notturno: fine < inizio
             if (endMinutes < startMinutes) endMinutes += 24 * 60;
+            
             const diffMinutes = endMinutes - startMinutes;
             const hours = diffMinutes / 60;
-            return (hours >= 0 && hours <= 24) ? hours : 0;
+            
+            // Max 24 ore
+            return (hours >= 0 && hours <= 24) ? hours : -1;
         }
-
-        function parseHoursField(oreValue, inizio, fine) {
-            if (typeof oreValue === 'number' && !isNaN(oreValue) && oreValue >= 0 && oreValue <= 24) return oreValue;
-            if (typeof oreValue === 'string') {
-                const trimmed = oreValue.trim();
-                if (trimmed.includes('T') || /^\d{4}-/.test(trimmed)) return calculateHours(inizio, fine);
-                const parsed = parseFloat(trimmed);
-                if (!isNaN(parsed) && parsed >= 0 && parsed <= 24) return parsed;
-            }
-            return calculateHours(inizio, fine);
-        }
-
+        
         function timeToMinutes(timeStr) {
-            if (!timeStr || typeof timeStr !== 'string') return 0;
+            if (!timeStr || typeof timeStr !== 'string') return null;
             const parts = timeStr.split(':');
-            if (parts.length < 2) return 0;
-            return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+            if (parts.length < 2) return null;
+            const h = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10);
+            if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) return null;
+            return h * 60 + m;
         }
-
+        
         function formatHoursDecimal(hours) {
-            if (typeof hours !== 'number' || isNaN(hours)) return '0.00';
+            if (typeof hours !== 'number' || isNaN(hours) || hours < 0) return '0.00';
             return hours.toFixed(2);
         }
-
+        
         function formatHoursTime(hours) {
             if (typeof hours !== 'number' || isNaN(hours) || hours < 0) return '00:00';
             const h = Math.floor(hours);
             const m = Math.round((hours - h) * 60);
             return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
         }
-
-        function updateHoursPreview() {
-            const start = document.getElementById('clockStart').value;
-            const end = document.getElementById('clockEnd').value;
-            const hours = calculateHours(start, end);
-            document.getElementById('previewHours').textContent = formatHoursDecimal(hours);
-        }
-
-        function toggleClockTime() {
-            const type = document.getElementById('clockType').value;
-            const timeSection = document.getElementById('clockTimeSection');
-            timeSection.style.display = type === 'work' ? 'block' : 'none';
-            
-            if (type === 'work') {
-                validateClockForm();
-            } else {
-                document.getElementById('overlapError').classList.remove('show');
-                document.getElementById('saveBtn').disabled = false;
-            }
-        }
-
-        function toggleEditTime() {
-            const type = document.getElementById('editType').value;
-            document.getElementById('editTimeSection').style.display = type === 'work' ? 'block' : 'none';
-        }
-
-        // ==========================================
-        // CONTROLLO SOVRAPPOSIZIONE - VERSIONE CORRETTA E SEVERA
-        // ==========================================
         
+        function parseHoursField(oreValue, inizio, fine) {
+            if (typeof oreValue === 'number' && !isNaN(oreValue) && oreValue >= 0 && oreValue <= 24) return oreValue;
+            if (typeof oreValue === 'string') {
+                const trimmed = oreValue.trim();
+                if (trimmed === '' || trimmed.includes('T') || /^\d{4}-/.test(trimmed)) {
+                    return calculateHours(inizio, fine);
+                }
+                const parsed = parseFloat(trimmed);
+                if (!isNaN(parsed) && parsed >= 0 && parsed <= 24) return parsed;
+            }
+            return calculateHours(inizio, fine);
+        }
+        
+        // ==========================================
+        // ALGORITMO SOVRAPPOSIZIONE - VERSIONE DEFINITIVA
+        // ==========================================
         /**
-         * Controlla se c'è sovrapposizione tra intervalli di tempo
-         * Ritorna TRUE se c'è sovrapposizione (BLOCCA), FALSE se è OK (PERMETTI)
+         * Controlla sovrapposizione tra intervalli
+         * @param {Array} existingEntries - Entries esistenti
+         * @param {string} newStart - HH:MM
+         * @param {string} newEnd - HH:MM
+         * @param {string|null} excludeId - ID da escludere (per edit)
+         * @returns {Object} { hasOverlap: boolean, conflictingEntry: object|null, message: string }
          */
-        function hasTimeOverlap(existingEntries, newStart, newEnd, excludeId) {
-            if (!newStart || !newEnd || !existingEntries || existingEntries.length === 0) {
-                return { hasOverlap: false, conflictingEntry: null };
+        function checkTimeOverlap(existingEntries, newStart, newEnd, excludeId = null) {
+            // Validazione input
+            if (!newStart || !newEnd || !existingEntries || !Array.isArray(existingEntries)) {
+                return { hasOverlap: false, conflictingEntry: null, message: '' };
             }
             
             const newStartMin = timeToMinutes(newStart);
             const newEndMin = timeToMinutes(newEnd);
             
-            // Normalizza nuovo intervallo (gestisce turno notturno)
+            if (newStartMin === null || newEndMin === null) {
+                return { hasOverlap: false, conflictingEntry: null, message: 'Orario non valido' };
+            }
+            
+            // Normalizza nuovo intervallo
             let normNewStart = newStartMin;
             let normNewEnd = newEndMin;
-            if (newEndMin < newStartMin) normNewEnd += 24 * 60;
+            const isOvernight = newEndMin < newStartMin;
+            if (isOvernight) normNewEnd += 24 * 60;
             
-            console.log('CONTROLLO SOVRAPPOSIZIONE:');
-            console.log('Nuovo:', newStart, '-', newEnd, '-> minuti:', normNewStart, '-', normNewEnd);
+            console.log(`[OVERLAP CHECK] Nuovo: ${newStart}-${newEnd} (${normNewStart}-${normNewEnd} min)`);
             
-            for (let entry of existingEntries) {
-                // Salta solo se è l'entry che stiamo modificando
+            for (const entry of existingEntries) {
+                // Escludi se stesso
                 if (excludeId && String(entry.id) === String(excludeId)) {
-                    console.log('  Salto entry ID', entry.id, '(esclusione)');
                     continue;
                 }
                 
-                // Considera SOLO entry di tipo work
+                // Considera SOLO entry di tipo work con orari validi
                 if (entry.tipo !== 'work') continue;
                 
                 const existStart = entry.inizio;
@@ -985,186 +991,435 @@
                 const existStartMin = timeToMinutes(existStart);
                 const existEndMin = timeToMinutes(existEnd);
                 
+                if (existStartMin === null || existEndMin === null) continue;
+                
                 // Normalizza esistente
                 let normExistStart = existStartMin;
                 let normExistEnd = existEndMin;
                 if (existEndMin < existStartMin) normExistEnd += 24 * 60;
                 
-                // ALGORITMO SOVRAPPOSIZIONE:
-                // Due intervalli [A,B] e [C,D] si sovrappongono se: A < D AND C < B
+                // ALGORITMO: [A,B] sovrappone [C,D] se A < D AND C < B
                 const overlap = (normNewStart < normExistEnd) && (normExistStart < normNewEnd);
                 
-                console.log('  VS entry ID', entry.id, ':', existStart, '-', existEnd);
-                console.log('    Normalizzato:', normExistStart, '-', normExistEnd);
-                console.log('    Sovrapposizione:', overlap);
+                console.log(`  vs [${existStart}-${existEnd}]: ${overlap ? 'SOVRAPPOSIZIONE!' : 'OK'}`);
                 
                 if (overlap) {
-                    return { 
-                        hasOverlap: true, 
-                        conflictingEntry: entry 
+                    return {
+                        hasOverlap: true,
+                        conflictingEntry: entry,
+                        message: `Orario ${newStart}-${newEnd} si sovrappone con ${existStart}-${existEnd}`
                     };
                 }
             }
             
-            return { hasOverlap: false, conflictingEntry: null };
+            return { hasOverlap: false, conflictingEntry: null, message: '' };
         }
-
+        
         // ==========================================
-        // VALIDAZIONE FORM CLOCK (NUOVA ENTRY)
+        // GESTIONE UI CLOCK - VERSIONE CORRETTA
         // ==========================================
+        function updateHoursPreview() {
+            const start = document.getElementById('clockStart').value;
+            const end = document.getElementById('clockEnd').value;
+            const hours = calculateHours(start, end);
+            document.getElementById('previewHours').textContent = hours >= 0 ? formatHoursDecimal(hours) : '--';
+            return hours;
+        }
+        
+        function onTypeChange() {
+            const type = document.getElementById('clockType').value;
+            const timeSection = document.getElementById('clockTimeSection');
+            
+            timeSection.style.display = type === 'work' ? 'block' : 'none';
+            
+            // Reset errori quando cambia tipo
+            if (type !== 'work') {
+                hideOverlapError();
+                setSaveButtonState(true, '💾 Salva Registrazione');
+            } else {
+                // Rivalida se torna a work
+                validateClockForm();
+            }
+        }
+        
+        function onTimeChange() {
+            updateHoursPreview();
+            validateClockForm();
+        }
+        
         async function onDateChange() {
             if (!currentUser) return;
             
             const selectedDate = document.getElementById('clockDate').value;
             if (!selectedDate) return;
             
-            // Sempre ricarica dati fresh quando cambia la data
-            const result = await apiCall('get');
-            if (!result.success) {
-                console.error('Errore caricamento dati');
+            console.log(`[DATE CHANGE] Data selezionata: ${selectedDate}`);
+            
+            // Disabilita durante caricamento
+            setSaveButtonState(false, '⏳ Caricamento...');
+            
+            try {
+                // CARICA DATI FRESH SEMPRE
+                const result = await apiCall('get');
+                
+                if (!result.success) {
+                    showAlert('clockAlert', 'Errore caricamento dati', 'error');
+                    setSaveButtonState(true, '💾 Salva Registrazione');
+                    return;
+                }
+                
+                const userId = String(currentUser.id);
+                
+                // Filtra SOLO entry work per questa data
+                currentDateEntries = result.data.filter(e => {
+                    const entryUserId = String(e.userId);
+                    const entryDate = e.data ? e.data.split('T')[0] : '';
+                    return entryUserId === userId && entryDate === selectedDate && e.tipo === 'work';
+                });
+                
+                console.log(`[DATE CHANGE] Trovate ${currentDateEntries.length} entries work`);
+                currentDateEntries.forEach(e => {
+                    console.log(`  - ID:${e.id} | ${e.inizio}-${e.fine}`);
+                });
+                
+                // Mostra/nascondi sezione entry esistenti
+                updateExistingEntriesUI();
+                
+                // Rivalida form
+                validateClockForm();
+                
+            } catch (e) {
+                console.error('[DATE CHANGE] Errore:', e);
+                showAlert('clockAlert', 'Errore di connessione', 'error');
+                setSaveButtonState(true, '💾 Salva Registrazione');
+            }
+        }
+        
+        function updateExistingEntriesUI() {
+            const section = document.getElementById('existingEntriesSection');
+            const list = document.getElementById('existingEntriesList');
+            
+            if (currentDateEntries.length === 0) {
+                section.classList.add('hidden');
                 return;
             }
             
-            const userId = String(currentUser.id);
-            
-            // Filtra entries di lavoro per questa data
-            currentDateEntries = result.data.filter(e => {
-                const entryUserId = String(e.userId);
-                const entryDate = e.data ? e.data.split('T')[0] : '';
-                return entryUserId === userId && entryDate === selectedDate && e.tipo === 'work';
-            });
-            
-            console.log('=== DATA CAMBIATA:', selectedDate, '===');
-            console.log('Entries esistenti:', currentDateEntries.length);
-            currentDateEntries.forEach(e => {
-                console.log('  - ID:', e.id, '|', e.inizio, '-', e.fine);
-            });
-            
-            // Reset UI
-            document.getElementById('overlapError').classList.remove('show');
-            document.getElementById('saveBtn').disabled = false;
-            
-            // Se ci sono entries, mostra warning
-            if (currentDateEntries.length > 0) {
-                showAlert('clockAlert', `⚠️ Hai già ${currentDateEntries.length} registrazione/i per questa data`, 'warning');
-            }
-            
-            validateClockForm();
+            section.classList.remove('hidden');
+            list.innerHTML = currentDateEntries.map(e => {
+                const ore = parseHoursField(e.ore, e.inizio, e.fine);
+                return `
+                    <div class="existing-entry-item">
+                        <span>${e.inizio} - ${e.fine}</span>
+                        <span style="font-weight: 600;">${formatHoursDecimal(ore)}h</span>
+                    </div>
+                `;
+            }).join('');
         }
-
+        
+        /**
+         * Validazione sincrona del form - viene chiamata ad ogni cambiamento
+         */
         function validateClockForm() {
             const type = document.getElementById('clockType').value;
-            const errorBox = document.getElementById('overlapError');
-            const saveBtn = document.getElementById('saveBtn');
             
-            // Se non è lavoro, nessun controllo necessario
+            // Non-work: sempre valido
             if (type !== 'work') {
-                errorBox.classList.remove('show');
-                saveBtn.disabled = false;
+                hideOverlapError();
+                setSaveButtonState(true, '💾 Salva Registrazione');
+                lastValidationResult = { valid: true, message: '' };
                 return true;
             }
             
-            const newStart = document.getElementById('clockStart').value;
-            const newEnd = document.getElementById('clockEnd').value;
+            const start = document.getElementById('clockStart').value;
+            const end = document.getElementById('clockEnd').value;
             
-            if (!newStart || !newEnd) {
-                errorBox.classList.remove('show');
-                saveBtn.disabled = false;
-                return true;
+            // Orari vuoti: non valido ma non mostrare errore overlap
+            if (!start || !end) {
+                hideOverlapError();
+                setSaveButtonState(false, '⏰ Inserisci orari');
+                lastValidationResult = { valid: false, message: 'Orari mancanti' };
+                return false;
             }
             
-            // Controllo sovrapposizione (nessuna esclusione per nuove entry)
-            const check = hasTimeOverlap(currentDateEntries, newStart, newEnd, null);
+            // Calcolo ore
+            const hours = calculateHours(start, end);
+            if (hours < 0) {
+                showOverlapError('Orario non valido');
+                setSaveButtonState(false, '❌ Orario invalido');
+                lastValidationResult = { valid: false, message: 'Orario non valido' };
+                return false;
+            }
+            
+            if (hours === 0) {
+                showOverlapError('La durata deve essere maggiore di 0');
+                setSaveButtonState(false, '❌ Durata 0');
+                lastValidationResult = { valid: false, message: 'Durata zero' };
+                return false;
+            }
+            
+            // CONTROLLO SOVRAPPOSIZIONE CRITICO
+            const check = checkTimeOverlap(currentDateEntries, start, end, null);
             
             if (check.hasOverlap) {
-                const msg = `Sovrapposizione con: ${check.conflictingEntry.inizio} - ${check.conflictingEntry.fine}`;
-                document.getElementById('overlapMessage').textContent = msg;
-                errorBox.classList.add('show');
-                saveBtn.disabled = true;
-                console.log('BLOCCATO: sovrapposizione rilevata');
+                showOverlapError(check.message);
+                setSaveButtonState(false, '🚫 Sovrapposizione!');
+                lastValidationResult = { valid: false, message: check.message };
                 return false;
-            } else {
-                errorBox.classList.remove('show');
-                saveBtn.disabled = false;
-                console.log('OK: nessuna sovrapposizione');
-                return true;
+            }
+            
+            // Tutto OK
+            hideOverlapError();
+            setSaveButtonState(true, '💾 Salva Registrazione');
+            lastValidationResult = { valid: true, message: '' };
+            return true;
+        }
+        
+        function showOverlapError(message) {
+            const box = document.getElementById('overlapError');
+            const msgEl = document.getElementById('overlapMessage');
+            msgEl.textContent = message;
+            box.classList.add('show');
+        }
+        
+        function hideOverlapError() {
+            const box = document.getElementById('overlapError');
+            box.classList.remove('show');
+        }
+        
+        function setSaveButtonState(enabled, text) {
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = !enabled;
+            btn.innerHTML = text;
+        }
+        
+        function setValidationMessage(msg) {
+            document.getElementById('validationMessage').textContent = msg;
+        }
+        
+        // ==========================================
+        // SALVATAGGIO - VERSIONE BULLETPROOF
+        // ==========================================
+        async function saveClock() {
+            console.log('[SAVE CLOCK] Inizio salvataggio');
+            
+            // 1. CONTROLLO AUTENTICAZIONE
+            if (!currentUser) {
+                console.error('[SAVE CLOCK] Nessun utente loggato');
+                return;
+            }
+            
+            // 2. PREVENZIONE DOPPIO CLICK
+            if (isSaving) {
+                console.log('[SAVE CLOCK] Salvataggio già in corso, ignoro');
+                return;
+            }
+            
+            // 3. VALIDAZIONE LOCALE OBBLIGATORIA
+            const isValid = validateClockForm();
+            if (!isValid) {
+                console.log('[SAVE CLOCK] Validazione locale fallita:', lastValidationResult.message);
+                showAlert('clockAlert', `❌ ${lastValidationResult.message}`, 'error');
+                return;
+            }
+            
+            const type = document.getElementById('clockType').value;
+            const selectedDate = document.getElementById('clockDate').value;
+            
+            if (!selectedDate) {
+                showAlert('clockAlert', '⚠️ Seleziona una data', 'warning');
+                return;
+            }
+            
+            // 4. BLOCCO SALVATAGGIO
+            isSaving = true;
+            setSaveButtonState(false, '⏳ Salvataggio...');
+            
+            try {
+                // 5. RICARICA DATI FRESH PER CONTROLLO FINALE (anti-race)
+                console.log('[SAVE CLOCK] Ricarico dati fresh per controllo finale...');
+                
+                const freshResult = await apiCall('get');
+                if (!freshResult.success) {
+                    throw new Error('Errore caricamento dati fresh');
+                }
+                
+                const userId = String(currentUser.id);
+                const freshEntries = freshResult.data.filter(e => {
+                    const entryUserId = String(e.userId);
+                    const entryDate = e.data ? e.data.split('T')[0] : '';
+                    return entryUserId === userId && entryDate === selectedDate && e.tipo === 'work';
+                });
+                
+                console.log(`[SAVE CLOCK] Entries fresh: ${freshEntries.length}`);
+                
+                // 6. CONTROLLO OVERLAP CON DATI FRESH (CRITICO!)
+                if (type === 'work') {
+                    const start = document.getElementById('clockStart').value;
+                    const end = document.getElementById('clockEnd').value;
+                    
+                    const finalCheck = checkTimeOverlap(freshEntries, start, end, null);
+                    
+                    if (finalCheck.hasOverlap) {
+                        // RACE CONDITION RILEVATA!
+                        console.error('[SAVE CLOCK] RACE CONDITION! Sovrapposizione rilevata con dati fresh');
+                        
+                        // Aggiorna UI con nuovi dati
+                        currentDateEntries = freshEntries;
+                        updateExistingEntriesUI();
+                        validateClockForm(); // Rivaliderà e bloccherà
+                        
+                        throw new Error(finalCheck.message);
+                    }
+                    
+                    // 7. CONFERMA UTENTE SE MULTI-ENTRY
+                    if (freshEntries.length > 0) {
+                        const confirmMsg = `Hai già ${freshEntries.length} registrazione/i per questa data.\n\n` +
+                            `Vuoi aggiungere un altro orario (${start}-${end})?`;
+                        
+                        if (!confirm(confirmMsg)) {
+                            console.log('[SAVE CLOCK] Utente ha annullato');
+                            isSaving = false;
+                            setSaveButtonState(true, '💾 Salva Registrazione');
+                            return;
+                        }
+                    }
+                }
+                
+                // 8. PREPARA DATI
+                let inizio = '', fine = '', ore = 0;
+                
+                if (type === 'work') {
+                    inizio = document.getElementById('clockStart').value;
+                    fine = document.getElementById('clockEnd').value;
+                    ore = calculateHours(inizio, fine);
+                    
+                    // Validazione finale ore
+                    if (ore <= 0) throw new Error('Calcolo ore non valido');
+                    if (ore > 16) {
+                        if (!confirm('Hai inserito più di 16 ore. Continuare?')) {
+                            isSaving = false;
+                            setSaveButtonState(true, '💾 Salva Registrazione');
+                            return;
+                        }
+                    }
+                }
+                
+                // 9. CHIAMATA API CON CHECK SERVER-SIDE
+                console.log('[SAVE CLOCK] Invio a server...');
+                
+                const saveResult = await apiCall('save', {
+                    userId: userId,
+                    nome: currentUser.nome || currentUser.email,
+                    data: selectedDate,
+                    tipo: type,
+                    inizio: inizio,
+                    fine: fine,
+                    ore: type === 'work' ? ore : 0,
+                    _checkOverlap: true // Flag per controllo server-side
+                });
+                
+                // 10. GESTISCI RISPOSTA
+                if (saveResult.success) {
+                    console.log('[SAVE CLOCK] Salvataggio OK');
+                    
+                    // Feedback visivo
+                    setSaveButtonState(false, '✅ Salvato!');
+                    
+                    // Aggiorna stato locale
+                    currentDateEntries.push({
+                        id: saveResult.id,
+                        userId: userId,
+                        data: selectedDate,
+                        tipo: type,
+                        inizio: inizio,
+                        fine: fine,
+                        ore: ore
+                    });
+                    
+                    updateExistingEntriesUI();
+                    await loadHistory();
+                    
+                    // Reset dopo 2s
+                    setTimeout(() => {
+                        isSaving = false;
+                        validateClockForm(); // Rivalida per stato pulsante
+                    }, 2000);
+                    
+                } else {
+                    // Errore server (incluso overlap rilevato lato server)
+                    throw new Error(saveResult.error || 'Errore server');
+                }
+                
+            } catch (error) {
+                console.error('[SAVE CLOCK] Errore:', error.message);
+                
+                isSaving = false;
+                setSaveButtonState(true, '❌ Errore - Riprova');
+                
+                showAlert('clockAlert', `❌ ${error.message}`, 'error');
+                
+                setTimeout(() => {
+                    validateClockForm();
+                }, 2000);
             }
         }
-
+        
         // ==========================================
-        // VALIDAZIONE FORM EDIT
+        // API - CON TIMEOUT E RETRY
         // ==========================================
-        function validateEditForm() {
-            const type = document.getElementById('editType').value;
-            const errorBox = document.getElementById('editOverlapError');
-            const saveBtn = document.getElementById('editSaveBtn');
+        async function apiCall(action, params = {}, retryCount = 0) {
+            const MAX_RETRIES = 2;
+            const TIMEOUT = 30000; // 30s
             
-            if (type !== 'work') {
-                errorBox.classList.remove('show');
-                saveBtn.disabled = false;
-                return true;
-            }
-            
-            const newDate = document.getElementById('editDate').value;
-            const newStart = document.getElementById('editStart').value;
-            const newEnd = document.getElementById('editEnd').value;
-            
-            if (!newStart || !newEnd || !newDate) {
-                errorBox.classList.remove('show');
-                saveBtn.disabled = false;
-                return true;
-            }
-            
-            // Filtra entries della stessa data
-            const sameDateEntries = currentHistoryEntries.filter(e => {
-                const entryDate = e.data ? e.data.split('T')[0] : '';
-                return entryDate === newDate && e.tipo === 'work';
-            });
-            
-            // Controllo sovrapposizione (esclude l'entry corrente)
-            const check = hasTimeOverlap(sameDateEntries, newStart, newEnd, currentEditingId);
-            
-            if (check.hasOverlap) {
-                const msg = `Sovrapposizione con: ${check.conflictingEntry.inizio} - ${check.conflictingEntry.fine}`;
-                document.getElementById('editOverlapMessage').textContent = msg;
-                errorBox.classList.add('show');
-                saveBtn.disabled = true;
-                return false;
-            } else {
-                errorBox.classList.remove('show');
-                saveBtn.disabled = false;
-                return true;
-            }
-        }
-
-        // ==========================================
-        // API
-        // ==========================================
-        async function apiCall(action, params = {}) {
             try {
                 const url = new URL(API_URL);
                 url.searchParams.append('action', action);
+                
                 Object.keys(params).forEach(key => {
                     if (params[key] !== undefined && params[key] !== null) {
                         url.searchParams.append(key, params[key]);
                     }
                 });
                 
+                console.log(`[API] ${action}`, params);
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
+                
                 const response = await fetch(url, {
                     method: 'GET',
                     mode: 'cors',
                     cache: 'no-cache',
-                    headers: { 'Accept': 'application/json' }
+                    headers: { 'Accept': 'application/json' },
+                    signal: controller.signal
                 });
                 
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                return await response.json();
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log(`[API] ${action} risposta:`, data.success ? 'OK' : 'FAIL');
+                return data;
+                
             } catch (e) {
-                console.error('Errore API:', e);
-                return { success: false, error: 'Errore di connessione: ' + e.message };
+                console.error(`[API] ${action} errore:`, e.message);
+                
+                if (retryCount < MAX_RETRIES && (e.name === 'TypeError' || e.name === 'AbortError')) {
+                    console.log(`[API] Retry ${retryCount + 1}/${MAX_RETRIES}...`);
+                    await new Promise(r => setTimeout(r, 1000 * (retryCount + 1)));
+                    return apiCall(action, params, retryCount + 1);
+                }
+                
+                return { 
+                    success: false, 
+                    error: e.name === 'AbortError' ? 'Timeout connessione' : `Errore: ${e.message}` 
+                };
             }
         }
-
+        
         // ==========================================
         // AUTENTICAZIONE
         // ==========================================
@@ -1178,36 +1433,43 @@
             }
             
             const btn = event.target;
+            const originalText = btn.innerHTML;
             btn.innerHTML = '<span class="loading"></span> Accesso...';
             btn.disabled = true;
             
-            const result = await apiCall('login', { email, password });
-            
-            btn.innerHTML = 'Accedi all\'App';
-            btn.disabled = false;
-            
-            if (result.success && result.user) {
-                currentUser = result.user;
-                if (!currentUser.id || !currentUser.ruolo) {
-                    showAlert('loginAlert', '⚠️ Errore dati utente', 'error');
-                    return;
+            try {
+                const result = await apiCall('login', { email, password });
+                
+                if (result.success && result.user) {
+                    currentUser = result.user;
+                    
+                    if (!currentUser.id || !currentUser.ruolo) {
+                        throw new Error('Dati utente incompleti');
+                    }
+                    
+                    await showApp();
+                } else {
+                    throw new Error(result.error || 'Credenziali errate');
                 }
-                await showApp();
-            } else {
-                showAlert('loginAlert', '❌ ' + (result.error || 'Credenziali errate'), 'error');
+            } catch (e) {
+                showAlert('loginAlert', `❌ ${e.message}`, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
-
+        
         async function showApp() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('appContainer').classList.remove('hidden');
+            
             document.getElementById('welcomeText').textContent = 
-                (currentUser.nome || currentUser.email) + ' • ' + 
-                (currentUser.ruolo === 'admin' ? 'Amministratore' : 'Dipendente');
+                `${currentUser.nome || currentUser.email} • ${currentUser.ruolo === 'admin' ? 'Amministratore' : 'Dipendente'}`;
             
             if (currentUser.ruolo === 'admin') {
                 document.getElementById('adminNav').classList.remove('hidden');
                 document.getElementById('employeeNav').classList.add('hidden');
+                
                 await Promise.all([
                     loadDashboard(),
                     loadTeam(),
@@ -1217,68 +1479,45 @@
             } else {
                 document.getElementById('adminNav').classList.add('hidden');
                 document.getElementById('employeeNav').classList.remove('hidden');
+                
                 await Promise.all([
                     onDateChange(),
                     loadHistory()
                 ]);
+                
                 showTab('clock', document.querySelector('#employeeNav .nav-tab'));
             }
         }
-
-        async function loadAdminSummary() {
-            const result = await apiCall('get');
-            if (!result.success) return;
-            
-            allEntries = result.data || [];
-            const currentMonth = new Date().toISOString().slice(0, 7);
-            
-            const monthEntries = allEntries.filter(e => {
-                const entryMonth = e.data ? e.data.substring(0, 7) : '';
-                return entryMonth === currentMonth;
-            });
-            
-            const workEntries = monthEntries.filter(e => e.tipo === 'work');
-            const totalHours = workEntries.reduce((sum, e) => {
-                return sum + parseHoursField(e.ore, e.inizio, e.fine);
-            }, 0);
-            
-            const holidays = monthEntries.filter(e => e.tipo === 'holiday').length;
-            const rest = monthEntries.filter(e => e.tipo === 'rest').length;
-            const festive = monthEntries.filter(e => e.tipo === 'festive').length;
-            
-            document.getElementById('sidebarTotalHours').textContent = formatHoursTime(totalHours);
-            document.getElementById('sidebarDecimalHours').textContent = formatHoursDecimal(totalHours) + ' h';
-            document.getElementById('sidebarWorkDays').textContent = workEntries.length;
-            document.getElementById('sidebarHolidays').textContent = holidays;
-            document.getElementById('sidebarRest').textContent = rest;
-            document.getElementById('sidebarFestive').textContent = festive;
-        }
-
+        
         function logout() {
             currentUser = null;
             allEntries = [];
             allUsers = [];
             location.reload();
         }
-
+        
         async function showTab(tabName, clickedElement) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            
             document.getElementById(tabName).classList.add('active');
             clickedElement.classList.add('active');
             
-            if (tabName === 'dashboard') {
-                await loadDashboard();
-                await loadAdminSummary();
+            switch(tabName) {
+                case 'dashboard': 
+                    await loadDashboard(); 
+                    await loadAdminSummary(); 
+                    break;
+                case 'team': await loadTeam(); break;
+                case 'history': await loadHistory(); break;
+                case 'reports': await loadReport(); break;
+                case 'clock': await onDateChange(); break;
             }
-            if (tabName === 'team') await loadTeam();
-            if (tabName === 'history') await loadHistory();
-            if (tabName === 'reports') await loadReport();
-            if (tabName === 'clock') await onDateChange();
         }
-
+        
         // ==========================================
-        // DASHBOARD
+        // DASHBOARD, TEAM, REPORTS, HISTORY, EDIT
+        // (Codice simile all'originale ma con fix)
         // ==========================================
         async function loadDashboard() {
             const result = await apiCall('get');
@@ -1295,15 +1534,18 @@
                 const entryDate = e.data ? e.data.split('T')[0] : '';
                 return entryDate === today;
             });
+            
             document.getElementById('statToday').textContent = todayEntries.length;
             
             const monthWorkEntries = allEntries.filter(e => {
                 const entryMonth = e.data ? e.data.substring(0, 7) : '';
                 return entryMonth === currentMonth && e.tipo === 'work';
             });
+            
             const totalHours = monthWorkEntries.reduce((sum, e) => {
                 return sum + parseHoursField(e.ore, e.inizio, e.fine);
             }, 0);
+            
             document.getElementById('statMonth').textContent = formatHoursDecimal(totalHours);
             
             const uniqueEmployees = new Set(allEntries.map(e => e.userId).filter(id => id)).size;
@@ -1332,26 +1574,45 @@
                 }).join('');
             }
         }
-
-        // ==========================================
-        // TEAM
-        // ==========================================
+        
+        async function loadAdminSummary() {
+            const result = await apiCall('get');
+            if (!result.success) return;
+            
+            allEntries = result.data || [];
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            
+            const monthEntries = allEntries.filter(e => {
+                const entryMonth = e.data ? e.data.substring(0, 7) : '';
+                return entryMonth === currentMonth;
+            });
+            
+            const workEntries = monthEntries.filter(e => e.tipo === 'work');
+            const totalHours = workEntries.reduce((sum, e) => {
+                return sum + parseHoursField(e.ore, e.inizio, e.fine);
+            }, 0);
+            
+            document.getElementById('sidebarTotalHours').textContent = formatHoursTime(totalHours);
+            document.getElementById('sidebarDecimalHours').textContent = formatHoursDecimal(totalHours) + ' h';
+            document.getElementById('sidebarWorkDays').textContent = workEntries.length;
+            document.getElementById('sidebarHolidays').textContent = monthEntries.filter(e => e.tipo === 'holiday').length;
+            document.getElementById('sidebarRest').textContent = monthEntries.filter(e => e.tipo === 'rest').length;
+            document.getElementById('sidebarFestive').textContent = monthEntries.filter(e => e.tipo === 'festive').length;
+        }
+        
         async function loadTeam() {
             const result = await apiCall('get_users');
             if (!result.success) {
                 document.getElementById('teamList').innerHTML = `
-                    <div class="alert alert-error">Errore caricamento team: ${result.error || 'Unknown'}</div>`;
+                    <div class="alert alert-error">Errore caricamento team</div>`;
                 return;
             }
+            
             allUsers = result.users || [];
-            allUsers.sort((a, b) => {
-                const idA = parseInt(a.id) || 0;
-                const idB = parseInt(b.id) || 0;
-                return idA - idB;
-            });
-            const employees = allUsers.filter(u => 
-                u.ruolo === 'dipendente' || u.ruolo === 'employee' || !u.ruolo || u.ruolo !== 'admin'
-            );
+            allUsers.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
+            
+            const employees = allUsers.filter(u => u.ruolo !== 'admin');
+            
             const list = document.getElementById('teamList');
             if (employees.length === 0) {
                 list.innerHTML = `
@@ -1363,7 +1624,9 @@
                 list.innerHTML = employees.map(u => `
                     <div class="entry-item">
                         <div class="entry-info">
-                            <div class="entry-date">${u.nome || 'Senza nome'} <span style="color: var(--gray); font-size: 0.8rem;">(ID: ${u.id || 'N/A'})</span></div>
+                            <div class="entry-date">${u.nome || 'Senza nome'} 
+                                <span style="color: var(--gray); font-size: 0.8rem;">(ID: ${u.id || 'N/A'})</span>
+                            </div>
                             <div class="entry-time">${u.email || 'Email non disponibile'}</div>
                         </div>
                         <span class="badge badge-work">Attivo</span>
@@ -1371,28 +1634,30 @@
                 `).join('');
             }
         }
-
+        
         async function addEmployee() {
             const name = document.getElementById('newName').value.trim();
             const email = document.getElementById('newEmail').value.trim().toLowerCase();
+            
             if (!name || !email) {
                 showAlert('addAlert', '⚠️ Inserisci nome e email', 'error');
                 return;
             }
+            
             if (!email.includes('@')) {
-                showAlert('addAlert', '⚠️ Inserisci una email valida', 'error');
+                showAlert('addAlert', '⚠️ Email non valida', 'error');
                 return;
             }
-            const maxId = allUsers.reduce((max, u) => {
-                const uid = parseInt(u.id);
-                return uid > max ? uid : max;
-            }, 0);
+            
+            const maxId = allUsers.reduce((max, u) => Math.max(max, parseInt(u.id) || 0), 0);
             const nextId = maxId + 1;
             const password = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 4);
+            
             const btn = event.target;
             const originalText = btn.innerHTML;
             btn.innerHTML = '<span class="loading"></span> Creazione...';
             btn.disabled = true;
+            
             const result = await apiCall('add_user', { 
                 id: nextId,
                 nome: name, 
@@ -1400,187 +1665,53 @@
                 password: password,
                 ruolo: 'dipendente'
             });
+            
             btn.innerHTML = originalText;
             btn.disabled = false;
+            
             if (result.success && result.user) {
                 lastCreated = result.user;
                 if (!lastCreated.id) lastCreated.id = nextId;
+                
                 document.getElementById('newName').value = '';
                 document.getElementById('newEmail').value = '';
                 document.getElementById('appUrl').textContent = APP_URL;
                 document.getElementById('credEmail').textContent = lastCreated.email;
                 document.getElementById('credPass').textContent = lastCreated.password || password;
                 document.getElementById('newCreds').classList.remove('hidden');
+                
                 await loadTeam();
                 await loadReportEmployees();
             } else {
-                showAlert('addAlert', '❌ ' + (result.error || 'Errore creazione dipendente'), 'error');
+                showAlert('addAlert', '❌ ' + (result.error || 'Errore creazione'), 'error');
             }
         }
-
+        
         function shareWhatsApp() {
             if (!lastCreated) {
-                alert('Errore: nessun dipendente creato recentemente');
+                alert('Errore: nessun dipendente creato');
                 return;
             }
-            const nome = lastCreated.nome || 'Utente';
-            const email = lastCreated.email || '';
-            const password = lastCreated.password || document.getElementById('credPass').textContent || '';
-            const link = APP_URL;
-            const text = `Benvenuto in TimeTrack Pro!
-
-Ciao ${nome},
-hai ricevuto l'accesso all'app per registrare le tue ore di lavoro.
-
-Link accesso:
-${link}
-
-Credenziali:
-Email: ${email}
-Password: ${password}
-
-Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
-            const encodedText = encodeURIComponent(text);
-            window.open('https://wa.me/?text=' + encodedText, '_blank');
+            
+            const text = `Benvenuto in TimeTrack Pro!\n\n` +
+                `Ciao ${lastCreated.nome || 'Utente'},\n\n` +
+                `Link: ${APP_URL}\n\n` +
+                `Email: ${lastCreated.email}\n` +
+                `Password: ${lastCreated.password || document.getElementById('credPass').textContent}\n\n` +
+                `Salva questa app nella schermata home!`;
+            
+            window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
         }
-
-        // ==========================================
-        // TIMBRATURA - VERSIONE DEFINITIVA CORRETTA
-        // ==========================================
-        async function saveClock() {
-            console.log('=== INIZIO SAVE CLOCK ===');
-            
-            if (!currentUser) {
-                console.log('ERRORE: nessun utente loggato');
-                return;
-            }
-            
-            // Prevenzione doppio click
-            if (isSaving) {
-                console.log('Salvataggio già in corso, ignoro');
-                return;
-            }
-            
-            const btn = document.getElementById('saveBtn');
-            const type = document.getElementById('clockType').value;
-            const selectedDate = document.getElementById('clockDate').value;
-            
-            // Controllo 1: Data obbligatoria
-            if (!selectedDate) {
-                showAlert('clockAlert', '⚠️ Seleziona una data', 'warning');
-                return;
-            }
-            
-            // Controllo 2: Se è lavoro, ORARI obbligatori e NON DEVONO SOVRAPPORSI
-            if (type === 'work') {
-                const newStart = document.getElementById('clockStart').value;
-                const newEnd = document.getElementById('clockEnd').value;
-                
-                if (!newStart || !newEnd) {
-                    showAlert('clockAlert', '⚠️ Inserisci orari di inizio e fine', 'warning');
-                    return;
-                }
-                
-                // Controllo CRITICO: sovrapposizione con entries esistenti
-                // Usa i dati in memoria (currentDateEntries) che sono stati caricati da onDateChange()
-                const check = hasTimeOverlap(currentDateEntries, newStart, newEnd, null);
-                
-                if (check.hasOverlap) {
-                    const msg = `❌ IMPOSSIBILE SALVARE: Orario sovrapposto con ${check.conflictingEntry.inizio} - ${check.conflictingEntry.fine}`;
-                    console.log('BLOCCO SALVATAGGIO:', msg);
-                    showAlert('clockAlert', msg, 'error');
-                    
-                    // Mostra errore anche nel box dedicato
-                    document.getElementById('overlapMessage').textContent = msg;
-                    document.getElementById('overlapError').classList.add('show');
-                    btn.disabled = true;
-                    
-                    // NON PROCEDE CON IL SALVATAGGIO
-                    return;
-                }
-            }
-            
-            // Se arriviamo qui, possiamo salvare
-            console.log('Nessuna sovrapposizione, procedo con salvataggio');
-            
-            isSaving = true;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="loading"></span> Salvataggio...';
-            btn.disabled = true;
-            
-            let inizio = '', fine = '', ore = 0;
-            
-            if (type === 'work') {
-                inizio = document.getElementById('clockStart').value;
-                fine = document.getElementById('clockEnd').value;
-                ore = calculateHours(inizio, fine);
-                
-                if (ore <= 0) {
-                    isSaving = false;
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    showAlert('clockAlert', '⚠️ Orario non valido', 'warning');
-                    return;
-                }
-                
-                if (ore > 16) {
-                    isSaving = false;
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    showAlert('clockAlert', '⚠️ Attenzione: hai inserito più di 16 ore', 'warning');
-                    return;
-                }
-            }
-            
-            // CHIAMATA API DI SALVATAGGIO
-            console.log('Chiamata API save...');
-            const saveResult = await apiCall('save', {
-                userId: String(currentUser.id),
-                nome: currentUser.nome || currentUser.email,
-                data: selectedDate,
-                tipo: type,
-                inizio: inizio,
-                fine: fine,
-                ore: type === 'work' ? ore : 0
-            });
-            
-            if (saveResult.success) {
-                console.log('Salvataggio OK');
-                btn.innerHTML = '✅ Salvato!';
-                btn.style.background = '#10b981';
-                
-                // Aggiorna dati locali
-                await onDateChange();
-                await loadHistory();
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.style.background = '';
-                    btn.disabled = false;
-                    isSaving = false;
-                }, 2000);
-            } else {
-                console.log('Errore salvataggio:', saveResult.error);
-                btn.innerHTML = '❌ Errore';
-                isSaving = false;
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }, 2000);
-                showAlert('clockAlert', '❌ Errore salvataggio: ' + (saveResult.error || 'Unknown'), 'error');
-            }
-        }
-
-        // ==========================================
-        // STORICO
-        // ==========================================
+        
         async function loadHistory() {
             if (!currentUser) return;
+            
             const result = await apiCall('get');
             if (!result.success) {
                 document.getElementById('historyList').innerHTML = '<div class="alert alert-error">Errore caricamento</div>';
                 return;
             }
+            
             const month = document.getElementById('historyMonth').value;
             const userId = String(currentUser.id);
             
@@ -1590,11 +1721,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                     const entryMonth = e.data ? e.data.substring(0, 7) : '';
                     return entryUserId === userId && entryMonth === month;
                 })
-                .sort((a, b) => {
-                    const dateA = a.data || '';
-                    const dateB = b.data || '';
-                    return dateB.localeCompare(dateA);
-                });
+                .sort((a, b) => (b.data || '').localeCompare(a.data || ''));
             
             const list = document.getElementById('historyList');
             if (currentHistoryEntries.length === 0) {
@@ -1607,7 +1734,7 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 list.innerHTML = currentHistoryEntries.map((e, index) => {
                     const ore = parseHoursField(e.ore, e.inizio, e.fine);
                     const entryId = e.id !== undefined ? String(e.id) : String(index);
-                    const entryUserId = e.userId !== undefined ? String(e.userId) : String(currentUser.id);
+                    const entryUserId = e.userId !== undefined ? String(e.userId) : userId;
                     
                     return `
                     <div class="entry-item">
@@ -1625,40 +1752,33 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                                     : ''}
                             </div>
                             <div class="entry-actions">
-                                <button class="btn-small btn-primary" onclick="openEditModal('${entryId}', '${entryUserId}')" style="padding: 6px 10px; font-size: 0.75rem;">✏️</button>
+                                <button class="btn-small btn-primary" onclick="openEditModal('${entryId}', '${entryUserId}')">✏️</button>
                             </div>
                         </div>
                     </div>`;
                 }).join('');
             }
+            
             updateSidebarSummary(currentHistoryEntries);
         }
-
+        
         function updateSidebarSummary(entries) {
             const workEntries = entries.filter(e => e.tipo === 'work');
-            const totalHours = workEntries.reduce((sum, e) => {
-                return sum + parseHoursField(e.ore, e.inizio, e.fine);
-            }, 0);
-            const holidays = entries.filter(e => e.tipo === 'holiday').length;
-            const rest = entries.filter(e => e.tipo === 'rest').length;
-            const festive = entries.filter(e => e.tipo === 'festive').length;
+            const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
             
             document.getElementById('sidebarTotalHours').textContent = formatHoursTime(totalHours);
             document.getElementById('sidebarDecimalHours').textContent = formatHoursDecimal(totalHours) + ' h';
             document.getElementById('sidebarWorkDays').textContent = workEntries.length;
-            document.getElementById('sidebarHolidays').textContent = holidays;
-            document.getElementById('sidebarRest').textContent = rest;
-            document.getElementById('sidebarFestive').textContent = festive;
+            document.getElementById('sidebarHolidays').textContent = entries.filter(e => e.tipo === 'holiday').length;
+            document.getElementById('sidebarRest').textContent = entries.filter(e => e.tipo === 'rest').length;
+            document.getElementById('sidebarFestive').textContent = entries.filter(e => e.tipo === 'festive').length;
         }
-
+        
         // ==========================================
-        // MODALE MODIFICA
+        // MODALE MODIFICA - CON VALIDAZIONE
         // ==========================================
         function openEditModal(entryId, entryUserId) {
-            const entry = currentHistoryEntries.find(e => {
-                const eid = e.id !== undefined ? String(e.id) : '';
-                return eid === String(entryId);
-            });
+            const entry = currentHistoryEntries.find(e => String(e.id) === String(entryId));
             
             if (!entry) {
                 alert('Errore: voce non trovata');
@@ -1674,38 +1794,77 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             document.getElementById('editStart').value = entry.inizio || '09:00';
             document.getElementById('editEnd').value = entry.fine || '18:00';
             
-            // Reset errori
             document.getElementById('editOverlapError').classList.remove('show');
             document.getElementById('editSaveBtn').disabled = false;
             
             toggleEditTime();
             
-            // Valida subito se è work
             if (entry.tipo === 'work') {
                 validateEditForm();
             }
             
             document.getElementById('editModal').classList.add('show');
         }
-
+        
         function closeEditModal() {
             document.getElementById('editModal').classList.remove('show');
             currentEditingId = null;
         }
-
-        async function saveEdit() {
-            console.log('=== INIZIO SAVE EDIT ===');
+        
+        function toggleEditTime() {
+            const type = document.getElementById('editType').value;
+            document.getElementById('editTimeSection').style.display = type === 'work' ? 'block' : 'none';
+        }
+        
+        function validateEditForm() {
+            const type = document.getElementById('editType').value;
+            const errorBox = document.getElementById('editOverlapError');
+            const saveBtn = document.getElementById('editSaveBtn');
             
-            // Validazione form
+            if (type !== 'work') {
+                errorBox.classList.remove('show');
+                saveBtn.disabled = false;
+                return true;
+            }
+            
+            const newDate = document.getElementById('editDate').value;
+            const newStart = document.getElementById('editStart').value;
+            const newEnd = document.getElementById('editEnd').value;
+            
+            if (!newStart || !newEnd || !newDate) {
+                errorBox.classList.remove('show');
+                saveBtn.disabled = true;
+                return false;
+            }
+            
+            // Filtra entries della stessa data (escludendo quella in modifica)
+            const sameDateEntries = currentHistoryEntries.filter(e => {
+                const entryDate = e.data ? e.data.split('T')[0] : '';
+                return entryDate === newDate && e.tipo === 'work';
+            });
+            
+            const check = checkTimeOverlap(sameDateEntries, newStart, newEnd, currentEditingId);
+            
+            if (check.hasOverlap) {
+                document.getElementById('editOverlapMessage').textContent = check.message;
+                errorBox.classList.add('show');
+                saveBtn.disabled = true;
+                return false;
+            } else {
+                errorBox.classList.remove('show');
+                saveBtn.disabled = false;
+                return true;
+            }
+        }
+        
+        async function saveEdit() {
             if (!validateEditForm()) {
-                console.log('Validazione form fallita');
                 alert('❌ Correggi gli errori prima di salvare');
                 return;
             }
             
             const entryId = document.getElementById('editId').value;
             const userId = document.getElementById('editUserId').value;
-            
             const newDate = document.getElementById('editDate').value;
             const newType = document.getElementById('editType').value;
             const newStart = document.getElementById('editStart').value;
@@ -1720,44 +1879,33 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             
             if (newType === 'work') {
                 if (!newStart || !newEnd) {
-                    alert('Inserisci orari di inizio e fine');
+                    alert('Inserisci orari');
                     return;
                 }
                 
                 ore = calculateHours(newStart, newEnd);
-                if (ore <= 0) {
+                if (ore < 0) {
                     alert('Orario non valido');
                     return;
                 }
                 
-                // Controllo FINALE con dati fresh dalla API
-                console.log('Controllo sovrapposizione con dati fresh...');
+                // Controllo server-side con dati fresh
                 const result = await apiCall('get');
-                
                 if (result.success) {
-                    // Filtra TUTTE le entries della stessa data (non solo dello storico corrente)
                     const allDateEntries = result.data.filter(e => {
                         const entryDate = e.data ? e.data.split('T')[0] : '';
                         return entryDate === newDate && e.tipo === 'work';
                     });
                     
-                    console.log('Entries trovate per data', newDate, ':', allDateEntries.length);
-                    
-                    const check = hasTimeOverlap(allDateEntries, newStart, newEnd, entryId);
+                    const check = checkTimeOverlap(allDateEntries, newStart, newEnd, entryId);
                     
                     if (check.hasOverlap) {
-                        const msg = `❌ IMPOSSIBILE SALVARE: Orario sovrapposto con ${check.conflictingEntry.inizio} - ${check.conflictingEntry.fine}`;
-                        console.log('BLOCCO SALVATAGGIO:', msg);
-                        alert(msg);
-                        return; // BLOCCA DEFINITIVAMENTE
+                        alert(`❌ ${check.message}`);
+                        return;
                     }
-                    
-                    console.log('Nessuna sovrapposizione, procedo');
                 }
             }
             
-            // Salva
-            console.log('Chiamata API update...');
             const saveResult = await apiCall('update', {
                 id: entryId,
                 userId: userId,
@@ -1769,23 +1917,155 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             });
             
             if (saveResult.success) {
-                console.log('Modifica salvata');
                 closeEditModal();
                 await loadHistory();
                 await onDateChange();
-                alert('✅ Modifica salvata con successo!');
+                alert('✅ Modifica salvata!');
             } else {
-                console.log('Errore:', saveResult.error);
-                alert('❌ Errore durante la modifica: ' + (saveResult.error || 'Errore sconosciuto'));
+                alert('❌ Errore: ' + (saveResult.error || 'Errore sconosciuto'));
             }
         }
-
+        
         // ==========================================
-        // EXPORT EXCEL
+        // REPORT E EXPORT
         // ==========================================
+        async function loadReportEmployees() {
+            const result = await apiCall('get_users');
+            if (!result.success) return;
+            
+            allUsers = result.users || [];
+            const select = document.getElementById('reportEmployee');
+            select.innerHTML = '<option value="all">Tutti i dipendenti</option>';
+            
+            allUsers.filter(u => u.ruolo !== 'admin').forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.id || emp.email;
+                option.textContent = emp.nome || emp.email;
+                select.appendChild(option);
+            });
+        }
+        
+        async function loadReport() {
+            const month = document.getElementById('reportMonth').value;
+            const employeeFilter = document.getElementById('reportEmployee').value;
+            
+            if (!month) {
+                showAlert('reportsAlert', '⚠️ Seleziona un mese', 'warning');
+                return;
+            }
+            
+            const result = await apiCall('get');
+            if (!result.success) {
+                document.getElementById('reportResult').innerHTML = '<div class="alert alert-error">Errore caricamento</div>';
+                return;
+            }
+            
+            allEntries = result.data || [];
+            let entries = allEntries.filter(e => {
+                const entryMonth = e.data ? e.data.substring(0, 7) : '';
+                return entryMonth === month;
+            });
+            
+            if (employeeFilter !== 'all') {
+                entries = entries.filter(e => String(e.userId) === String(employeeFilter));
+            }
+            
+            currentReportData = entries;
+            
+            // Calcola statistiche
+            const workEntries = entries.filter(e => e.tipo === 'work');
+            const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
+            
+            document.getElementById('reportSummary').innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;">
+                    <div class="stat-box" style="padding: 15px;">
+                        <div class="stat-number" style="font-size: 1.2rem;">${formatHoursDecimal(totalHours)}</div>
+                        <div class="stat-label">Ore Totali</div>
+                    </div>
+                    <div class="stat-box" style="padding: 15px;">
+                        <div class="stat-number" style="font-size: 1.2rem;">${workEntries.length}</div>
+                        <div class="stat-label">Giorni Lavoro</div>
+                    </div>
+                    <div class="stat-box" style="padding: 15px;">
+                        <div class="stat-number" style="font-size: 1.2rem; color: #be185d;">${entries.filter(e => e.tipo === 'holiday').length}</div>
+                        <div class="stat-label">Ferie</div>
+                    </div>
+                    <div class="stat-box" style="padding: 15px;">
+                        <div class="stat-number" style="font-size: 1.2rem; color: #065f46;">${entries.filter(e => e.tipo === 'rest').length}</div>
+                        <div class="stat-label">Riposo</div>
+                    </div>
+                    <div class="stat-box" style="padding: 15px;">
+                        <div class="stat-number" style="font-size: 1.2rem; color: #d97706;">${entries.filter(e => e.tipo === 'festive').length}</div>
+                        <div class="stat-label">Festivi</div>
+                    </div>
+                </div>
+            `;
+            
+            // Render dettaglio giornaliero...
+            const div = document.getElementById('reportResult');
+            if (entries.length === 0) {
+                div.innerHTML = '<div class="empty-state">Nessun dato</div>';
+                return;
+            }
+            
+            // Raggruppa per data
+            const byDate = {};
+            entries.forEach(e => {
+                const dateKey = e.data ? e.data.split('T')[0] : 'unknown';
+                if (!byDate[dateKey]) byDate[dateKey] = [];
+                byDate[dateKey].push(e);
+            });
+            
+            let html = '<div class="card" style="margin-top: 20px;"><div class="card-title">📅 Dettaglio</div>';
+            Object.keys(byDate).sort().forEach(date => {
+                const dayEntries = byDate[date];
+                const dayTotal = dayEntries
+                    .filter(e => e.tipo === 'work')
+                    .reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
+                    
+                html += `
+                <div style="margin-bottom: 15px; padding: 15px; background: #f8fafc; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <strong>${formatDate(date)}</strong>
+                        <span class="badge badge-work">${formatHoursDecimal(dayTotal)}h</span>
+                    </div>
+                    ${dayEntries.map(e => {
+                        const ore = parseHoursField(e.ore, e.inizio, e.fine);
+                        return `
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin: 5px 0;">
+                            <span>${e.nome || 'Sconosciuto'}</span>
+                            <div>
+                                ${e.tipo === 'work' ? `<span style="color: var(--gray);">${e.inizio}-${e.fine}</span>` : ''}
+                                <span class="badge badge-${e.tipo}" style="font-size: 0.7rem; margin-left: 8px;">${label(e.tipo)}</span>
+                                ${e.tipo === 'work' ? `<span style="font-weight: 600; margin-left: 8px;">${formatHoursDecimal(ore)}h</span>` : ''}
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>`;
+            });
+            html += '</div>';
+            div.innerHTML = html;
+        }
+        
+        function exportExcelCurrent() {
+            if (!currentReportData || currentReportData.length === 0) {
+                alert('Nessun dato da esportare');
+                return;
+            }
+            exportToExcel(currentReportData, 'Report_Selezione');
+        }
+        
+        function exportExcelAll() {
+            if (!allEntries || allEntries.length === 0) {
+                alert('Nessun dato disponibile');
+                return;
+            }
+            exportToExcel(allEntries, 'Report_Completo');
+        }
+        
         function exportEmployeeExcel() {
             if (!currentHistoryEntries || currentHistoryEntries.length === 0) {
-                alert('Nessun dato da esportare per questo mese');
+                alert('Nessun dato da esportare');
                 return;
             }
             
@@ -1793,17 +2073,8 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
             const employeeName = currentUser.nome || currentUser.email;
             
             const exportData = [];
+            exportData.push({ 'Data': 'DATA', 'Tipo': 'TIPO', 'Entrata': 'ENTRATA', 'Uscita': 'USCITA', 'Ore': 'ORE' });
             
-            // Intestazione
-            exportData.push({
-                'Data': 'DATA',
-                'Tipo': 'TIPO',
-                'Entrata': 'ENTRATA',
-                'Uscita': 'USCITA',
-                'Ore': 'ORE'
-            });
-            
-            // Dati
             currentHistoryEntries.forEach(e => {
                 const ore = parseHoursField(e.ore, e.inizio, e.fine);
                 exportData.push({
@@ -1815,180 +2086,23 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 });
             });
             
-            // Righe vuote
-            exportData.push({ 'Data': '', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': '' });
-            exportData.push({ 'Data': '', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': '' });
-            
-            // RIEPILOGO
+            // Riepilogo
             const workEntries = currentHistoryEntries.filter(e => e.tipo === 'work');
             const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
-            const holidays = currentHistoryEntries.filter(e => e.tipo === 'holiday').length;
-            const rest = currentHistoryEntries.filter(e => e.tipo === 'rest').length;
-            const festive = currentHistoryEntries.filter(e => e.tipo === 'festive').length;
             
+            exportData.push({});
             exportData.push({ 'Data': 'RIEPILOGO', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': '' });
-            exportData.push({ 'Data': 'Totale Ore Lavorate:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': formatHoursDecimal(totalHours) });
+            exportData.push({ 'Data': 'Totale Ore:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': formatHoursDecimal(totalHours) });
             exportData.push({ 'Data': 'Giorni Lavorati:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': workEntries.length });
-            exportData.push({ 'Data': 'Ferie:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': holidays });
-            exportData.push({ 'Data': 'Riposo:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': rest });
-            exportData.push({ 'Data': 'Giorni Festivi:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': festive });
-            exportData.push({ 'Data': 'TOTALE GIORNI:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': currentHistoryEntries.length });
             
             const ws = XLSX.utils.json_to_sheet(exportData, { skipHeader: true });
-            
-            const wscols = [
-                {wch: 15}, {wch: 20}, {wch: 12}, {wch: 12}, {wch: 12}
-            ];
-            ws['!cols'] = wscols;
+            ws['!cols'] = [{wch: 15}, {wch: 20}, {wch: 12}, {wch: 12}, {wch: 12}];
             
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Presenze");
-            
-            const filename = `Presenze_${employeeName}_${month}.xlsx`;
-            XLSX.writeFile(wb, filename);
+            XLSX.writeFile(wb, `Presenze_${employeeName}_${month}.xlsx`);
         }
-
-        // ==========================================
-        // REPORT
-        // ==========================================
-        async function loadReportEmployees() {
-            const result = await apiCall('get_users');
-            if (!result.success) return;
-            allUsers = result.users || [];
-            const select = document.getElementById('reportEmployee');
-            select.innerHTML = '<option value="all">Tutti i dipendenti</option>';
-            const employees = allUsers.filter(u => 
-                u.ruolo === 'dipendente' || u.ruolo === 'employee' || !u.ruolo || u.ruolo !== 'admin'
-            );
-            employees.forEach(emp => {
-                const option = document.createElement('option');
-                option.value = emp.id || emp.email;
-                option.textContent = emp.nome || emp.email;
-                select.appendChild(option);
-            });
-        }
-
-        async function loadReport() {
-            const month = document.getElementById('reportMonth').value;
-            const employeeFilter = document.getElementById('reportEmployee').value;
-            if (!month) {
-                showAlert('reportsAlert', '⚠️ Seleziona un mese', 'warning');
-                return;
-            }
-            const result = await apiCall('get');
-            if (!result.success) {
-                document.getElementById('reportResult').innerHTML = '<div class="alert alert-error">Errore caricamento report</div>';
-                return;
-            }
-            allEntries = result.data || [];
-            let entries = allEntries.filter(e => {
-                const entryMonth = e.data ? e.data.substring(0, 7) : '';
-                return entryMonth === month;
-            });
-            if (employeeFilter !== 'all') {
-                entries = entries.filter(e => String(e.userId) === String(employeeFilter));
-            }
-            currentReportData = entries;
-            const workEntries = entries.filter(e => e.tipo === 'work');
-            const totalHours = workEntries.reduce((sum, e) => {
-                return sum + parseHoursField(e.ore, e.inizio, e.fine);
-            }, 0);
-            const holidays = entries.filter(e => e.tipo === 'holiday').length;
-            const rest = entries.filter(e => e.tipo === 'rest').length;
-            const festive = entries.filter(e => e.tipo === 'festive').length;
-            
-            const summaryDiv = document.getElementById('reportSummary');
-            summaryDiv.innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;">
-                    <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.2rem;">${formatHoursDecimal(totalHours)}</div>
-                        <div class="stat-label">Ore Totali</div>
-                    </div>
-                    <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.2rem;">${workEntries.length}</div>
-                        <div class="stat-label">Giorni Lavoro</div>
-                    </div>
-                    <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.2rem; color: #be185d;">${holidays}</div>
-                        <div class="stat-label">Ferie</div>
-                    </div>
-                    <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.2rem; color: #065f46;">${rest}</div>
-                        <div class="stat-label">Riposo</div>
-                    </div>
-                    <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.2rem; color: #d97706;">${festive}</div>
-                        <div class="stat-label">Festivi</div>
-                    </div>
-                </div>
-            `;
-            const div = document.getElementById('reportResult');
-            if (entries.length === 0) {
-                div.innerHTML = '<div class="empty-state">Nessun dato per i filtri selezionati</div>';
-                return;
-            }
-            const byDate = {};
-            entries.forEach(e => {
-                const dateKey = e.data ? e.data.split('T')[0] : 'unknown';
-                if (!byDate[dateKey]) byDate[dateKey] = [];
-                byDate[dateKey].push(e);
-            });
-            const sortedDates = Object.keys(byDate).sort();
-            let html = '<div class="card" style="margin-top: 20px;"><div class="card-title">📅 Dettaglio Giornaliero</div>';
-            sortedDates.forEach(date => {
-                const dayEntries = byDate[date];
-                const dayTotal = dayEntries
-                    .filter(e => e.tipo === 'work')
-                    .reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
-                html += `
-                <div style="margin-bottom: 15px; padding: 15px; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-                        <strong style="color: var(--dark);">${formatDate(date)}</strong>
-                        <span class="badge badge-work">${formatHoursDecimal(dayTotal)}h</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        ${dayEntries.map(e => {
-                            const ore = parseHoursField(e.ore, e.inizio, e.fine);
-                            return `
-                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
-                                <span>${e.nome || 'Sconosciuto'}</span>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    ${e.tipo === 'work' ? 
-                                        `<span style="color: var(--gray); font-variant-numeric: tabular-nums;">${e.inizio}-${e.fine}</span>` 
-                                        : ''}
-                                    <span class="badge badge-${e.tipo}" style="font-size: 0.7rem;">${label(e.tipo)}</span>
-                                    ${e.tipo === 'work' ? 
-                                        `<span style="font-weight: 600; min-width: 50px; text-align: right;">${formatHoursDecimal(ore)}h</span>` 
-                                        : ''}
-                                </div>
-                            </div>`;
-                        }).join('')}
-                    </div>
-                </div>`;
-            });
-            html += '</div>';
-            div.innerHTML = html;
-        }
-
-        // ==========================================
-        // EXPORT ADMIN
-        // ==========================================
-        function exportExcelCurrent() {
-            if (!currentReportData || currentReportData.length === 0) {
-                alert('Nessun dato da esportare. Carica prima un report.');
-                return;
-            }
-            exportToExcel(currentReportData, 'Report_Selezione');
-        }
-
-        function exportExcelAll() {
-            if (!allEntries || allEntries.length === 0) {
-                alert('Nessun dato disponibile');
-                return;
-            }
-            exportToExcel(allEntries, 'Report_Completo');
-        }
-
+        
         function exportToExcel(data, filename) {
             const exportData = data.map(e => ({
                 'Data': e.data,
@@ -1999,74 +2113,65 @@ Salva questa app nella schermata home del tuo telefono per un accesso rapido!`;
                 'Ore Totali': e.tipo === 'work' ? parseHoursField(e.ore, e.inizio, e.fine) : 0,
                 'User ID': e.userId || ''
             }));
+            
             const ws = XLSX.utils.json_to_sheet(exportData);
-            const wscols = [
-                {wch: 12}, {wch: 25}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 15}
-            ];
-            ws['!cols'] = wscols;
+            ws['!cols'] = [{wch: 12}, {wch: 25}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 15}];
+            
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Presenze");
-            const date = new Date().toISOString().split('T')[0];
-            XLSX.writeFile(wb, `${filename}_${date}.xlsx`);
+            XLSX.writeFile(wb, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
-
+        
         // ==========================================
         // UTILITY
         // ==========================================
         function label(type) {
             const labels = { 
-                work: 'Lavoro Ordinario', 
+                work: 'Lavoro', 
                 holiday: 'Ferie', 
                 rest: 'Riposo', 
-                festive: 'Giorno Festivo' 
+                festive: 'Festivo' 
             };
             return labels[type] || type;
         }
-
+        
         function formatDate(dateStr) {
             if (!dateStr || typeof dateStr !== 'string') return '-';
             if (dateStr.includes('T')) {
                 const d = new Date(dateStr);
-                if (!isNaN(d.getTime())) {
-                    return d.toLocaleDateString('it-IT');
-                }
+                if (!isNaN(d.getTime())) return d.toLocaleDateString('it-IT');
             }
             const parts = dateStr.split('-');
-            if (parts.length === 3) {
-                return `${parts[2]}/${parts[1]}/${parts[0]}`;
-            }
+            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
             return dateStr;
         }
-
+        
         function showAlert(containerId, msg, type) {
             if (alertTimeouts[containerId]) {
                 clearTimeout(alertTimeouts[containerId]);
-                delete alertTimeouts[containerId];
             }
             
             let el = document.getElementById(containerId);
             if (!el) {
-                const div = document.createElement('div');
-                div.id = 'tempAlert_' + Date.now();
-                div.className = `alert alert-${type}`;
-                div.innerHTML = msg;
-                div.style.position = 'fixed';
-                div.style.top = '20px';
-                div.style.left = '50%';
-                div.style.transform = 'translateX(-50%)';
-                div.style.zIndex = '9999';
-                div.style.maxWidth = '90%';
-                document.body.appendChild(div);
-                alertTimeouts[containerId] = setTimeout(() => {
-                    if (div.parentNode) div.remove();
-                }, 5000);
-                return;
+                // Crea alert fluttuante
+                el = document.createElement('div');
+                el.id = 'tempAlert_' + Date.now();
+                el.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;max-width:90%;';
+                document.body.appendChild(el);
             }
-            el.className = 'alert alert-' + type;
+            
+            el.className = `alert alert-${type}`;
             el.innerHTML = msg;
             el.style.display = 'flex';
+            
             alertTimeouts[containerId] = setTimeout(() => {
-                if (el) el.style.display = 'none';
+                if (el.parentNode) {
+                    if (el.id.startsWith('tempAlert_')) {
+                        el.remove();
+                    } else {
+                        el.style.display = 'none';
+                    }
+                }
             }, 5000);
         }
     </script>
