@@ -128,6 +128,7 @@
         .btn-success:hover:not(:disabled) { filter: brightness(1.1); }
         
         .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
         .btn-secondary { 
             background: #f1f5f9; 
             color: var(--dark); 
@@ -387,14 +388,15 @@
         
         .error-box {
             background: #fee2e2;
-            border: 2px solid #dc2626;
+            border: 3px solid #dc2626;
             border-radius: 12px;
-            padding: 16px;
+            padding: 20px;
             margin-bottom: 20px;
             display: none;
             align-items: center;
             gap: 12px;
             color: #991b1b;
+            font-weight: 600;
         }
         
         .error-box.show { display: flex; }
@@ -402,7 +404,6 @@
         .error-box.blocking {
             background: #fecaca;
             border-color: #991b1b;
-            font-weight: 600;
         }
         
         .compact-list {
@@ -519,7 +520,7 @@
         
         .existing-entries {
             background: #f0f9ff;
-            border: 1px solid #bae6fd;
+            border: 2px solid #7dd3fc;
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 20px;
@@ -536,7 +537,7 @@
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
-            border-bottom: 1px solid #e0f2fe;
+            border-bottom: 1px solid #bae6fd;
             font-size: 0.9rem;
         }
         
@@ -730,22 +731,23 @@
                             <div id="existingEntriesList"></div>
                         </div>
                         
+                        <!-- ERRORE BLOCCANTE -->
                         <div id="overlapError" class="error-box blocking">
                             <span style="font-size: 1.5rem;">🚫</span>
                             <div>
-                                <div style="font-weight: 600;">SALVATAGGIO BLOCCATO</div>
-                                <div id="overlapMessage">Esiste già una registrazione che si sovrappone a questo orario.</div>
+                                <div style="font-weight: 700; font-size: 1.1rem;">SALVATAGGIO BLOCCATO</div>
+                                <div id="overlapMessage" style="margin-top: 5px;">Esiste già una registrazione che si sovrappone a questo orario.</div>
                             </div>
                         </div>
                         
                         <div class="card" style="text-align: center;">
                             <div class="day-selector">
                                 <div class="form-group" style="text-align: left; margin: 0;">
-                                    <label>📅 Data</label>
+                                    <label>📅 Data *</label>
                                     <input type="date" id="clockDate" onchange="onDateChange()">
                                 </div>
                                 <div class="form-group" style="text-align: left; margin: 0;">
-                                    <label>Tipo Presenza</label>
+                                    <label>Tipo Presenza *</label>
                                     <select id="clockType" onchange="onTypeChange()" style="font-size: 1rem;">
                                         <option value="work">Lavoro Ordinario</option>
                                         <option value="rest">Riposo</option>
@@ -774,8 +776,6 @@
                             <button class="btn-success" onclick="saveClock()" id="saveBtn" style="font-size: 1.1rem; padding: 18px; margin-top: 20px; max-width: 400px;">
                                 💾 Salva Registrazione
                             </button>
-                            
-                            <div id="validationMessage" style="margin-top: 15px; color: var(--danger); font-size: 0.9rem; min-height: 20px;"></div>
                         </div>
                         <button class="btn-secondary" onclick="logout()" style="max-width: 200px;">🚪 Logout</button>
                     </div>
@@ -843,21 +843,16 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbzCHH0x-8Gw1YNOoBqJ_rZH74PYBAfKUeczK8H1SXYXCSvhRCVSMHa6_coHPhypUArR/exec';
         const APP_URL = window.location.href.split('?')[0].replace(/\/$/, '');
         
-        // Stato applicazione
         let currentUser = null;
         let allEntries = [];
         let allUsers = [];
         let lastCreated = null;
         let currentReportData = [];
         let currentHistoryEntries = [];
-        let currentDateEntries = []; // Entries work per la data selezionata
+        let currentDateEntries = [];
         let alertTimeouts = {};
         let currentEditingId = null;
-        
-        // Flags di controllo
         let isSaving = false;
-        let isValidating = false;
-        let lastValidationResult = { valid: false, message: '' };
         
         // ==========================================
         // INIZIALIZZAZIONE
@@ -868,21 +863,17 @@
             document.getElementById('reportMonth').value = monthStr;
             document.getElementById('historyMonth').value = monthStr;
             document.getElementById('clockDate').value = today.toISOString().split('T')[0];
-            
             updateHoursPreview();
         };
         
         // ==========================================
-        // UTILITY TIME - VERSIONE ROBUSTA
+        // UTILITY TIME
         // ==========================================
         function calculateHours(start, end) {
             if (!start || !end || typeof start !== 'string' || typeof end !== 'string') return -1;
             
-            start = start.trim();
-            end = end.trim();
-            
-            const startParts = start.split(':');
-            const endParts = end.split(':');
+            const startParts = start.trim().split(':');
+            const endParts = end.trim().split(':');
             
             if (startParts.length < 2 || endParts.length < 2) return -1;
             
@@ -897,13 +888,11 @@
             let startMinutes = h1 * 60 + m1;
             let endMinutes = h2 * 60 + m2;
             
-            // Turno notturno: fine < inizio
             if (endMinutes < startMinutes) endMinutes += 24 * 60;
             
             const diffMinutes = endMinutes - startMinutes;
             const hours = diffMinutes / 60;
             
-            // Max 24 ore
             return (hours >= 0 && hours <= 24) ? hours : -1;
         }
         
@@ -943,18 +932,9 @@
         }
         
         // ==========================================
-        // ALGORITMO SOVRAPPOSIZIONE - VERSIONE DEFINITIVA
+        // ALGORITMO SOVRAPPOSIZIONE
         // ==========================================
-        /**
-         * Controlla sovrapposizione tra intervalli
-         * @param {Array} existingEntries - Entries esistenti
-         * @param {string} newStart - HH:MM
-         * @param {string} newEnd - HH:MM
-         * @param {string|null} excludeId - ID da escludere (per edit)
-         * @returns {Object} { hasOverlap: boolean, conflictingEntry: object|null, message: string }
-         */
-        function checkTimeOverlap(existingEntries, newStart, newEnd, excludeId = null) {
-            // Validazione input
+        function checkTimeOverlap(existingEntries, newStart, newEnd, excludeId) {
             if (!newStart || !newEnd || !existingEntries || !Array.isArray(existingEntries)) {
                 return { hasOverlap: false, conflictingEntry: null, message: '' };
             }
@@ -966,42 +946,27 @@
                 return { hasOverlap: false, conflictingEntry: null, message: 'Orario non valido' };
             }
             
-            // Normalizza nuovo intervallo
             let normNewStart = newStartMin;
             let normNewEnd = newEndMin;
-            const isOvernight = newEndMin < newStartMin;
-            if (isOvernight) normNewEnd += 24 * 60;
-            
-            console.log(`[OVERLAP CHECK] Nuovo: ${newStart}-${newEnd} (${normNewStart}-${normNewEnd} min)`);
+            if (newEndMin < newStartMin) normNewEnd += 24 * 60;
             
             for (const entry of existingEntries) {
-                // Escludi se stesso
-                if (excludeId && String(entry.id) === String(excludeId)) {
-                    continue;
-                }
-                
-                // Considera SOLO entry di tipo work con orari validi
+                if (excludeId && String(entry.id) === String(excludeId)) continue;
                 if (entry.tipo !== 'work') continue;
                 
                 const existStart = entry.inizio;
                 const existEnd = entry.fine;
-                
                 if (!existStart || !existEnd) continue;
                 
                 const existStartMin = timeToMinutes(existStart);
                 const existEndMin = timeToMinutes(existEnd);
-                
                 if (existStartMin === null || existEndMin === null) continue;
                 
-                // Normalizza esistente
                 let normExistStart = existStartMin;
                 let normExistEnd = existEndMin;
                 if (existEndMin < existStartMin) normExistEnd += 24 * 60;
                 
-                // ALGORITMO: [A,B] sovrappone [C,D] se A < D AND C < B
                 const overlap = (normNewStart < normExistEnd) && (normExistStart < normNewEnd);
-                
-                console.log(`  vs [${existStart}-${existEnd}]: ${overlap ? 'SOVRAPPOSIZIONE!' : 'OK'}`);
                 
                 if (overlap) {
                     return {
@@ -1016,7 +981,7 @@
         }
         
         // ==========================================
-        // GESTIONE UI CLOCK - VERSIONE CORRETTA
+        // GESTIONE UI CLOCK
         // ==========================================
         function updateHoursPreview() {
             const start = document.getElementById('clockStart').value;
@@ -1029,15 +994,12 @@
         function onTypeChange() {
             const type = document.getElementById('clockType').value;
             const timeSection = document.getElementById('clockTimeSection');
-            
             timeSection.style.display = type === 'work' ? 'block' : 'none';
             
-            // Reset errori quando cambia tipo
             if (type !== 'work') {
                 hideOverlapError();
                 setSaveButtonState(true, '💾 Salva Registrazione');
             } else {
-                // Rivalida se torna a work
                 validateClockForm();
             }
         }
@@ -1053,13 +1015,9 @@
             const selectedDate = document.getElementById('clockDate').value;
             if (!selectedDate) return;
             
-            console.log(`[DATE CHANGE] Data selezionata: ${selectedDate}`);
-            
-            // Disabilita durante caricamento
             setSaveButtonState(false, '⏳ Caricamento...');
             
             try {
-                // CARICA DATI FRESH SEMPRE
                 const result = await apiCall('get');
                 
                 if (!result.success) {
@@ -1069,23 +1027,13 @@
                 }
                 
                 const userId = String(currentUser.id);
-                
-                // Filtra SOLO entry work per questa data
                 currentDateEntries = result.data.filter(e => {
                     const entryUserId = String(e.userId);
                     const entryDate = e.data ? e.data.split('T')[0] : '';
                     return entryUserId === userId && entryDate === selectedDate && e.tipo === 'work';
                 });
                 
-                console.log(`[DATE CHANGE] Trovate ${currentDateEntries.length} entries work`);
-                currentDateEntries.forEach(e => {
-                    console.log(`  - ID:${e.id} | ${e.inizio}-${e.fine}`);
-                });
-                
-                // Mostra/nascondi sezione entry esistenti
                 updateExistingEntriesUI();
-                
-                // Rivalida form
                 validateClockForm();
                 
             } catch (e) {
@@ -1116,74 +1064,58 @@
             }).join('');
         }
         
-        /**
-         * Validazione sincrona del form - viene chiamata ad ogni cambiamento
-         */
         function validateClockForm() {
             const type = document.getElementById('clockType').value;
             
-            // Non-work: sempre valido
             if (type !== 'work') {
                 hideOverlapError();
                 setSaveButtonState(true, '💾 Salva Registrazione');
-                lastValidationResult = { valid: true, message: '' };
                 return true;
             }
             
             const start = document.getElementById('clockStart').value;
             const end = document.getElementById('clockEnd').value;
             
-            // Orari vuoti: non valido ma non mostrare errore overlap
             if (!start || !end) {
                 hideOverlapError();
                 setSaveButtonState(false, '⏰ Inserisci orari');
-                lastValidationResult = { valid: false, message: 'Orari mancanti' };
                 return false;
             }
             
-            // Calcolo ore
             const hours = calculateHours(start, end);
             if (hours < 0) {
                 showOverlapError('Orario non valido');
                 setSaveButtonState(false, '❌ Orario invalido');
-                lastValidationResult = { valid: false, message: 'Orario non valido' };
                 return false;
             }
             
             if (hours === 0) {
                 showOverlapError('La durata deve essere maggiore di 0');
-                setSaveButtonState(false, '❌ Durata 0');
-                lastValidationResult = { valid: false, message: 'Durata zero' };
+                setSaveButtonState(false, '❌ Durata zero');
                 return false;
             }
             
-            // CONTROLLO SOVRAPPOSIZIONE CRITICO
             const check = checkTimeOverlap(currentDateEntries, start, end, null);
             
             if (check.hasOverlap) {
                 showOverlapError(check.message);
                 setSaveButtonState(false, '🚫 Sovrapposizione!');
-                lastValidationResult = { valid: false, message: check.message };
                 return false;
             }
             
-            // Tutto OK
             hideOverlapError();
             setSaveButtonState(true, '💾 Salva Registrazione');
-            lastValidationResult = { valid: true, message: '' };
             return true;
         }
         
         function showOverlapError(message) {
             const box = document.getElementById('overlapError');
-            const msgEl = document.getElementById('overlapMessage');
-            msgEl.textContent = message;
+            document.getElementById('overlapMessage').textContent = message;
             box.classList.add('show');
         }
         
         function hideOverlapError() {
-            const box = document.getElementById('overlapError');
-            box.classList.remove('show');
+            document.getElementById('overlapError').classList.remove('show');
         }
         
         function setSaveButtonState(enabled, text) {
@@ -1192,36 +1124,25 @@
             btn.innerHTML = text;
         }
         
-        function setValidationMessage(msg) {
-            document.getElementById('validationMessage').textContent = msg;
-        }
-        
         // ==========================================
-        // SALVATAGGIO - VERSIONE BULLETPROOF
+        // SALVATAGGIO - VERSIONE DEFINITIVA CORRETTA
         // ==========================================
         async function saveClock() {
-            console.log('[SAVE CLOCK] Inizio salvataggio');
+            console.log('[SAVE] === INIZIO ===');
             
-            // 1. CONTROLLO AUTENTICAZIONE
+            // 1. Controllo autenticazione
             if (!currentUser) {
-                console.error('[SAVE CLOCK] Nessun utente loggato');
+                showAlert('clockAlert', 'Errore: sessione scaduta', 'error');
                 return;
             }
             
-            // 2. PREVENZIONE DOPPIO CLICK
+            // 2. Prevenzione doppio click
             if (isSaving) {
-                console.log('[SAVE CLOCK] Salvataggio già in corso, ignoro');
+                console.log('[SAVE] Già in corso');
                 return;
             }
             
-            // 3. VALIDAZIONE LOCALE OBBLIGATORIA
-            const isValid = validateClockForm();
-            if (!isValid) {
-                console.log('[SAVE CLOCK] Validazione locale fallita:', lastValidationResult.message);
-                showAlert('clockAlert', `❌ ${lastValidationResult.message}`, 'error');
-                return;
-            }
-            
+            // 3. Raccolta dati
             const type = document.getElementById('clockType').value;
             const selectedDate = document.getElementById('clockDate').value;
             
@@ -1230,17 +1151,40 @@
                 return;
             }
             
-            // 4. BLOCCO SALVATAGGIO
+            let start = '', end = '', ore = 0;
+            
+            if (type === 'work') {
+                start = document.getElementById('clockStart').value;
+                end = document.getElementById('clockEnd').value;
+                
+                if (!start || !end) {
+                    showAlert('clockAlert', '⚠️ Inserisci orari', 'warning');
+                    return;
+                }
+                
+                ore = calculateHours(start, end);
+                if (ore <= 0) {
+                    showAlert('clockAlert', '⚠️ Orario non valido', 'warning');
+                    return;
+                }
+                
+                if (ore > 16 && !confirm('Hai inserito più di 16 ore. Continuare?')) {
+                    return;
+                }
+            }
+            
+            // 4. Blocco salvataggio
             isSaving = true;
-            setSaveButtonState(false, '⏳ Salvataggio...');
+            setSaveButtonState(false, '⏳ Controllo in corso...');
             
             try {
-                // 5. RICARICA DATI FRESH PER CONTROLLO FINALE (anti-race)
-                console.log('[SAVE CLOCK] Ricarico dati fresh per controllo finale...');
+                // 5. CONTROLLO FINALE CON DATI FRESH
+                console.log('[SAVE] Controllo dati fresh...');
                 
                 const freshResult = await apiCall('get');
+                
                 if (!freshResult.success) {
-                    throw new Error('Errore caricamento dati fresh');
+                    throw new Error('Errore connessione durante controllo');
                 }
                 
                 const userId = String(currentUser.id);
@@ -1250,126 +1194,111 @@
                     return entryUserId === userId && entryDate === selectedDate && e.tipo === 'work';
                 });
                 
-                console.log(`[SAVE CLOCK] Entries fresh: ${freshEntries.length}`);
+                console.log(`[SAVE] Trovate ${freshEntries.length} entries esistenti`);
                 
-                // 6. CONTROLLO OVERLAP CON DATI FRESH (CRITICO!)
+                // 6. CONTROLLO SOVRAPPOSIZIONE DEFINITIVO
                 if (type === 'work') {
-                    const start = document.getElementById('clockStart').value;
-                    const end = document.getElementById('clockEnd').value;
+                    const overlapCheck = checkTimeOverlap(freshEntries, start, end, null);
                     
-                    const finalCheck = checkTimeOverlap(freshEntries, start, end, null);
-                    
-                    if (finalCheck.hasOverlap) {
-                        // RACE CONDITION RILEVATA!
-                        console.error('[SAVE CLOCK] RACE CONDITION! Sovrapposizione rilevata con dati fresh');
+                    if (overlapCheck.hasOverlap) {
+                        // 🔴 BLOCCO ASSOLUTO - USCITA IMMEDIATA
+                        console.error('[SAVE] ❌ BLOCCATO:', overlapCheck.message);
                         
-                        // Aggiorna UI con nuovi dati
+                        showOverlapError(overlapCheck.message);
+                        setSaveButtonState(false, '🚫 Sovrapposizione!');
+                        
                         currentDateEntries = freshEntries;
                         updateExistingEntriesUI();
-                        validateClockForm(); // Rivaliderà e bloccherà
                         
-                        throw new Error(finalCheck.message);
+                        showAlert('clockAlert', `❌ Salvataggio bloccato: ${overlapCheck.message}`, 'error');
+                        
+                        // 🔴 USCITA SENZA SALVARE
+                        isSaving = false;
+                        return;
                     }
                     
-                    // 7. CONFERMA UTENTE SE MULTI-ENTRY
+                    // 7. Conferma multi-entry
                     if (freshEntries.length > 0) {
-                        const confirmMsg = `Hai già ${freshEntries.length} registrazione/i per questa data.\n\n` +
-                            `Vuoi aggiungere un altro orario (${start}-${end})?`;
+                        const confirmMsg = `Hai già ${freshEntries.length} registrazione/i:\n` +
+                            freshEntries.map(e => `• ${e.inizio}-${e.fine}`).join('\n') +
+                            `\n\nAggiungere anche ${start}-${end}?`;
                         
                         if (!confirm(confirmMsg)) {
-                            console.log('[SAVE CLOCK] Utente ha annullato');
+                            console.log('[SAVE] Utente ha annullato');
                             isSaving = false;
                             setSaveButtonState(true, '💾 Salva Registrazione');
-                            return;
+                            return; // USCITA SENZA SALVARE
                         }
                     }
                 }
                 
-                // 8. PREPARA DATI
-                let inizio = '', fine = '', ore = 0;
+                // 8. SALVATAGGIO (solo se tutti i controlli passano)
+                console.log('[SAVE] ✅ Procedo con salvataggio');
                 
-                if (type === 'work') {
-                    inizio = document.getElementById('clockStart').value;
-                    fine = document.getElementById('clockEnd').value;
-                    ore = calculateHours(inizio, fine);
-                    
-                    // Validazione finale ore
-                    if (ore <= 0) throw new Error('Calcolo ore non valido');
-                    if (ore > 16) {
-                        if (!confirm('Hai inserito più di 16 ore. Continuare?')) {
-                            isSaving = false;
-                            setSaveButtonState(true, '💾 Salva Registrazione');
-                            return;
-                        }
-                    }
-                }
-                
-                // 9. CHIAMATA API CON CHECK SERVER-SIDE
-                console.log('[SAVE CLOCK] Invio a server...');
+                setSaveButtonState(false, '⏳ Salvataggio...');
                 
                 const saveResult = await apiCall('save', {
                     userId: userId,
                     nome: currentUser.nome || currentUser.email,
                     data: selectedDate,
                     tipo: type,
-                    inizio: inizio,
-                    fine: fine,
-                    ore: type === 'work' ? ore : 0,
-                    _checkOverlap: true // Flag per controllo server-side
+                    inizio: type === 'work' ? start : '',
+                    fine: type === 'work' ? end : '',
+                    ore: type === 'work' ? ore : 0
                 });
                 
-                // 10. GESTISCI RISPOSTA
                 if (saveResult.success) {
-                    console.log('[SAVE CLOCK] Salvataggio OK');
+                    console.log('[SAVE] ✅ Salvato, ID:', saveResult.id);
                     
-                    // Feedback visivo
                     setSaveButtonState(false, '✅ Salvato!');
                     
-                    // Aggiorna stato locale
-                    currentDateEntries.push({
-                        id: saveResult.id,
-                        userId: userId,
-                        data: selectedDate,
-                        tipo: type,
-                        inizio: inizio,
-                        fine: fine,
-                        ore: ore
-                    });
+                    if (type === 'work') {
+                        currentDateEntries.push({
+                            id: saveResult.id,
+                            userId: userId,
+                            data: selectedDate,
+                            tipo: type,
+                            inizio: start,
+                            fine: end,
+                            ore: ore
+                        });
+                        updateExistingEntriesUI();
+                    }
                     
-                    updateExistingEntriesUI();
                     await loadHistory();
                     
-                    // Reset dopo 2s
                     setTimeout(() => {
                         isSaving = false;
-                        validateClockForm(); // Rivalida per stato pulsante
+                        document.getElementById('clockStart').value = '09:00';
+                        document.getElementById('clockEnd').value = '18:00';
+                        updateHoursPreview();
+                        validateClockForm();
                     }, 2000);
                     
                 } else {
-                    // Errore server (incluso overlap rilevato lato server)
+                    // Errore dal server
                     throw new Error(saveResult.error || 'Errore server');
                 }
                 
             } catch (error) {
-                console.error('[SAVE CLOCK] Errore:', error.message);
+                console.error('[SAVE] ❌ ERRORE:', error.message);
                 
                 isSaving = false;
                 setSaveButtonState(true, '❌ Errore - Riprova');
-                
                 showAlert('clockAlert', `❌ ${error.message}`, 'error');
                 
-                setTimeout(() => {
+                if (error.message.toLowerCase().includes('sovrapposizione')) {
                     validateClockForm();
-                }, 2000);
+                }
             }
         }
         
         // ==========================================
-        // API - CON TIMEOUT E RETRY
+        // API
         // ==========================================
         async function apiCall(action, params = {}, retryCount = 0) {
             const MAX_RETRIES = 2;
-            const TIMEOUT = 30000; // 30s
+            const TIMEOUT = 30000;
             
             try {
                 const url = new URL(API_URL);
@@ -1380,8 +1309,6 @@
                         url.searchParams.append(key, params[key]);
                     }
                 });
-                
-                console.log(`[API] ${action}`, params);
                 
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
@@ -1396,19 +1323,12 @@
                 
                 clearTimeout(timeoutId);
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
-                const data = await response.json();
-                console.log(`[API] ${action} risposta:`, data.success ? 'OK' : 'FAIL');
-                return data;
+                return await response.json();
                 
             } catch (e) {
-                console.error(`[API] ${action} errore:`, e.message);
-                
                 if (retryCount < MAX_RETRIES && (e.name === 'TypeError' || e.name === 'AbortError')) {
-                    console.log(`[API] Retry ${retryCount + 1}/${MAX_RETRIES}...`);
                     await new Promise(r => setTimeout(r, 1000 * (retryCount + 1)));
                     return apiCall(action, params, retryCount + 1);
                 }
@@ -1442,11 +1362,9 @@
                 
                 if (result.success && result.user) {
                     currentUser = result.user;
-                    
                     if (!currentUser.id || !currentUser.ruolo) {
                         throw new Error('Dati utente incompleti');
                     }
-                    
                     await showApp();
                 } else {
                     throw new Error(result.error || 'Credenziali errate');
@@ -1469,22 +1387,12 @@
             if (currentUser.ruolo === 'admin') {
                 document.getElementById('adminNav').classList.remove('hidden');
                 document.getElementById('employeeNav').classList.add('hidden');
-                
-                await Promise.all([
-                    loadDashboard(),
-                    loadTeam(),
-                    loadReportEmployees()
-                ]);
+                await Promise.all([loadDashboard(), loadTeam(), loadReportEmployees()]);
                 await loadAdminSummary();
             } else {
                 document.getElementById('adminNav').classList.add('hidden');
                 document.getElementById('employeeNav').classList.remove('hidden');
-                
-                await Promise.all([
-                    onDateChange(),
-                    loadHistory()
-                ]);
-                
+                await Promise.all([onDateChange(), loadHistory()]);
                 showTab('clock', document.querySelector('#employeeNav .nav-tab'));
             }
         }
@@ -1499,15 +1407,11 @@
         async function showTab(tabName, clickedElement) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            
             document.getElementById(tabName).classList.add('active');
             clickedElement.classList.add('active');
             
             switch(tabName) {
-                case 'dashboard': 
-                    await loadDashboard(); 
-                    await loadAdminSummary(); 
-                    break;
+                case 'dashboard': await loadDashboard(); await loadAdminSummary(); break;
                 case 'team': await loadTeam(); break;
                 case 'history': await loadHistory(); break;
                 case 'reports': await loadReport(); break;
@@ -1516,8 +1420,7 @@
         }
         
         // ==========================================
-        // DASHBOARD, TEAM, REPORTS, HISTORY, EDIT
-        // (Codice simile all'originale ma con fix)
+        // DASHBOARD
         // ==========================================
         async function loadDashboard() {
             const result = await apiCall('get');
@@ -1542,10 +1445,7 @@
                 return entryMonth === currentMonth && e.tipo === 'work';
             });
             
-            const totalHours = monthWorkEntries.reduce((sum, e) => {
-                return sum + parseHoursField(e.ore, e.inizio, e.fine);
-            }, 0);
-            
+            const totalHours = monthWorkEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
             document.getElementById('statMonth').textContent = formatHoursDecimal(totalHours);
             
             const uniqueEmployees = new Set(allEntries.map(e => e.userId).filter(id => id)).size;
@@ -1588,9 +1488,7 @@
             });
             
             const workEntries = monthEntries.filter(e => e.tipo === 'work');
-            const totalHours = workEntries.reduce((sum, e) => {
-                return sum + parseHoursField(e.ore, e.inizio, e.fine);
-            }, 0);
+            const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
             
             document.getElementById('sidebarTotalHours').textContent = formatHoursTime(totalHours);
             document.getElementById('sidebarDecimalHours').textContent = formatHoursDecimal(totalHours) + ' h';
@@ -1600,17 +1498,18 @@
             document.getElementById('sidebarFestive').textContent = monthEntries.filter(e => e.tipo === 'festive').length;
         }
         
+        // ==========================================
+        // TEAM
+        // ==========================================
         async function loadTeam() {
             const result = await apiCall('get_users');
             if (!result.success) {
-                document.getElementById('teamList').innerHTML = `
-                    <div class="alert alert-error">Errore caricamento team</div>`;
+                document.getElementById('teamList').innerHTML = `<div class="alert alert-error">Errore caricamento team</div>`;
                 return;
             }
             
             allUsers = result.users || [];
             allUsers.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
-            
             const employees = allUsers.filter(u => u.ruolo !== 'admin');
             
             const list = document.getElementById('teamList');
@@ -1624,9 +1523,7 @@
                 list.innerHTML = employees.map(u => `
                     <div class="entry-item">
                         <div class="entry-info">
-                            <div class="entry-date">${u.nome || 'Senza nome'} 
-                                <span style="color: var(--gray); font-size: 0.8rem;">(ID: ${u.id || 'N/A'})</span>
-                            </div>
+                            <div class="entry-date">${u.nome || 'Senza nome'} <span style="color: var(--gray); font-size: 0.8rem;">(ID: ${u.id || 'N/A'})</span></div>
                             <div class="entry-time">${u.email || 'Email non disponibile'}</div>
                         </div>
                         <span class="badge badge-work">Attivo</span>
@@ -1703,6 +1600,9 @@
             window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
         }
         
+        // ==========================================
+        // STORICO
+        // ==========================================
         async function loadHistory() {
             if (!currentUser) return;
             
@@ -1775,7 +1675,7 @@
         }
         
         // ==========================================
-        // MODALE MODIFICA - CON VALIDAZIONE
+        // MODALE MODIFICA
         // ==========================================
         function openEditModal(entryId, entryUserId) {
             const entry = currentHistoryEntries.find(e => String(e.id) === String(entryId));
@@ -1837,7 +1737,6 @@
                 return false;
             }
             
-            // Filtra entries della stessa data (escludendo quella in modifica)
             const sameDateEntries = currentHistoryEntries.filter(e => {
                 const entryDate = e.data ? e.data.split('T')[0] : '';
                 return entryDate === newDate && e.tipo === 'work';
@@ -1889,7 +1788,6 @@
                     return;
                 }
                 
-                // Controllo server-side con dati fresh
                 const result = await apiCall('get');
                 if (result.success) {
                     const allDateEntries = result.data.filter(e => {
@@ -1927,7 +1825,7 @@
         }
         
         // ==========================================
-        // REPORT E EXPORT
+        // REPORT
         // ==========================================
         async function loadReportEmployees() {
             const result = await apiCall('get_users');
@@ -1972,7 +1870,6 @@
             
             currentReportData = entries;
             
-            // Calcola statistiche
             const workEntries = entries.filter(e => e.tipo === 'work');
             const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
             
@@ -2001,14 +1898,12 @@
                 </div>
             `;
             
-            // Render dettaglio giornaliero...
             const div = document.getElementById('reportResult');
             if (entries.length === 0) {
                 div.innerHTML = '<div class="empty-state">Nessun dato</div>';
                 return;
             }
             
-            // Raggruppa per data
             const byDate = {};
             entries.forEach(e => {
                 const dateKey = e.data ? e.data.split('T')[0] : 'unknown';
@@ -2047,6 +1942,9 @@
             div.innerHTML = html;
         }
         
+        // ==========================================
+        // EXPORT
+        // ==========================================
         function exportExcelCurrent() {
             if (!currentReportData || currentReportData.length === 0) {
                 alert('Nessun dato da esportare');
@@ -2086,7 +1984,6 @@
                 });
             });
             
-            // Riepilogo
             const workEntries = currentHistoryEntries.filter(e => e.tipo === 'work');
             const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
             
@@ -2126,12 +2023,7 @@
         // UTILITY
         // ==========================================
         function label(type) {
-            const labels = { 
-                work: 'Lavoro', 
-                holiday: 'Ferie', 
-                rest: 'Riposo', 
-                festive: 'Festivo' 
-            };
+            const labels = { work: 'Lavoro', holiday: 'Ferie', rest: 'Riposo', festive: 'Festivo' };
             return labels[type] || type;
         }
         
@@ -2153,7 +2045,6 @@
             
             let el = document.getElementById(containerId);
             if (!el) {
-                // Crea alert fluttuante
                 el = document.createElement('div');
                 el.id = 'tempAlert_' + Date.now();
                 el.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;max-width:90%;';
