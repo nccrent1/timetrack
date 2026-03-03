@@ -6,2065 +6,1279 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#6366f1">
-    <title>TimeTrack Pro</title>
+    <title>TimeTrack Pro - Gestione Presenze</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiVGltZVRyYWNrIFBybyIsInNob3J0X25hbWUiOiJUaW1lVHJhY2siLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzYzNjZmMSJ9">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* ==========================================
+           TIMETRACK PRO - CSS COMPLETO
+           ========================================== */
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
         :root { 
             --primary: #4f46e5; 
-            --primary-dark: #3730a3;
+            --primary-dark: #3730a3; 
             --success: #059669; 
             --danger: #dc2626; 
             --warning: #d97706; 
             --gray: #64748b; 
-            --dark: #0f172a;
-            --light: #f8fafc;
-            --border: #e2e8f0;
+            --dark: #1e293b; 
+            --light: #f8fafc; 
+            --border: #e2e8f0; 
         }
-        
+
         body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
             min-height: 100vh; 
-            color: var(--dark);
-            line-height: 1.6;
+            color: var(--dark); 
+            line-height: 1.5; 
         }
-        
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        
-        .app-container { 
+
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+
+        .login-screen, .app-container { 
             background: white; 
             border-radius: 24px; 
-            min-height: 85vh; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); 
             overflow: hidden; 
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-            display: flex;
-            flex-direction: column;
+            min-height: 90vh; 
         }
-        
+
         .header { 
-            background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%); 
+            background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%); 
             color: white; 
-            padding: 30px 20px; 
-            text-align: center;
+            padding: 40px 30px; 
+            text-align: center; 
+            position: relative; 
         }
-        
-        .header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 5px; }
-        .header p { opacity: 0.9; font-size: 0.95rem; }
-        
+
+        .header h1 { 
+            font-size: 2.2rem; 
+            font-weight: 700; 
+            margin-bottom: 8px; 
+            letter-spacing: -0.5px; 
+        }
+
+        .header p { 
+            font-size: 1rem; 
+            opacity: 0.9; 
+            font-weight: 400; 
+        }
+
         .content { 
+            padding: 30px; 
+            display: grid; 
+            grid-template-columns: 1fr 320px; 
+            gap: 30px; 
+        }
+
+        .content.single-column { 
+            grid-template-columns: 1fr; 
+        }
+
+        .main-area { 
+            min-width: 0; 
+        }
+
+        .sidebar { 
+            background: var(--light); 
+            border-radius: 20px; 
             padding: 25px; 
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 25px;
+            height: fit-content; 
+            position: sticky; 
+            top: 20px; 
         }
-        
-        @media (max-width: 1024px) {
-            .content { grid-template-columns: 1fr; }
-            .sidebar { order: -1; }
+
+        .sidebar-title { 
+            font-size: 0.875rem; 
+            font-weight: 600; 
+            color: var(--gray); 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            margin-bottom: 20px; 
         }
-        
-        .main-area { min-width: 0; }
-        .sidebar { display: flex; flex-direction: column; gap: 20px; }
-        
-        .form-group { margin-bottom: 20px; }
-        
+
+        .stat-card { 
+            background: white; 
+            border-radius: 16px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+        }
+
+        .stat-value { 
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            color: var(--primary); 
+            line-height: 1; 
+        }
+
+        .stat-value.time-format { 
+            font-size: 1.8rem; 
+            font-family: 'SF Mono', Monaco, monospace; 
+        }
+
+        .stat-label { 
+            font-size: 0.875rem; 
+            color: var(--gray); 
+            margin-top: 8px; 
+            font-weight: 500; 
+        }
+
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+
         label { 
             display: block; 
             margin-bottom: 8px; 
             font-weight: 600; 
-            font-size: 0.85rem; 
-            color: var(--dark);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 0.9rem; 
+            color: var(--dark); 
         }
-        
+
         input, select { 
             width: 100%; 
             padding: 14px 16px; 
             border: 2px solid var(--border); 
             border-radius: 12px; 
-            font-size: 15px;
-            transition: all 0.2s;
-            background: white;
+            font-size: 16px; 
+            transition: all 0.2s; 
+            background: white; 
         }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+
+        input:focus, select:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); 
         }
-        
+
         button { 
-            width: 100%; 
-            padding: 16px; 
+            padding: 14px 24px; 
             border: none; 
             border-radius: 12px; 
-            font-size: 15px; 
+            font-size: 0.95rem; 
             font-weight: 600; 
             cursor: pointer; 
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            transition: all 0.2s; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
         }
-        
-        button:active { transform: scale(0.98); }
-        
+
+        button:hover:not(:disabled) { 
+            transform: translateY(-1px); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+        }
+
+        button:active:not(:disabled) { 
+            transform: scale(0.98); 
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
         .btn-primary { 
             background: var(--primary); 
             color: white; 
-            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
         }
-        .btn-primary:hover { background: var(--primary-dark); }
-        
+
         .btn-success { 
             background: var(--success); 
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
+            color: white; 
         }
-        .btn-success:hover:not(:disabled) { filter: brightness(1.1); }
-        
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
+
+        .btn-danger { 
+            background: var(--danger); 
+            color: white; 
+        }
+
+        .btn-warning { 
+            background: var(--warning); 
+            color: white; 
+        }
+
         .btn-secondary { 
-            background: #f1f5f9; 
+            background: white; 
             color: var(--dark); 
-            border: 2px solid var(--border);
+            border: 2px solid var(--border); 
         }
-        
-        .btn-small {
-            padding: 8px 12px;
-            font-size: 0.8rem;
-            width: auto;
-            display: inline-flex;
+
+        .hidden { 
+            display: none !important; 
         }
-        
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-            background: var(--gray) !important;
-        }
-        
-        .hidden { display: none !important; }
-        
+
         .nav-tabs { 
             display: flex; 
-            justify-content: space-between; 
             gap: 8px; 
             margin-bottom: 25px; 
             padding: 6px; 
-            background: #f1f5f9; 
+            background: var(--light); 
             border-radius: 16px; 
         }
-        
+
         .nav-tab { 
             flex: 1; 
-            padding: 12px 8px; 
+            padding: 12px 16px; 
             background: transparent; 
             border: none; 
             border-radius: 12px; 
             color: var(--gray); 
             font-weight: 600; 
-            font-size: 0.75rem; 
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
+            font-size: 0.85rem; 
+            cursor: pointer; 
+            transition: all 0.2s; 
         }
-        
+
+        .nav-tab:hover { 
+            background: rgba(255,255,255,0.5); 
+        }
+
         .nav-tab.active { 
-            background: var(--primary); 
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+            background: white; 
+            color: var(--primary); 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
         }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
+
         .card { 
             background: white; 
-            border-radius: 16px; 
-            padding: 24px; 
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-radius: 20px; 
+            padding: 25px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); 
+            border: 1px solid var(--border); 
         }
-        
+
         .card-title { 
-            font-size: 1.1rem; 
+            font-size: 1.25rem; 
             font-weight: 700; 
             margin-bottom: 20px; 
+            color: var(--dark); 
             display: flex; 
             align-items: center; 
             gap: 10px;
-            color: var(--dark);
         }
-        
-        .summary-card {
-            background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
-            color: white;
-            border-radius: 20px;
-            padding: 24px;
-            text-align: center;
-            position: sticky;
+
+        /* Alert Notifications */
+        .alert {
+            position: fixed;
             top: 20px;
-            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.3);
-        }
-        
-        .summary-card .label {
-            font-size: 0.85rem;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-        
-        .summary-card .value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-        }
-        
-        .summary-card .sub-value {
-            font-size: 1rem;
-            opacity: 0.9;
-            margin-top: 5px;
-            font-variant-numeric: tabular-nums;
-        }
-        
-        .stat-grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 15px; 
-            margin-bottom: 25px; 
-        }
-        
-        .stat-box { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 16px; 
-            text-align: center; 
-            border: 1px solid var(--border);
-            transition: transform 0.2s;
-        }
-        
-        .stat-box:hover { transform: translateY(-2px); }
-        
-        .stat-number { 
-            font-size: 1.8rem; 
-            font-weight: 700; 
-            color: var(--primary);
-            font-variant-numeric: tabular-nums;
-        }
-        
-        .stat-label { 
-            font-size: 0.75rem; 
-            color: var(--gray); 
-            margin-top: 6px;
-            font-weight: 500;
-        }
-        
-        .entry-item { 
-            background: white; 
-            padding: 16px; 
-            border-radius: 12px; 
-            margin-bottom: 12px; 
-            border: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-        }
-        
-        .entry-item:hover {
-            border-color: var(--primary);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-        
-        .entry-actions {
-            display: flex;
-            gap: 8px;
-            margin-left: 10px;
-        }
-        
-        .entry-info { flex: 1; }
-        .entry-date { font-weight: 600; color: var(--dark); font-size: 0.95rem; }
-        .entry-time { 
-            font-size: 0.85rem; 
-            color: var(--gray); 
-            margin-top: 4px;
-            font-variant-numeric: tabular-nums;
-        }
-        
-        .badge { 
-            display: inline-block; 
-            padding: 6px 14px; 
-            border-radius: 20px; 
-            font-size: 0.75rem; 
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .badge-work { background: #dbeafe; color: #1e40af; }
-        .badge-holiday { background: #fce7f3; color: #be185d; }
-        .badge-rest { background: #d1fae5; color: #065f46; }
-        .badge-festive { background: #fef3c7; color: #92400e; }
-        
-        .loading { 
-            display: inline-block; 
-            width: 20px; 
-            height: 20px; 
-            border: 3px solid rgba(255,255,255,.3); 
-            border-radius: 50%; 
-            border-top-color: white; 
-            animation: spin 1s ease-in-out infinite; 
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .alert { 
-            padding: 16px; 
-            border-radius: 12px; 
-            margin-bottom: 20px; 
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-        
-        .creds-box { 
-            background: #ecfdf5; 
-            border: 2px solid var(--success); 
-            border-radius: 16px; 
-            padding: 20px; 
-            margin-top: 20px; 
-        }
-        
-        .creds-box p { 
-            font-family: 'SF Mono', monospace; 
-            font-size: 0.9rem; 
-            margin: 10px 0; 
-            word-break: break-all;
-            padding: 8px;
-            background: white;
-            border-radius: 6px;
-        }
-        
-        .section-title { 
-            font-size: 0.75rem; 
-            color: var(--gray); 
-            margin-bottom: 10px; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-        
-        .empty-state { 
-            text-align: center; 
-            padding: 50px 20px; 
-            color: var(--gray);
-            background: #f8fafc;
-            border-radius: 16px;
-            border: 2px dashed var(--border);
-        }
-        
-        .empty-state-icon { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; }
-        
-        .time-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .error-box {
-            background: #fee2e2;
-            border: 3px solid #dc2626;
+            right: 20px;
+            padding: 16px 20px;
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: none;
+            display: flex;
             align-items: center;
             gap: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            border: 2px solid #dc2626;
             color: #991b1b;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border: 2px solid #059669;
+            color: #065f46;
+        }
+
+        .alert-icon {
+            font-size: 20px;
+        }
+
+        .alert-text {
+            flex: 1;
+            font-weight: 500;
+            font-size: 0.95rem;
+            white-space: pre-line;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .alert-close:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Badge per tipo timbratura */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: 600;
+            text-transform: uppercase;
         }
-        
-        .error-box.show { display: flex; }
-        
-        .error-box.blocking {
-            background: #fecaca;
-            border-color: #991b1b;
+
+        .badge-normale { background: #e0e7ff; color: #3730a3; }
+        .badge-straordinario { background: #fef3c7; color: #92400e; }
+        .badge-ferie { background: #d1fae5; color: #065f46; }
+        .badge-malattia { background: #fee2e2; color: #991b1b; }
+
+        /* Utility */
+        .text-center { text-align: center; }
+        .text-gray-500 { color: #64748b; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+
+        /* Tabella */
+        .table-container {
+            overflow-x: auto;
         }
-        
-        .compact-list {
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 5px;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        
-        .compact-list::-webkit-scrollbar { width: 6px; }
-        .compact-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
-        .compact-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        
-        .hours-display {
-            font-variant-numeric: tabular-nums;
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--light);
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        tr:hover {
+            background: var(--light);
+        }
+
+        /* Azioni tabella */
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-edit { background: #e0e7ff; }
+        .btn-edit:hover { background: #c7d2fe; }
+        .btn-delete { background: #fee2e2; }
+        .btn-delete:hover { background: #fecaca; }
+
+        /* Statistiche dipendenti */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-row:last-child { border-bottom: none; }
+
+        .stat-name { font-weight: 500; }
+        .stat-ore { 
+            font-family: 'SF Mono', Monaco, monospace;
             font-weight: 600;
             color: var(--primary);
         }
-        
-        .report-filters {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 15px;
-            align-items: end;
-            margin-bottom: 20px;
-        }
-        
-        @media (max-width: 640px) {
-            .report-filters { grid-template-columns: 1fr; }
-            .container { padding: 0; }
-            .app-container { border-radius: 0; min-height: 100vh; }
-            .header { padding: 25px 20px; }
-            .header h1 { font-size: 1.5rem; }
-            .content { padding: 20px; }
-            .card { padding: 20px; }
-            .summary-card { position: static; }
-            .time-inputs { grid-template-columns: 1fr; }
-        }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-        
-        .modal-overlay.show { display: flex; }
-        
-        .modal {
+        .stat-giorni {
+            font-size: 0.8rem;
+            color: var(--gray);
             background: white;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: modalIn 0.3s;
+            padding: 2px 8px;
+            border-radius: 10px;
         }
-        
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        
-        .modal-header {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            width: auto;
-            padding: 0;
-        }
-        
-        .day-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+
+        /* Login form */
+        .login-form {
             max-width: 400px;
             margin: 0 auto;
+            padding: 40px 20px;
         }
-        
+
+        .login-form h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--dark);
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                position: static;
+            }
+        }
+
         @media (max-width: 640px) {
-            .day-selector { grid-template-columns: 1fr; }
-        }
-        
-        .export-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid var(--border);
-        }
-        
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .export-buttons button {
-            flex: 1;
-            min-width: 150px;
-        }
-        
-        .existing-entries {
-            background: #f0f9ff;
-            border: 2px solid #7dd3fc;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-        
-        .existing-entries-title {
-            font-weight: 600;
-            color: #0369a1;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-        
-        .existing-entry-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #bae6fd;
-            font-size: 0.9rem;
-        }
-        
-        .existing-entry-item:last-child {
-            border-bottom: none;
+            .alert {
+                left: 10px;
+                right: 10px;
+                top: 10px;
+                max-width: none;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .content {
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Modal Modifica -->
-    <div id="editModal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <span>✏️ Modifica Registrazione</span>
-                <button class="modal-close" onclick="closeEditModal()">×</button>
-            </div>
-            <div id="editForm">
-                <input type="hidden" id="editId">
-                <input type="hidden" id="editUserId">
+
+    <!-- ==========================================
+         SCHERMATA LOGIN
+         ========================================== -->
+    <div id="loginScreen" class="login-screen">
+        <div class="header">
+            <h1>⏰ TimeTrack Pro</h1>
+            <p>Gestione Presenze Dipendenti</p>
+        </div>
+        <div class="login-form">
+            <form id="loginForm">
                 <div class="form-group">
-                    <label>Data</label>
-                    <input type="date" id="editDate" onchange="validateEditForm()">
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="Inserisci username" required>
                 </div>
                 <div class="form-group">
-                    <label>Tipo Presenza</label>
-                    <select id="editType" onchange="toggleEditTime(); validateEditForm();">
-                        <option value="work">Lavoro Ordinario</option>
-                        <option value="rest">Riposo</option>
-                        <option value="holiday">Ferie</option>
-                        <option value="festive">Giorno Festivo</option>
-                    </select>
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Inserisci password" required>
                 </div>
-                <div id="editTimeSection">
-                    <div class="time-inputs">
-                        <div class="form-group">
-                            <label>Ora Entrata</label>
-                            <input type="time" id="editStart" onchange="validateEditForm()">
-                        </div>
-                        <div class="form-group">
-                            <label>Ora Uscita</label>
-                            <input type="time" id="editEnd" onchange="validateEditForm()">
-                        </div>
-                    </div>
-                </div>
-                <div id="editOverlapError" class="error-box" style="margin-top: 15px;">
-                    <span style="font-size: 1.5rem;">🚫</span>
-                    <div>
-                        <div style="font-weight: 600;">Orario non valido</div>
-                        <div id="editOverlapMessage">Esiste già una registrazione che si sovrappone a questo orario.</div>
-                    </div>
-                </div>
-                <button class="btn-success" onclick="saveEdit()" id="editSaveBtn" style="margin-top: 15px;">Salva Modifiche</button>
-                <button class="btn-secondary" onclick="closeEditModal()" style="margin-top: 10px;">Annulla</button>
-            </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">
+                    🔐 Accedi
+                </button>
+            </form>
         </div>
     </div>
 
-    <div id="loginScreen" class="container">
-        <div class="app-container">
-            <div class="header">
-                <h1>⏰ TimeTrack Pro</h1>
-                <p>Gestione Presenze Intelligente</p>
-            </div>
-            <div class="content" style="display: block; max-width: 400px; margin: 0 auto;">
-                <div id="loginAlert"></div>
-                <div class="card" style="margin-top: 20px;">
-                    <div class="form-group">
-                        <label>📧 Email</label>
-                        <input type="email" id="loginEmail" placeholder="nome@azienda.it" autocomplete="email">
-                    </div>
-                    <div class="form-group">
-                        <label>🔑 Password</label>
-                        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
-                    </div>
-                    <button class="btn-primary" onclick="login()">Accedi all'App</button>
-                </div>
-            </div>
+    <!-- ==========================================
+         APP CONTAINER (nascosto all'inizio)
+         ========================================== -->
+    <div id="appContainer" class="app-container hidden">
+        <div class="header">
+            <h1>⏰ TimeTrack Pro</h1>
+            <p>Gestione Presenze Dipendenti</p>
+            <button id="btnLogout" class="btn-secondary" style="position: absolute; top: 20px; right: 20px;">
+                🚪 Logout
+            </button>
         </div>
-    </div>
 
-    <div id="appContainer" class="container hidden">
-        <div class="app-container">
-            <div class="header">
-                <h1>TimeTrack Pro</h1>
-                <p id="welcomeText"></p>
-            </div>
-            <div class="content">
-                <div class="main-area">
-                    <div id="adminNav" class="nav-tabs hidden">
-                        <button class="nav-tab active" onclick="showTab('dashboard', this)">📊 Dashboard</button>
-                        <button class="nav-tab" onclick="showTab('team', this)">👥 Team</button>
-                        <button class="nav-tab" onclick="showTab('reports', this)">📈 Report</button>
-                    </div>
-                    <div id="employeeNav" class="nav-tabs hidden">
-                        <button class="nav-tab active" onclick="showTab('clock', this)">⏰ Timbra</button>
-                        <button class="nav-tab" onclick="showTab('history', this)">📋 Storico</button>
-                    </div>
+        <div class="content">
+            <div class="main-area">
+                <!-- Tabs -->
+                <div class="nav-tabs">
+                    <button class="nav-tab active" data-tab="tabTimbrature">📝 Timbrature</button>
+                    <button class="nav-tab" data-tab="tabStatistiche">📊 Statistiche</button>
+                </div>
 
-                    <div id="dashboard" class="tab-content active">
-                        <div id="dashboardAlert"></div>
-                        <div class="stat-grid">
-                            <div class="stat-box">
-                                <div class="stat-number" id="statToday">-</div>
-                                <div class="stat-label">Timbrature Oggi</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-number" id="statMonth">-</div>
-                                <div class="stat-label">Ore Mese</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-number" id="statEmployees">-</div>
-                                <div class="stat-label">Dipendenti Attivi</div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-title">🕐 Registrazioni di Oggi</div>
-                            <div id="todayList"><div class="loading"></div></div>
-                        </div>
-                        <button class="btn-secondary" onclick="logout()" style="max-width: 200px;">🚪 Logout</button>
-                    </div>
-
-                    <div id="team" class="tab-content">
-                        <div class="card">
-                            <div class="card-title">➕ Nuovo Dipendente</div>
-                            <div id="addAlert"></div>
-                            <div class="form-group">
-                                <label>Nome Completo</label>
-                                <input type="text" id="newName" placeholder="Mario Rossi">
-                            </div>
-                            <div class="form-group">
-                                <label>Email Aziendale</label>
-                                <input type="email" id="newEmail" placeholder="mario.rossi@azienda.it">
-                            </div>
-                            <button class="btn-success" onclick="addEmployee()">Crea Account Dipendente</button>
-                            <div id="newCreds" class="creds-box hidden">
-                                <p style="font-weight: 600; margin-bottom: 15px;">✅ Dipendente Creato con Successo!</p>
-                                <div class="section-title">Link Accesso App</div>
-                                <p id="appUrl" style="font-size: 0.8rem;"></p>
-                                <div class="section-title">Credenziali Accesso</div>
-                                <p>👤 <span id="credEmail"></span></p>
-                                <p>🔑 <span id="credPass"></span></p>
-                                <button class="btn-primary" onclick="shareWhatsApp()" style="margin-top: 15px;">
-                                    📱 Condividi su WhatsApp
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-title">👥 Elenco Dipendenti</div>
-                            <div id="teamList"><div class="loading"></div></div>
-                        </div>
-                    </div>
-
-                    <div id="reports" class="tab-content">
-                        <div id="reportsAlert"></div>
-                        <div class="card">
-                            <div class="card-title">📊 Report e Export</div>
-                            
-                            <div class="report-filters">
-                                <div class="form-group" style="margin: 0;">
-                                    <label>Mese</label>
-                                    <input type="month" id="reportMonth" onchange="loadReport()">
+                <!-- Tab Timbrature -->
+                <div id="tabTimbrature" class="tab-content">
+                    <!-- Form Timbratura -->
+                    <div class="card">
+                        <h2 class="card-title">📝 Nuova Timbratura</h2>
+                        <form id="timbraturaForm">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div class="form-group">
+                                    <label>Data *</label>
+                                    <input type="date" id="dataInput" required>
                                 </div>
-                                <div class="form-group" style="margin: 0;">
-                                    <label>Dipendente</label>
-                                    <select id="reportEmployee" onchange="loadReport()">
-                                        <option value="all">Tutti i dipendenti</option>
+                                <div class="form-group">
+                                    <label>Dipendente *</label>
+                                    <select id="dipendenteSelect" required>
+                                        <option value="">Seleziona...</option>
                                     </select>
                                 </div>
-                                <button class="btn-primary" onclick="loadReport()" style="margin: 0; padding: 14px 24px; height: fit-content;">
-                                    🔄 Aggiorna
-                                </button>
-                            </div>
-
-                            <div id="reportSummary" style="margin-bottom: 20px;"></div>
-                            
-                            <div class="export-buttons">
-                                <button class="btn-success" onclick="exportExcelCurrent()">📊 Excel Selezione</button>
-                                <button class="btn-secondary" onclick="exportExcelAll()">📁 Excel Completo</button>
-                            </div>
-                            
-                            <div id="reportResult" style="margin-top: 25px;"></div>
-                        </div>
-                    </div>
-
-                    <div id="clock" class="tab-content">
-                        <div id="clockAlert"></div>
-                        
-                        <!-- Sezione entry esistenti -->
-                        <div id="existingEntriesSection" class="existing-entries hidden">
-                            <div class="existing-entries-title">📋 Registrazioni esistenti per questa data:</div>
-                            <div id="existingEntriesList"></div>
-                        </div>
-                        
-                        <!-- ERRORE BLOCCANTE -->
-                        <div id="overlapError" class="error-box blocking">
-                            <span style="font-size: 1.5rem;">🚫</span>
-                            <div>
-                                <div style="font-weight: 700; font-size: 1.1rem;">SALVATAGGIO BLOCCATO</div>
-                                <div id="overlapMessage" style="margin-top: 5px;">Esiste già una registrazione che si sovrappone a questo orario.</div>
-                            </div>
-                        </div>
-                        
-                        <div class="card" style="text-align: center;">
-                            <div class="day-selector">
-                                <div class="form-group" style="text-align: left; margin: 0;">
-                                    <label>📅 Data *</label>
-                                    <input type="date" id="clockDate" onchange="onDateChange()">
+                                <div class="form-group">
+                                    <label>Ora Inizio *</label>
+                                    <input type="time" id="oraInizio" required>
                                 </div>
-                                <div class="form-group" style="text-align: left; margin: 0;">
-                                    <label>Tipo Presenza *</label>
-                                    <select id="clockType" onchange="onTypeChange()" style="font-size: 1rem;">
-                                        <option value="work">Lavoro Ordinario</option>
-                                        <option value="rest">Riposo</option>
-                                        <option value="holiday">Ferie</option>
-                                        <option value="festive">Giorno Festivo</option>
+                                <div class="form-group">
+                                    <label>Ora Fine *</label>
+                                    <input type="time" id="oraFine" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ore Pausa</label>
+                                    <input type="number" id="orePausa" value="0" min="0" max="8" step="0.5">
+                                </div>
+                                <div class="form-group">
+                                    <label>Tipo</label>
+                                    <select id="tipoTimbratura">
+                                        <option value="normale">Normale</option>
+                                        <option value="straordinario">Straordinario</option>
+                                        <option value="ferie">Ferie</option>
+                                        <option value="malattia">Malattia</option>
                                     </select>
                                 </div>
                             </div>
-                            
-                            <div id="clockTimeSection" style="max-width: 400px; margin: 20px auto 0;">
-                                <div class="time-inputs">
-                                    <div class="form-group" style="text-align: left;">
-                                        <label>Ora Entrata *</label>
-                                        <input type="time" id="clockStart" value="09:00" style="font-size: 1.2rem; text-align: center;" onchange="onTimeChange()">
-                                    </div>
-                                    <div class="form-group" style="text-align: left;">
-                                        <label>Ora Uscita *</label>
-                                        <input type="time" id="clockEnd" value="18:00" style="font-size: 1.2rem; text-align: center;" onchange="onTimeChange()">
-                                    </div>
-                                </div>
-                                <div id="hoursPreview" style="margin: 15px 0; padding: 15px; background: #f0fdf4; border-radius: 12px; color: var(--success); font-weight: 600;">
-                                    Totale: <span id="previewHours">0.00</span> ore
-                                </div>
+                            <div class="form-group">
+                                <label>Note</label>
+                                <input type="text" id="noteInput" placeholder="Note opzionali...">
                             </div>
-                            
-                            <button class="btn-success" onclick="saveClock()" id="saveBtn" style="font-size: 1.1rem; padding: 18px; margin-top: 20px; max-width: 400px;">
-                                💾 Salva Registrazione
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" id="btnSalva" class="btn-primary">
+                                    💾 Salva Timbratura
+                                </button>
+                                <button type="button" id="btnAnnullaModifica" class="btn-secondary hidden" onclick="resetForm()">
+                                    ❌ Annulla
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Filtri -->
+                    <div class="card">
+                        <h3 class="card-title" style="font-size: 1rem;">🔍 Filtri</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Filtra per Data</label>
+                                <input type="date" id="filterData">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Filtra per Dipendente</label>
+                                <select id="filterDipendente">
+                                    <option value="">Tutti</option>
+                                </select>
+                            </div>
+                            <button onclick="updateTabella()" class="btn-secondary">
+                                🔄 Aggiorna
                             </button>
                         </div>
-                        <button class="btn-secondary" onclick="logout()" style="max-width: 200px;">🚪 Logout</button>
                     </div>
 
-                    <div id="history" class="tab-content">
-                        <div id="historyAlert"></div>
-                        <div class="card">
-                            <div class="card-title">📋 Storico Presenze</div>
-                            <div class="form-group" style="max-width: 300px;">
-                                <label>Seleziona Mese</label>
-                                <input type="month" id="historyMonth" onchange="loadHistory()">
-                            </div>
-                            <div id="historyList" class="compact-list"><div class="loading"></div></div>
-                            
-                            <div class="export-section">
-                                <div class="card-title">📊 Export Mio Riepilogo</div>
-                                <button class="btn-success" onclick="exportEmployeeExcel()">📥 Scarica Excel con Riepilogo</button>
-                            </div>
+                    <!-- Tabella Timbrature -->
+                    <div class="card">
+                        <h2 class="card-title">📋 Storico Timbrature</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Dipendente</th>
+                                        <th>Orario</th>
+                                        <th>Ore</th>
+                                        <th>Tipo</th>
+                                        <th>Note</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabellaTimbrature">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-gray-500 py-8">
+                                            Nessuna timbratura trovata
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Export -->
+                    <div class="card">
+                        <h3 class="card-title" style="font-size: 1rem;">📤 Export Dati</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="exportExcel()" class="btn-success">
+                                📊 Excel
+                            </button>
+                            <button onclick="exportPDF()" class="btn-danger">
+                                📄 PDF
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="sidebar">
-                    <div class="summary-card">
-                        <div class="label">Totale Ore Mese</div>
-                        <div class="value" id="sidebarTotalHours">00:00</div>
-                        <div class="sub-value" id="sidebarDecimalHours">0.00 h</div>
-                    </div>
-                    
-                    <div class="card" style="padding: 20px;">
-                        <div class="card-title" style="font-size: 1rem; margin-bottom: 15px;">📅 Riepilogo Mese</div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
-                            <span style="color: var(--gray); font-size: 0.9rem;">Giorni Lavorati</span>
-                            <span style="font-weight: 600;" id="sidebarWorkDays">0</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
-                            <span style="color: var(--gray); font-size: 0.9rem;">Ferie</span>
-                            <span style="font-weight: 600;" id="sidebarHolidays">0</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
-                            <span style="color: var(--gray); font-size: 0.9rem;">Riposo</span>
-                            <span style="font-weight: 600;" id="sidebarRest">0</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: var(--gray); font-size: 0.9rem;">Giorni Festivi</span>
-                            <span style="font-weight: 600;" id="sidebarFestive">0</span>
-                        </div>
-                    </div>
-                    
-                    <div class="card" style="background: #eff6ff; border-color: #bfdbfe;">
-                        <div style="font-size: 0.85rem; color: #1e40af; line-height: 1.5;">
-                            <strong>💡 Suggerimento:</strong><br>
-                            Aggiungi questa app alla schermata home per un accesso rapido come una vera app!
+                <!-- Tab Statistiche -->
+                <div id="tabStatistiche" class="tab-content hidden">
+                    <div class="card">
+                        <h2 class="card-title">📊 Statistiche Mensili</h2>
+                        <div id="statisticheMensili">
+                            <p class="text-gray-500">Seleziona un mese per visualizzare le statistiche</p>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-title">📈 Riepilogo Oggi</div>
+                
+                <div class="stat-card">
+                    <div class="stat-value time-format" id="statOreOggi">0.00h</div>
+                    <div class="stat-label">Ore lavorate oggi</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-value" id="statTimbrature">0</div>
+                    <div class="stat-label">Timbrature totali</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-value time-format" id="statOreMese">0.00h</div>
+                    <div class="stat-label">Ore questo mese</div>
+                </div>
+
+                <div class="sidebar-title" style="margin-top: 30px;">👥 Ore per Dipendente</div>
+                <div id="statDipendenti">
+                    <p class="text-gray-500">Nessun dato</p>
+                </div>
+
+                <div class="sidebar-title" style="margin-top: 30px;">➕ Aggiungi Dipendente</div>
+                <div class="form-group">
+                    <input type="text" id="nuovoDipendente" placeholder="Nome dipendente...">
+                </div>
+                <button onclick="aggiungiDipendenteDaInput()" class="btn-primary" style="width: 100%;">
+                    ➕ Aggiungi
+                </button>
+            </div>
         </div>
     </div>
 
+    <!-- ==========================================
+         JAVASCRIPT COMPLETO
+         ========================================== -->
     <script>
         // ==========================================
-        // CONFIGURAZIONE E STATO GLOBALE
+        // TIMETRACK PRO - JAVASCRIPT COMPLETO
         // ==========================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzCHH0x-8Gw1YNOoBqJ_rZH74PYBAfKUeczK8H1SXYXCSvhRCVSMHa6_coHPhypUArR/exec';
-        const APP_URL = window.location.href.split('?')[0].replace(/\/$/, '');
-        
+
+        let timbrature = [];
+        let dipendenti = [];
         let currentUser = null;
-        let allEntries = [];
-        let allUsers = [];
-        let lastCreated = null;
-        let currentReportData = [];
-        let currentHistoryEntries = [];
-        let currentDateEntries = [];
-        let alertTimeouts = {};
-        let currentEditingId = null;
-        let isSaving = false;
-        
+        let editingId = null;
+
         // ==========================================
         // INIZIALIZZAZIONE
         // ==========================================
-        window.onload = function() {
-            const today = new Date();
-            const monthStr = today.toISOString().slice(0, 7);
-            document.getElementById('reportMonth').value = monthStr;
-            document.getElementById('historyMonth').value = monthStr;
-            document.getElementById('clockDate').value = today.toISOString().split('T')[0];
-            updateHoursPreview();
-        };
-        
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+        });
+
+        function initApp() {
+            loadData();
+            setupEventListeners();
+            updateUI();
+            
+            // Imposta data di oggi
+            document.getElementById('dataInput').valueAsDate = new Date();
+            
+            // Se c'è un utente loggato, mostra l'app
+            if (localStorage.getItem('currentUser')) {
+                showApp();
+            } else {
+                showLogin();
+            }
+        }
+
+        function setupEventListeners() {
+            // Login
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Form timbratura - IMPORTANTE: preventDefault qui
+            document.getElementById('timbraturaForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                salvaTimbratura();
+            });
+            
+            // Navigazione tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', switchTab);
+            });
+            
+            // Logout
+            document.getElementById('btnLogout').addEventListener('click', logout);
+        }
+
         // ==========================================
-        // UTILITY TIME
+        // GESTIONE DATI LOCALSTORAGE
         // ==========================================
-        function calculateHours(start, end) {
-            if (!start || !end || typeof start !== 'string' || typeof end !== 'string') return -1;
-            
-            const startParts = start.trim().split(':');
-            const endParts = end.trim().split(':');
-            
-            if (startParts.length < 2 || endParts.length < 2) return -1;
-            
-            const h1 = parseInt(startParts[0], 10);
-            const m1 = parseInt(startParts[1], 10);
-            const h2 = parseInt(endParts[0], 10);
-            const m2 = parseInt(endParts[1], 10);
-            
-            if (isNaN(h1) || isNaN(m1) || isNaN(h2) || isNaN(m2)) return -1;
-            if (h1 < 0 || h1 > 23 || m1 < 0 || m1 > 59 || h2 < 0 || h2 > 23 || m2 < 0 || m2 > 59) return -1;
-            
-            let startMinutes = h1 * 60 + m1;
-            let endMinutes = h2 * 60 + m2;
-            
-            if (endMinutes < startMinutes) endMinutes += 24 * 60;
-            
-            const diffMinutes = endMinutes - startMinutes;
-            const hours = diffMinutes / 60;
-            
-            return (hours >= 0 && hours <= 24) ? hours : -1;
+
+        function loadData() {
+            try {
+                timbrature = JSON.parse(localStorage.getItem('timbature')) || [];
+                dipendenti = JSON.parse(localStorage.getItem('dipendenti')) || [];
+                currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+            } catch (e) {
+                console.error('Errore caricamento dati:', e);
+                timbrature = [];
+                dipendenti = [];
+            }
         }
-        
-        function timeToMinutes(timeStr) {
-            if (!timeStr || typeof timeStr !== 'string') return null;
-            const parts = timeStr.split(':');
-            if (parts.length < 2) return null;
-            const h = parseInt(parts[0], 10);
-            const m = parseInt(parts[1], 10);
-            if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) return null;
-            return h * 60 + m;
+
+        function saveData() {
+            localStorage.setItem('timbature', JSON.stringify(timbrature));
+            localStorage.setItem('dipendenti', JSON.stringify(dipendenti));
         }
-        
-        function formatHoursDecimal(hours) {
-            if (typeof hours !== 'number' || isNaN(hours) || hours < 0) return '0.00';
-            return hours.toFixed(2);
+
+        // ==========================================
+        // AUTENTICAZIONE
+        // ==========================================
+
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                mostraErrore('Inserisci username e password');
+                return false;
+            }
+            
+            // Simulazione autenticazione
+            if (password.length < 4) {
+                mostraErrore('Password non valida (min 4 caratteri)');
+                return false;
+            }
+            
+            currentUser = {
+                id: Date.now(),
+                username: username,
+                nome: username,
+                ruolo: 'admin'
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            mostraSuccesso('Benvenuto ' + username);
+            showApp();
+            return true;
         }
-        
-        function formatHoursTime(hours) {
-            if (typeof hours !== 'number' || isNaN(hours) || hours < 0) return '00:00';
-            const h = Math.floor(hours);
-            const m = Math.round((hours - h) * 60);
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+
+        function logout() {
+            if (confirm('Sei sicuro di voler uscire?')) {
+                localStorage.removeItem('currentUser');
+                currentUser = null;
+                showLogin();
+            }
         }
-        
-        function parseHoursField(oreValue, inizio, fine) {
-            if (typeof oreValue === 'number' && !isNaN(oreValue) && oreValue >= 0 && oreValue <= 24) return oreValue;
-            if (typeof oreValue === 'string') {
-                const trimmed = oreValue.trim();
-                if (trimmed === '' || trimmed.includes('T') || /^\d{4}-/.test(trimmed)) {
-                    return calculateHours(inizio, fine);
+
+        // ==========================================
+        // GESTIONE TIMBRATURE - CORE FUNCTION
+        // ==========================================
+
+        function salvaTimbratura() {
+            // 1. DISABILITA BOTTONE SUBITO
+            const btnSalva = document.getElementById('btnSalva');
+            const originalText = btnSalva.innerHTML;
+            
+            btnSalva.disabled = true;
+            btnSalva.innerHTML = '⏳ Salvataggio...';
+            
+            try {
+                // 2. RACCOLTA DATI
+                const dataInput = document.getElementById('dataInput').value;
+                const oraInizio = document.getElementById('oraInizio').value;
+                const oraFine = document.getElementById('oraFine').value;
+                const dipendenteId = document.getElementById('dipendenteSelect').value;
+                const tipo = document.getElementById('tipoTimbratura').value;
+                const note = document.getElementById('noteInput').value.trim();
+                const orePausa = parseFloat(document.getElementById('orePausa').value) || 0;
+                
+                // 3. VALIDAZIONE CAMPI OBBLIGATORI
+                if (!dataInput || !oraInizio || !oraFine || !dipendenteId) {
+                    mostraErrore('Compila tutti i campi obbligatori (*)');
+                    ripristinaBottone(btnSalva, originalText);
+                    return false;
                 }
-                const parsed = parseFloat(trimmed);
-                if (!isNaN(parsed) && parsed >= 0 && parsed <= 24) return parsed;
+                
+                // 4. VALIDAZIONE ORARIO (fine > inizio)
+                if (oraFine <= oraInizio) {
+                    mostraErrore('L\'ora di fine deve essere successiva all\'ora di inizio');
+                    ripristinaBottone(btnSalva, originalText);
+                    return false;
+                }
+                
+                // 5. CONTROLLO SOVRAPPOSIZIONI ORARIE (CRITICO)
+                const sovrapposizione = controllaSovrapposizioni(
+                    dataInput, 
+                    oraInizio, 
+                    oraFine, 
+                    dipendenteId, 
+                    editingId
+                );
+                
+                if (sovrapposizione.esiste) {
+                    mostraErrore(sovrapposizione.messaggio);
+                    ripristinaBottone(btnSalva, originalText);
+                    return false; // ← BLOCCA QUI, NON SALVA!
+                }
+                
+                // 6. CALCOLO ORE
+                const oreTotali = calcolaOreTotali(oraInizio, oraFine);
+                const oreNette = Math.max(0, oreTotali - orePausa);
+                
+                // 7. CREAZIONE OGGETTO
+                const nuovaTimbratura = {
+                    id: editingId || Date.now(),
+                    data: dataInput,
+                    oraInizio: oraInizio,
+                    oraFine: oraFine,
+                    oreTotali: oreTotali,
+                    orePausa: orePausa,
+                    oreNette: oreNette,
+                    dipendenteId: parseInt(dipendenteId),
+                    tipo: tipo,
+                    note: note,
+                    creatoDa: currentUser?.id,
+                    creatoIl: editingId ? undefined : new Date().toISOString(),
+                    modificatoIl: new Date().toISOString()
+                };
+                
+                // 8. SALVATAGGIO
+                if (editingId) {
+                    const index = timbrature.findIndex(t => t.id === editingId);
+                    if (index !== -1) {
+                        nuovaTimbratura.creatoIl = timbrature[index].creatoIl;
+                        timbrature[index] = nuovaTimbratura;
+                    }
+                } else {
+                    timbrature.push(nuovaTimbratura);
+                }
+                
+                saveData();
+                
+                // 9. AGGIORNAMENTO UI
+                updateTabella();
+                updateStatistiche();
+                resetForm();
+                
+                const msg = editingId ? 'Timbratura aggiornata' : 'Timbratura salvata';
+                mostraSuccesso(msg + ` (${oreNette.toFixed(2)} ore)`);
+                
+                editingId = null;
+                
+            } catch (error) {
+                console.error('Errore:', error);
+                mostraErrore('Errore durante il salvataggio');
+            } finally {
+                ripristinaBottone(btnSalva, originalText);
             }
-            return calculateHours(inizio, fine);
         }
-        
+
         // ==========================================
-        // ALGORITMO SOVRAPPOSIZIONE
+        // CONTROLLO SOVRAPPOSIZIONI ORARIE
         // ==========================================
-        function checkTimeOverlap(existingEntries, newStart, newEnd, excludeId) {
-            if (!newStart || !newEnd || !existingEntries || !Array.isArray(existingEntries)) {
-                return { hasOverlap: false, conflictingEntry: null, message: '' };
+
+        function controllaSovrapposizioni(data, oraInizio, oraFine, dipendenteId, excludeId) {
+            const timbratureGiorno = timbrature.filter(t => {
+                if (t.data !== data) return false;
+                if (t.dipendenteId !== parseInt(dipendenteId)) return false;
+                if (excludeId && t.id === excludeId) return false;
+                return true;
+            });
+            
+            if (timbratureGiorno.length === 0) {
+                return { esiste: false };
             }
             
-            const newStartMin = timeToMinutes(newStart);
-            const newEndMin = timeToMinutes(newEnd);
+            const nuovoInizio = timeToMinutes(oraInizio);
+            const nuovoFine = timeToMinutes(oraFine);
             
-            if (newStartMin === null || newEndMin === null) {
-                return { hasOverlap: false, conflictingEntry: null, message: 'Orario non valido' };
-            }
-            
-            let normNewStart = newStartMin;
-            let normNewEnd = newEndMin;
-            if (newEndMin < newStartMin) normNewEnd += 24 * 60;
-            
-            for (const entry of existingEntries) {
-                if (excludeId && String(entry.id) === String(excludeId)) continue;
-                if (entry.tipo !== 'work') continue;
+            for (const t of timbratureGiorno) {
+                const esistenteInizio = timeToMinutes(t.oraInizio);
+                const esistenteFine = timeToMinutes(t.oraFine);
                 
-                const existStart = entry.inizio;
-                const existEnd = entry.fine;
-                if (!existStart || !existEnd) continue;
+                const sovrappone = (nuovoInizio < esistenteFine) && (nuovoFine > esistenteInizio);
                 
-                const existStartMin = timeToMinutes(existStart);
-                const existEndMin = timeToMinutes(existEnd);
-                if (existStartMin === null || existEndMin === null) continue;
-                
-                let normExistStart = existStartMin;
-                let normExistEnd = existEndMin;
-                if (existEndMin < existStartMin) normExistEnd += 24 * 60;
-                
-                const overlap = (normNewStart < normExistEnd) && (normExistStart < normNewEnd);
-                
-                if (overlap) {
+                if (sovrappone) {
                     return {
-                        hasOverlap: true,
-                        conflictingEntry: entry,
-                        message: `Orario ${newStart}-${newEnd} si sovrappone con ${existStart}-${existEnd}`
+                        esiste: true,
+                        messaggio: `⚠️ Sovrapposizione oraria rilevata!\n\n` +
+                                  `Esistente: ${t.oraInizio} - ${t.oraFine}\n` +
+                                  `Nuovo: ${oraInizio} - ${oraFine}\n\n` +
+                                  `Modifica l'orario esistente o scegli un altro slot.`
                     };
                 }
             }
             
-            return { hasOverlap: false, conflictingEntry: null, message: '' };
+            return { esiste: false };
         }
-        
-        // ==========================================
-        // GESTIONE UI CLOCK
-        // ==========================================
-        function updateHoursPreview() {
-            const start = document.getElementById('clockStart').value;
-            const end = document.getElementById('clockEnd').value;
-            const hours = calculateHours(start, end);
-            document.getElementById('previewHours').textContent = hours >= 0 ? formatHoursDecimal(hours) : '--';
-            return hours;
+
+        function timeToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
         }
-        
-        function onTypeChange() {
-            const type = document.getElementById('clockType').value;
-            const timeSection = document.getElementById('clockTimeSection');
-            timeSection.style.display = type === 'work' ? 'block' : 'none';
+
+        function calcolaOreTotali(oraInizio, oraFine) {
+            const inizio = timeToMinutes(oraInizio);
+            const fine = timeToMinutes(oraFine);
+            return (fine - inizio) / 60;
+        }
+
+        // ==========================================
+        // GESTIONE FORM E UI
+        // ==========================================
+
+        function resetForm() {
+            document.getElementById('timbraturaForm').reset();
+            document.getElementById('dataInput').valueAsDate = new Date();
+            editingId = null;
             
-            if (type !== 'work') {
-                hideOverlapError();
-                setSaveButtonState(true, '💾 Salva Registrazione');
-            } else {
-                validateClockForm();
+            const btnSalva = document.getElementById('btnSalva');
+            btnSalva.innerHTML = '💾 Salva Timbratura';
+            btnSalva.classList.remove('btn-warning');
+            btnSalva.classList.add('btn-primary');
+            
+            document.getElementById('btnAnnullaModifica').classList.add('hidden');
+        }
+
+        function modificaTimbratura(id) {
+            const t = timbrature.find(x => x.id === id);
+            if (!t) return;
+            
+            editingId = id;
+            
+            document.getElementById('dataInput').value = t.data;
+            document.getElementById('oraInizio').value = t.oraInizio;
+            document.getElementById('oraFine').value = t.oraFine;
+            document.getElementById('dipendenteSelect').value = t.dipendenteId;
+            document.getElementById('tipoTimbratura').value = t.tipo || 'normale';
+            document.getElementById('orePausa').value = t.orePausa || 0;
+            document.getElementById('noteInput').value = t.note || '';
+            
+            const btnSalva = document.getElementById('btnSalva');
+            btnSalva.innerHTML = '🔄 Aggiorna Timbratura';
+            btnSalva.classList.remove('btn-primary');
+            btnSalva.classList.add('btn-warning');
+            
+            document.getElementById('btnAnnullaModifica').classList.remove('hidden');
+            
+            document.getElementById('timbraturaForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function eliminaTimbratura(id) {
+            if (!confirm('Sei sicuro di voler eliminare questa timbratura?')) return;
+            
+            timbrature = timbrature.filter(t => t.id !== id);
+            saveData();
+            updateTabella();
+            updateStatistiche();
+            mostraSuccesso('Timbratura eliminata');
+            
+            if (editingId === id) {
+                resetForm();
             }
         }
-        
-        function onTimeChange() {
-            updateHoursPreview();
-            validateClockForm();
-        }
-        
-        async function onDateChange() {
-            if (!currentUser) return;
+
+        // ==========================================
+        // AGGIORNAMENTO UI
+        // ==========================================
+
+        function updateTabella() {
+            const tbody = document.getElementById('tabellaTimbrature');
+            const filtroData = document.getElementById('filterData').value;
+            const filtroDip = document.getElementById('filterDipendente').value;
             
-            const selectedDate = document.getElementById('clockDate').value;
-            if (!selectedDate) return;
+            let filtrate = [...timbrature].sort((a, b) => {
+                if (a.data !== b.data) return b.data.localeCompare(a.data);
+                return a.oraInizio.localeCompare(b.oraInizio);
+            });
             
-            setSaveButtonState(false, '⏳ Caricamento...');
+            if (filtroData) filtrate = filtrate.filter(t => t.data === filtroData);
+            if (filtroDip) filtrate = filtrate.filter(t => t.dipendenteId === parseInt(filtroDip));
             
-            try {
-                const result = await apiCall('get');
-                
-                if (!result.success) {
-                    showAlert('clockAlert', 'Errore caricamento dati', 'error');
-                    setSaveButtonState(true, '💾 Salva Registrazione');
-                    return;
-                }
-                
-                const userId = String(currentUser.id);
-                currentDateEntries = result.data.filter(e => {
-                    const entryUserId = String(e.userId);
-                    const entryDate = e.data ? e.data.split('T')[0] : '';
-                    return entryUserId === userId && entryDate === selectedDate && e.tipo === 'work';
-                });
-                
-                updateExistingEntriesUI();
-                validateClockForm();
-                
-            } catch (e) {
-                console.error('[DATE CHANGE] Errore:', e);
-                showAlert('clockAlert', 'Errore di connessione', 'error');
-                setSaveButtonState(true, '💾 Salva Registrazione');
-            }
-        }
-        
-        function updateExistingEntriesUI() {
-            const section = document.getElementById('existingEntriesSection');
-            const list = document.getElementById('existingEntriesList');
-            
-            if (currentDateEntries.length === 0) {
-                section.classList.add('hidden');
+            if (filtrate.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-gray-500 py-8">
+                            Nessuna timbratura trovata
+                        </td>
+                    </tr>`;
                 return;
             }
             
-            section.classList.remove('hidden');
-            list.innerHTML = currentDateEntries.map(e => {
-                const ore = parseHoursField(e.ore, e.inizio, e.fine);
+            tbody.innerHTML = filtrate.map(t => {
+                const dip = dipendenti.find(d => d.id === t.dipendenteId);
+                const nomeDip = dip ? dip.nome : 'Sconosciuto';
+                
                 return `
-                    <div class="existing-entry-item">
-                        <span>${e.inizio} - ${e.fine}</span>
-                        <span style="font-weight: 600;">${formatHoursDecimal(ore)}h</span>
-                    </div>
-                `;
+                    <tr data-id="${t.id}">
+                        <td>${formatData(t.data)}</td>
+                        <td>${nomeDip}</td>
+                        <td>${t.oraInizio} - ${t.oraFine}</td>
+                        <td class="time-format">${t.oreNette?.toFixed(2) || '0.00'}h</td>
+                        <td><span class="badge badge-${t.tipo || 'normale'}">${t.tipo || 'Normale'}</span></td>
+                        <td>${t.note || '-'}</td>
+                        <td class="actions">
+                            <button onclick="modificaTimbratura(${t.id})" class="btn-icon btn-edit" title="Modifica">✏️</button>
+                            <button onclick="eliminaTimbratura(${t.id})" class="btn-icon btn-delete" title="Elimina">🗑️</button>
+                        </td>
+                    </tr>`;
             }).join('');
         }
-        
-        function validateClockForm() {
-            const type = document.getElementById('clockType').value;
+
+        function updateStatistiche() {
+            const oggi = new Date().toISOString().split('T')[0];
+            const timbratureOggi = timbrature.filter(t => t.data === oggi);
+            const oreOggi = timbratureOggi.reduce((sum, t) => sum + (t.oreNette || 0), 0);
             
-            if (type !== 'work') {
-                hideOverlapError();
-                setSaveButtonState(true, '💾 Salva Registrazione');
-                return true;
-            }
+            document.getElementById('statOreOggi').textContent = oreOggi.toFixed(2) + 'h';
+            document.getElementById('statTimbrature').textContent = timbrature.length;
             
-            const start = document.getElementById('clockStart').value;
-            const end = document.getElementById('clockEnd').value;
+            const oreMese = calcolaOreMese(new Date().getMonth(), new Date().getFullYear());
+            document.getElementById('statOreMese').textContent = oreMese.toFixed(2) + 'h';
             
-            if (!start || !end) {
-                hideOverlapError();
-                setSaveButtonState(false, '⏰ Inserisci orari');
-                return false;
-            }
-            
-            const hours = calculateHours(start, end);
-            if (hours < 0) {
-                showOverlapError('Orario non valido');
-                setSaveButtonState(false, '❌ Orario invalido');
-                return false;
-            }
-            
-            if (hours === 0) {
-                showOverlapError('La durata deve essere maggiore di 0');
-                setSaveButtonState(false, '❌ Durata zero');
-                return false;
-            }
-            
-            const check = checkTimeOverlap(currentDateEntries, start, end, null);
-            
-            if (check.hasOverlap) {
-                showOverlapError(check.message);
-                setSaveButtonState(false, '🚫 Sovrapposizione!');
-                return false;
-            }
-            
-            hideOverlapError();
-            setSaveButtonState(true, '💾 Salva Registrazione');
-            return true;
+            updateStatDipendenti();
         }
-        
-        function showOverlapError(message) {
-            const box = document.getElementById('overlapError');
-            document.getElementById('overlapMessage').textContent = message;
-            box.classList.add('show');
-        }
-        
-        function hideOverlapError() {
-            document.getElementById('overlapError').classList.remove('show');
-        }
-        
-        function setSaveButtonState(enabled, text) {
-            const btn = document.getElementById('saveBtn');
-            btn.disabled = !enabled;
-            btn.innerHTML = text;
-        }
-        
-        // ==========================================
-        // SALVATAGGIO - VERSIONE DEFINITIVA CORRETTA
-        // ==========================================
-        async function saveClock() {
-            console.log('[SAVE] === INIZIO ===');
+
+        function updateStatDipendenti() {
+            const container = document.getElementById('statDipendenti');
+            const stats = {};
             
-            // 1. Controllo autenticazione
-            if (!currentUser) {
-                showAlert('clockAlert', 'Errore: sessione scaduta', 'error');
-                return;
-            }
-            
-            // 2. Prevenzione doppio click
-            if (isSaving) {
-                console.log('[SAVE] Già in corso');
-                return;
-            }
-            
-            // 3. Raccolta dati
-            const type = document.getElementById('clockType').value;
-            const selectedDate = document.getElementById('clockDate').value;
-            
-            if (!selectedDate) {
-                showAlert('clockAlert', '⚠️ Seleziona una data', 'warning');
-                return;
-            }
-            
-            let start = '', end = '', ore = 0;
-            
-            if (type === 'work') {
-                start = document.getElementById('clockStart').value;
-                end = document.getElementById('clockEnd').value;
-                
-                if (!start || !end) {
-                    showAlert('clockAlert', '⚠️ Inserisci orari', 'warning');
-                    return;
+            timbrature.forEach(t => {
+                if (!stats[t.dipendenteId]) {
+                    stats[t.dipendenteId] = { ore: 0, giorni: new Set() };
                 }
-                
-                ore = calculateHours(start, end);
-                if (ore <= 0) {
-                    showAlert('clockAlert', '⚠️ Orario non valido', 'warning');
-                    return;
-                }
-                
-                if (ore > 16 && !confirm('Hai inserito più di 16 ore. Continuare?')) {
-                    return;
-                }
-            }
-            
-            // 4. Blocco salvataggio
-            isSaving = true;
-            setSaveButtonState(false, '⏳ Controllo in corso...');
-            
-            try {
-                // 5. CONTROLLO FINALE CON DATI FRESH
-                console.log('[SAVE] Controllo dati fresh...');
-                
-                const freshResult = await apiCall('get');
-                
-                if (!freshResult.success) {
-                    throw new Error('Errore connessione durante controllo');
-                }
-                
-                const userId = String(currentUser.id);
-                const freshEntries = freshResult.data.filter(e => {
-                    const entryUserId = String(e.userId);
-                    const entryDate = e.data ? e.data.split('T')[0] : '';
-                    return entryUserId === userId && entryDate === selectedDate && e.tipo === 'work';
-                });
-                
-                console.log(`[SAVE] Trovate ${freshEntries.length} entries esistenti`);
-                
-                // 6. CONTROLLO SOVRAPPOSIZIONE DEFINITIVO
-                if (type === 'work') {
-                    const overlapCheck = checkTimeOverlap(freshEntries, start, end, null);
-                    
-                    if (overlapCheck.hasOverlap) {
-                        // 🔴 BLOCCO ASSOLUTO - USCITA IMMEDIATA
-                        console.error('[SAVE] ❌ BLOCCATO:', overlapCheck.message);
-                        
-                        showOverlapError(overlapCheck.message);
-                        setSaveButtonState(false, '🚫 Sovrapposizione!');
-                        
-                        currentDateEntries = freshEntries;
-                        updateExistingEntriesUI();
-                        
-                        showAlert('clockAlert', `❌ Salvataggio bloccato: ${overlapCheck.message}`, 'error');
-                        
-                        // 🔴 USCITA SENZA SALVARE
-                        isSaving = false;
-                        return;
-                    }
-                    
-                    // 7. Conferma multi-entry
-                    if (freshEntries.length > 0) {
-                        const confirmMsg = `Hai già ${freshEntries.length} registrazione/i:\n` +
-                            freshEntries.map(e => `• ${e.inizio}-${e.fine}`).join('\n') +
-                            `\n\nAggiungere anche ${start}-${end}?`;
-                        
-                        if (!confirm(confirmMsg)) {
-                            console.log('[SAVE] Utente ha annullato');
-                            isSaving = false;
-                            setSaveButtonState(true, '💾 Salva Registrazione');
-                            return; // USCITA SENZA SALVARE
-                        }
-                    }
-                }
-                
-                // 8. SALVATAGGIO (solo se tutti i controlli passano)
-                console.log('[SAVE] ✅ Procedo con salvataggio');
-                
-                setSaveButtonState(false, '⏳ Salvataggio...');
-                
-                const saveResult = await apiCall('save', {
-                    userId: userId,
-                    nome: currentUser.nome || currentUser.email,
-                    data: selectedDate,
-                    tipo: type,
-                    inizio: type === 'work' ? start : '',
-                    fine: type === 'work' ? end : '',
-                    ore: type === 'work' ? ore : 0
-                });
-                
-                if (saveResult.success) {
-                    console.log('[SAVE] ✅ Salvato, ID:', saveResult.id);
-                    
-                    setSaveButtonState(false, '✅ Salvato!');
-                    
-                    if (type === 'work') {
-                        currentDateEntries.push({
-                            id: saveResult.id,
-                            userId: userId,
-                            data: selectedDate,
-                            tipo: type,
-                            inizio: start,
-                            fine: end,
-                            ore: ore
-                        });
-                        updateExistingEntriesUI();
-                    }
-                    
-                    await loadHistory();
-                    
-                    setTimeout(() => {
-                        isSaving = false;
-                        document.getElementById('clockStart').value = '09:00';
-                        document.getElementById('clockEnd').value = '18:00';
-                        updateHoursPreview();
-                        validateClockForm();
-                    }, 2000);
-                    
-                } else {
-                    // Errore dal server
-                    throw new Error(saveResult.error || 'Errore server');
-                }
-                
-            } catch (error) {
-                console.error('[SAVE] ❌ ERRORE:', error.message);
-                
-                isSaving = false;
-                setSaveButtonState(true, '❌ Errore - Riprova');
-                showAlert('clockAlert', `❌ ${error.message}`, 'error');
-                
-                if (error.message.toLowerCase().includes('sovrapposizione')) {
-                    validateClockForm();
-                }
-            }
-        }
-        
-        // ==========================================
-        // API
-        // ==========================================
-        async function apiCall(action, params = {}, retryCount = 0) {
-            const MAX_RETRIES = 2;
-            const TIMEOUT = 30000;
-            
-            try {
-                const url = new URL(API_URL);
-                url.searchParams.append('action', action);
-                
-                Object.keys(params).forEach(key => {
-                    if (params[key] !== undefined && params[key] !== null) {
-                        url.searchParams.append(key, params[key]);
-                    }
-                });
-                
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    mode: 'cors',
-                    cache: 'no-cache',
-                    headers: { 'Accept': 'application/json' },
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                return await response.json();
-                
-            } catch (e) {
-                if (retryCount < MAX_RETRIES && (e.name === 'TypeError' || e.name === 'AbortError')) {
-                    await new Promise(r => setTimeout(r, 1000 * (retryCount + 1)));
-                    return apiCall(action, params, retryCount + 1);
-                }
-                
-                return { 
-                    success: false, 
-                    error: e.name === 'AbortError' ? 'Timeout connessione' : `Errore: ${e.message}` 
-                };
-            }
-        }
-        
-        // ==========================================
-        // AUTENTICAZIONE
-        // ==========================================
-        async function login() {
-            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                showAlert('loginAlert', '⚠️ Inserisci email e password', 'error');
-                return;
-            }
-            
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="loading"></span> Accesso...';
-            btn.disabled = true;
-            
-            try {
-                const result = await apiCall('login', { email, password });
-                
-                if (result.success && result.user) {
-                    currentUser = result.user;
-                    if (!currentUser.id || !currentUser.ruolo) {
-                        throw new Error('Dati utente incompleti');
-                    }
-                    await showApp();
-                } else {
-                    throw new Error(result.error || 'Credenziali errate');
-                }
-            } catch (e) {
-                showAlert('loginAlert', `❌ ${e.message}`, 'error');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-        
-        async function showApp() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('appContainer').classList.remove('hidden');
-            
-            document.getElementById('welcomeText').textContent = 
-                `${currentUser.nome || currentUser.email} • ${currentUser.ruolo === 'admin' ? 'Amministratore' : 'Dipendente'}`;
-            
-            if (currentUser.ruolo === 'admin') {
-                document.getElementById('adminNav').classList.remove('hidden');
-                document.getElementById('employeeNav').classList.add('hidden');
-                await Promise.all([loadDashboard(), loadTeam(), loadReportEmployees()]);
-                await loadAdminSummary();
-            } else {
-                document.getElementById('adminNav').classList.add('hidden');
-                document.getElementById('employeeNav').classList.remove('hidden');
-                await Promise.all([onDateChange(), loadHistory()]);
-                showTab('clock', document.querySelector('#employeeNav .nav-tab'));
-            }
-        }
-        
-        function logout() {
-            currentUser = null;
-            allEntries = [];
-            allUsers = [];
-            location.reload();
-        }
-        
-        async function showTab(tabName, clickedElement) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            clickedElement.classList.add('active');
-            
-            switch(tabName) {
-                case 'dashboard': await loadDashboard(); await loadAdminSummary(); break;
-                case 'team': await loadTeam(); break;
-                case 'history': await loadHistory(); break;
-                case 'reports': await loadReport(); break;
-                case 'clock': await onDateChange(); break;
-            }
-        }
-        
-        // ==========================================
-        // DASHBOARD
-        // ==========================================
-        async function loadDashboard() {
-            const result = await apiCall('get');
-            if (!result.success) {
-                showAlert('dashboardAlert', 'Errore caricamento dati', 'error');
-                return;
-            }
-            
-            allEntries = result.data || [];
-            const today = new Date().toISOString().split('T')[0];
-            const currentMonth = new Date().toISOString().slice(0, 7);
-            
-            const todayEntries = allEntries.filter(e => {
-                const entryDate = e.data ? e.data.split('T')[0] : '';
-                return entryDate === today;
+                stats[t.dipendenteId].ore += t.oreNette || 0;
+                stats[t.dipendenteId].giorni.add(t.data);
             });
             
-            document.getElementById('statToday').textContent = todayEntries.length;
-            
-            const monthWorkEntries = allEntries.filter(e => {
-                const entryMonth = e.data ? e.data.substring(0, 7) : '';
-                return entryMonth === currentMonth && e.tipo === 'work';
-            });
-            
-            const totalHours = monthWorkEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
-            document.getElementById('statMonth').textContent = formatHoursDecimal(totalHours);
-            
-            const uniqueEmployees = new Set(allEntries.map(e => e.userId).filter(id => id)).size;
-            document.getElementById('statEmployees').textContent = uniqueEmployees || 0;
-            
-            const list = document.getElementById('todayList');
-            if (todayEntries.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <div>Nessuna timbratura oggi</div>
+            const html = Object.entries(stats).map(([id, stat]) => {
+                const dip = dipendenti.find(d => d.id === parseInt(id));
+                const nome = dip ? dip.nome : 'Sconosciuto';
+                return `
+                    <div class="stat-row">
+                        <span class="stat-name">${nome}</span>
+                        <span class="stat-ore">${stat.ore.toFixed(1)}h</span>
+                        <span class="stat-giorni">${stat.giorni.size} gg</span>
                     </div>`;
-            } else {
-                list.innerHTML = todayEntries.map(e => {
-                    const ore = parseHoursField(e.ore, e.inizio, e.fine);
-                    return `
-                    <div class="entry-item">
-                        <div class="entry-info">
-                            <div class="entry-date">${e.nome || 'Sconosciuto'}</div>
-                            ${e.tipo === 'work' ? 
-                                `<div class="entry-time">${e.inizio || '--:--'} - ${e.fine || '--:--'} • ${formatHoursDecimal(ore)}h</div>` 
-                                : ''}
-                        </div>
-                        <span class="badge badge-${e.tipo}">${label(e.tipo)}</span>
-                    </div>`;
-                }).join('');
-            }
+            }).join('');
+            
+            container.innerHTML = html || '<p class="text-gray-500">Nessun dato disponibile</p>';
         }
-        
-        async function loadAdminSummary() {
-            const result = await apiCall('get');
-            if (!result.success) return;
-            
-            allEntries = result.data || [];
-            const currentMonth = new Date().toISOString().slice(0, 7);
-            
-            const monthEntries = allEntries.filter(e => {
-                const entryMonth = e.data ? e.data.substring(0, 7) : '';
-                return entryMonth === currentMonth;
-            });
-            
-            const workEntries = monthEntries.filter(e => e.tipo === 'work');
-            const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
-            
-            document.getElementById('sidebarTotalHours').textContent = formatHoursTime(totalHours);
-            document.getElementById('sidebarDecimalHours').textContent = formatHoursDecimal(totalHours) + ' h';
-            document.getElementById('sidebarWorkDays').textContent = workEntries.length;
-            document.getElementById('sidebarHolidays').textContent = monthEntries.filter(e => e.tipo === 'holiday').length;
-            document.getElementById('sidebarRest').textContent = monthEntries.filter(e => e.tipo === 'rest').length;
-            document.getElementById('sidebarFestive').textContent = monthEntries.filter(e => e.tipo === 'festive').length;
-        }
-        
-        // ==========================================
-        // TEAM
-        // ==========================================
-        async function loadTeam() {
-            const result = await apiCall('get_users');
-            if (!result.success) {
-                document.getElementById('teamList').innerHTML = `<div class="alert alert-error">Errore caricamento team</div>`;
-                return;
-            }
-            
-            allUsers = result.users || [];
-            allUsers.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
-            const employees = allUsers.filter(u => u.ruolo !== 'admin');
-            
-            const list = document.getElementById('teamList');
-            if (employees.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">👤</div>
-                        <div>Nessun dipendente registrato</div>
-                    </div>`;
-            } else {
-                list.innerHTML = employees.map(u => `
-                    <div class="entry-item">
-                        <div class="entry-info">
-                            <div class="entry-date">${u.nome || 'Senza nome'} <span style="color: var(--gray); font-size: 0.8rem;">(ID: ${u.id || 'N/A'})</span></div>
-                            <div class="entry-time">${u.email || 'Email non disponibile'}</div>
-                        </div>
-                        <span class="badge badge-work">Attivo</span>
-                    </div>
-                `).join('');
-            }
-        }
-        
-        async function addEmployee() {
-            const name = document.getElementById('newName').value.trim();
-            const email = document.getElementById('newEmail').value.trim().toLowerCase();
-            
-            if (!name || !email) {
-                showAlert('addAlert', '⚠️ Inserisci nome e email', 'error');
-                return;
-            }
-            
-            if (!email.includes('@')) {
-                showAlert('addAlert', '⚠️ Email non valida', 'error');
-                return;
-            }
-            
-            const maxId = allUsers.reduce((max, u) => Math.max(max, parseInt(u.id) || 0), 0);
-            const nextId = maxId + 1;
-            const password = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 4);
-            
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="loading"></span> Creazione...';
-            btn.disabled = true;
-            
-            const result = await apiCall('add_user', { 
-                id: nextId,
-                nome: name, 
-                email: email, 
-                password: password,
-                ruolo: 'dipendente'
-            });
-            
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            
-            if (result.success && result.user) {
-                lastCreated = result.user;
-                if (!lastCreated.id) lastCreated.id = nextId;
-                
-                document.getElementById('newName').value = '';
-                document.getElementById('newEmail').value = '';
-                document.getElementById('appUrl').textContent = APP_URL;
-                document.getElementById('credEmail').textContent = lastCreated.email;
-                document.getElementById('credPass').textContent = lastCreated.password || password;
-                document.getElementById('newCreds').classList.remove('hidden');
-                
-                await loadTeam();
-                await loadReportEmployees();
-            } else {
-                showAlert('addAlert', '❌ ' + (result.error || 'Errore creazione'), 'error');
-            }
-        }
-        
-        function shareWhatsApp() {
-            if (!lastCreated) {
-                alert('Errore: nessun dipendente creato');
-                return;
-            }
-            
-            const text = `Benvenuto in TimeTrack Pro!\n\n` +
-                `Ciao ${lastCreated.nome || 'Utente'},\n\n` +
-                `Link: ${APP_URL}\n\n` +
-                `Email: ${lastCreated.email}\n` +
-                `Password: ${lastCreated.password || document.getElementById('credPass').textContent}\n\n` +
-                `Salva questa app nella schermata home!`;
-            
-            window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
-        }
-        
-        // ==========================================
-        // STORICO
-        // ==========================================
-        async function loadHistory() {
-            if (!currentUser) return;
-            
-            const result = await apiCall('get');
-            if (!result.success) {
-                document.getElementById('historyList').innerHTML = '<div class="alert alert-error">Errore caricamento</div>';
-                return;
-            }
-            
-            const month = document.getElementById('historyMonth').value;
-            const userId = String(currentUser.id);
-            
-            currentHistoryEntries = result.data
-                .filter(e => {
-                    const entryUserId = String(e.userId);
-                    const entryMonth = e.data ? e.data.substring(0, 7) : '';
-                    return entryUserId === userId && entryMonth === month;
+
+        function calcolaOreMese(mese, anno) {
+            return timbrature
+                .filter(t => {
+                    const d = new Date(t.data);
+                    return d.getMonth() === mese && d.getFullYear() === anno;
                 })
-                .sort((a, b) => (b.data || '').localeCompare(a.data || ''));
-            
-            const list = document.getElementById('historyList');
-            if (currentHistoryEntries.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <div>Nessuna registrazione questo mese</div>
-                    </div>`;
-            } else {
-                list.innerHTML = currentHistoryEntries.map((e, index) => {
-                    const ore = parseHoursField(e.ore, e.inizio, e.fine);
-                    const entryId = e.id !== undefined ? String(e.id) : String(index);
-                    const entryUserId = e.userId !== undefined ? String(e.userId) : userId;
-                    
-                    return `
-                    <div class="entry-item">
-                        <div class="entry-info">
-                            <div class="entry-date">${formatDate(e.data)}</div>
-                            ${e.tipo === 'work' ? 
-                                `<div class="entry-time">${e.inizio || '--:--'} - ${e.fine || '--:--'}</div>` 
-                                : ''}
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="text-align: right;">
-                                <span class="badge badge-${e.tipo}">${label(e.tipo)}</span>
-                                ${e.tipo === 'work' ? 
-                                    `<div class="hours-display" style="margin-top: 4px;">${formatHoursDecimal(ore)}h</div>` 
-                                    : ''}
-                            </div>
-                            <div class="entry-actions">
-                                <button class="btn-small btn-primary" onclick="openEditModal('${entryId}', '${entryUserId}')">✏️</button>
-                            </div>
-                        </div>
-                    </div>`;
-                }).join('');
-            }
-            
-            updateSidebarSummary(currentHistoryEntries);
+                .reduce((sum, t) => sum + (t.oreNette || 0), 0);
         }
-        
-        function updateSidebarSummary(entries) {
-            const workEntries = entries.filter(e => e.tipo === 'work');
-            const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
-            
-            document.getElementById('sidebarTotalHours').textContent = formatHoursTime(totalHours);
-            document.getElementById('sidebarDecimalHours').textContent = formatHoursDecimal(totalHours) + ' h';
-            document.getElementById('sidebarWorkDays').textContent = workEntries.length;
-            document.getElementById('sidebarHolidays').textContent = entries.filter(e => e.tipo === 'holiday').length;
-            document.getElementById('sidebarRest').textContent = entries.filter(e => e.tipo === 'rest').length;
-            document.getElementById('sidebarFestive').textContent = entries.filter(e => e.tipo === 'festive').length;
-        }
-        
-        // ==========================================
-        // MODALE MODIFICA
-        // ==========================================
-        function openEditModal(entryId, entryUserId) {
-            const entry = currentHistoryEntries.find(e => String(e.id) === String(entryId));
-            
-            if (!entry) {
-                alert('Errore: voce non trovata');
-                return;
-            }
-            
-            currentEditingId = entryId;
-            
-            document.getElementById('editId').value = entryId;
-            document.getElementById('editUserId').value = entryUserId;
-            document.getElementById('editDate').value = entry.data ? entry.data.split('T')[0] : '';
-            document.getElementById('editType').value = entry.tipo || 'work';
-            document.getElementById('editStart').value = entry.inizio || '09:00';
-            document.getElementById('editEnd').value = entry.fine || '18:00';
-            
-            document.getElementById('editOverlapError').classList.remove('show');
-            document.getElementById('editSaveBtn').disabled = false;
-            
-            toggleEditTime();
-            
-            if (entry.tipo === 'work') {
-                validateEditForm();
-            }
-            
-            document.getElementById('editModal').classList.add('show');
-        }
-        
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('show');
-            currentEditingId = null;
-        }
-        
-        function toggleEditTime() {
-            const type = document.getElementById('editType').value;
-            document.getElementById('editTimeSection').style.display = type === 'work' ? 'block' : 'none';
-        }
-        
-        function validateEditForm() {
-            const type = document.getElementById('editType').value;
-            const errorBox = document.getElementById('editOverlapError');
-            const saveBtn = document.getElementById('editSaveBtn');
-            
-            if (type !== 'work') {
-                errorBox.classList.remove('show');
-                saveBtn.disabled = false;
-                return true;
-            }
-            
-            const newDate = document.getElementById('editDate').value;
-            const newStart = document.getElementById('editStart').value;
-            const newEnd = document.getElementById('editEnd').value;
-            
-            if (!newStart || !newEnd || !newDate) {
-                errorBox.classList.remove('show');
-                saveBtn.disabled = true;
-                return false;
-            }
-            
-            const sameDateEntries = currentHistoryEntries.filter(e => {
-                const entryDate = e.data ? e.data.split('T')[0] : '';
-                return entryDate === newDate && e.tipo === 'work';
-            });
-            
-            const check = checkTimeOverlap(sameDateEntries, newStart, newEnd, currentEditingId);
-            
-            if (check.hasOverlap) {
-                document.getElementById('editOverlapMessage').textContent = check.message;
-                errorBox.classList.add('show');
-                saveBtn.disabled = true;
-                return false;
-            } else {
-                errorBox.classList.remove('show');
-                saveBtn.disabled = false;
-                return true;
-            }
-        }
-        
-        async function saveEdit() {
-            if (!validateEditForm()) {
-                alert('❌ Correggi gli errori prima di salvare');
-                return;
-            }
-            
-            const entryId = document.getElementById('editId').value;
-            const userId = document.getElementById('editUserId').value;
-            const newDate = document.getElementById('editDate').value;
-            const newType = document.getElementById('editType').value;
-            const newStart = document.getElementById('editStart').value;
-            const newEnd = document.getElementById('editEnd').value;
-            
-            if (!newDate) {
-                alert('Seleziona una data');
-                return;
-            }
-            
-            let ore = 0;
-            
-            if (newType === 'work') {
-                if (!newStart || !newEnd) {
-                    alert('Inserisci orari');
-                    return;
-                }
-                
-                ore = calculateHours(newStart, newEnd);
-                if (ore < 0) {
-                    alert('Orario non valido');
-                    return;
-                }
-                
-                const result = await apiCall('get');
-                if (result.success) {
-                    const allDateEntries = result.data.filter(e => {
-                        const entryDate = e.data ? e.data.split('T')[0] : '';
-                        return entryDate === newDate && e.tipo === 'work';
-                    });
-                    
-                    const check = checkTimeOverlap(allDateEntries, newStart, newEnd, entryId);
-                    
-                    if (check.hasOverlap) {
-                        alert(`❌ ${check.message}`);
-                        return;
-                    }
-                }
-            }
-            
-            const saveResult = await apiCall('update', {
-                id: entryId,
-                userId: userId,
-                data: newDate,
-                tipo: newType,
-                inizio: newType === 'work' ? newStart : '',
-                fine: newType === 'work' ? newEnd : '',
-                ore: newType === 'work' ? ore : 0
-            });
-            
-            if (saveResult.success) {
-                closeEditModal();
-                await loadHistory();
-                await onDateChange();
-                alert('✅ Modifica salvata!');
-            } else {
-                alert('❌ Errore: ' + (saveResult.error || 'Errore sconosciuto'));
-            }
-        }
-        
-        // ==========================================
-        // REPORT
-        // ==========================================
-        async function loadReportEmployees() {
-            const result = await apiCall('get_users');
-            if (!result.success) return;
-            
-            allUsers = result.users || [];
-            const select = document.getElementById('reportEmployee');
-            select.innerHTML = '<option value="all">Tutti i dipendenti</option>';
-            
-            allUsers.filter(u => u.ruolo !== 'admin').forEach(emp => {
-                const option = document.createElement('option');
-                option.value = emp.id || emp.email;
-                option.textContent = emp.nome || emp.email;
-                select.appendChild(option);
-            });
-        }
-        
-        async function loadReport() {
-            const month = document.getElementById('reportMonth').value;
-            const employeeFilter = document.getElementById('reportEmployee').value;
-            
-            if (!month) {
-                showAlert('reportsAlert', '⚠️ Seleziona un mese', 'warning');
-                return;
-            }
-            
-            const result = await apiCall('get');
-            if (!result.success) {
-                document.getElementById('reportResult').innerHTML = '<div class="alert alert-error">Errore caricamento</div>';
-                return;
-            }
-            
-            allEntries = result.data || [];
-            let entries = allEntries.filter(e => {
-                const entryMonth = e.data ? e.data.substring(0, 7) : '';
-                return entryMonth === month;
-            });
-            
-            if (employeeFilter !== 'all') {
-                entries = entries.filter(e => String(e.userId) === String(employeeFilter));
-            }
-            
-            currentReportData = entries;
-            
-            const workEntries = entries.filter(e => e.tipo === 'work');
-            const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
-            
-            document.getElementById('reportSummary').innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;">
-                    <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.2rem;">${formatHoursDecimal(totalHours)}</div>
-                        <div class="stat-label">Ore Totali</div>
-                    </div>
-                    <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.2rem;">${workEntries.length}</div>
-                        <div class="stat-label">Giorni Lavoro</div>
-                    </div>
-                    <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.2rem; color: #be185d;">${entries.filter(e => e.tipo === 'holiday').length}</div>
-                        <div class="stat-label">Ferie</div>
-                    </div>
-                    <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.2rem; color: #065f46;">${entries.filter(e => e.tipo === 'rest').length}</div>
-                        <div class="stat-label">Riposo</div>
-                    </div>
-                    <div class="stat-box" style="padding: 15px;">
-                        <div class="stat-number" style="font-size: 1.2rem; color: #d97706;">${entries.filter(e => e.tipo === 'festive').length}</div>
-                        <div class="stat-label">Festivi</div>
-                    </div>
-                </div>
-            `;
-            
-            const div = document.getElementById('reportResult');
-            if (entries.length === 0) {
-                div.innerHTML = '<div class="empty-state">Nessun dato</div>';
-                return;
-            }
-            
-            const byDate = {};
-            entries.forEach(e => {
-                const dateKey = e.data ? e.data.split('T')[0] : 'unknown';
-                if (!byDate[dateKey]) byDate[dateKey] = [];
-                byDate[dateKey].push(e);
-            });
-            
-            let html = '<div class="card" style="margin-top: 20px;"><div class="card-title">📅 Dettaglio</div>';
-            Object.keys(byDate).sort().forEach(date => {
-                const dayEntries = byDate[date];
-                const dayTotal = dayEntries
-                    .filter(e => e.tipo === 'work')
-                    .reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
-                    
-                html += `
-                <div style="margin-bottom: 15px; padding: 15px; background: #f8fafc; border-radius: 12px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <strong>${formatDate(date)}</strong>
-                        <span class="badge badge-work">${formatHoursDecimal(dayTotal)}h</span>
-                    </div>
-                    ${dayEntries.map(e => {
-                        const ore = parseHoursField(e.ore, e.inizio, e.fine);
-                        return `
-                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin: 5px 0;">
-                            <span>${e.nome || 'Sconosciuto'}</span>
-                            <div>
-                                ${e.tipo === 'work' ? `<span style="color: var(--gray);">${e.inizio}-${e.fine}</span>` : ''}
-                                <span class="badge badge-${e.tipo}" style="font-size: 0.7rem; margin-left: 8px;">${label(e.tipo)}</span>
-                                ${e.tipo === 'work' ? `<span style="font-weight: 600; margin-left: 8px;">${formatHoursDecimal(ore)}h</span>` : ''}
-                            </div>
-                        </div>`;
-                    }).join('')}
-                </div>`;
-            });
-            html += '</div>';
-            div.innerHTML = html;
-        }
-        
+
         // ==========================================
         // EXPORT
         // ==========================================
-        function exportExcelCurrent() {
-            if (!currentReportData || currentReportData.length === 0) {
-                alert('Nessun dato da esportare');
-                return;
-            }
-            exportToExcel(currentReportData, 'Report_Selezione');
-        }
-        
-        function exportExcelAll() {
-            if (!allEntries || allEntries.length === 0) {
-                alert('Nessun dato disponibile');
-                return;
-            }
-            exportToExcel(allEntries, 'Report_Completo');
-        }
-        
-        function exportEmployeeExcel() {
-            if (!currentHistoryEntries || currentHistoryEntries.length === 0) {
-                alert('Nessun dato da esportare');
+
+        function exportExcel() {
+            if (timbrature.length === 0) {
+                mostraErrore('Nessun dato da esportare');
                 return;
             }
             
-            const month = document.getElementById('historyMonth').value;
-            const employeeName = currentUser.nome || currentUser.email;
-            
-            const exportData = [];
-            exportData.push({ 'Data': 'DATA', 'Tipo': 'TIPO', 'Entrata': 'ENTRATA', 'Uscita': 'USCITA', 'Ore': 'ORE' });
-            
-            currentHistoryEntries.forEach(e => {
-                const ore = parseHoursField(e.ore, e.inizio, e.fine);
-                exportData.push({
-                    'Data': formatDate(e.data),
-                    'Tipo': label(e.tipo),
-                    'Entrata': e.inizio || '-',
-                    'Uscita': e.fine || '-',
-                    'Ore': e.tipo === 'work' ? formatHoursDecimal(ore) : '-'
-                });
+            const datiExport = timbrature.map(t => {
+                const dip = dipendenti.find(d => d.id === t.dipendenteId);
+                return {
+                    'Data': t.data,
+                    'Dipendente': dip?.nome || 'Sconosciuto',
+                    'Ora Inizio': t.oraInizio,
+                    'Ora Fine': t.oraFine,
+                    'Ore Totali': t.oreTotali,
+                    'Ore Pausa': t.orePausa,
+                    'Ore Nette': t.oreNette,
+                    'Tipo': t.tipo,
+                    'Note': t.note
+                };
             });
             
-            const workEntries = currentHistoryEntries.filter(e => e.tipo === 'work');
-            const totalHours = workEntries.reduce((sum, e) => sum + parseHoursField(e.ore, e.inizio, e.fine), 0);
-            
-            exportData.push({});
-            exportData.push({ 'Data': 'RIEPILOGO', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': '' });
-            exportData.push({ 'Data': 'Totale Ore:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': formatHoursDecimal(totalHours) });
-            exportData.push({ 'Data': 'Giorni Lavorati:', 'Tipo': '', 'Entrata': '', 'Uscita': '', 'Ore': workEntries.length });
-            
-            const ws = XLSX.utils.json_to_sheet(exportData, { skipHeader: true });
-            ws['!cols'] = [{wch: 15}, {wch: 20}, {wch: 12}, {wch: 12}, {wch: 12}];
-            
+            const ws = XLSX.utils.json_to_sheet(datiExport);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Presenze");
-            XLSX.writeFile(wb, `Presenze_${employeeName}_${month}.xlsx`);
-        }
-        
-        function exportToExcel(data, filename) {
-            const exportData = data.map(e => ({
-                'Data': e.data,
-                'Dipendente': e.nome || 'Sconosciuto',
-                'Tipo': label(e.tipo),
-                'Ora Inizio': e.inizio || '',
-                'Ora Fine': e.fine || '',
-                'Ore Totali': e.tipo === 'work' ? parseHoursField(e.ore, e.inizio, e.fine) : 0,
-                'User ID': e.userId || ''
-            }));
+            XLSX.utils.book_append_sheet(wb, ws, "Timbrature");
             
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            ws['!cols'] = [{wch: 12}, {wch: 25}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 15}];
-            
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Presenze");
-            XLSX.writeFile(wb, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
+            XLSX.writeFile(wb, `Timbrature_${new Date().toISOString().split('T')[0]}.xlsx`);
+            mostraSuccesso('Excel esportato con successo');
         }
-        
+
+        function exportPDF() {
+            window.print();
+        }
+
         // ==========================================
-        // UTILITY
+        // GESTIONE DIPENDENTI
         // ==========================================
-        function label(type) {
-            const labels = { work: 'Lavoro', holiday: 'Ferie', rest: 'Riposo', festive: 'Festivo' };
-            return labels[type] || type;
-        }
-        
-        function formatDate(dateStr) {
-            if (!dateStr || typeof dateStr !== 'string') return '-';
-            if (dateStr.includes('T')) {
-                const d = new Date(dateStr);
-                if (!isNaN(d.getTime())) return d.toLocaleDateString('it-IT');
-            }
-            const parts = dateStr.split('-');
-            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-            return dateStr;
-        }
-        
-        function showAlert(containerId, msg, type) {
-            if (alertTimeouts[containerId]) {
-                clearTimeout(alertTimeouts[containerId]);
+
+        function aggiungiDipendenteDaInput() {
+            const input = document.getElementById('nuovoDipendente');
+            const nome = input.value.trim();
+            
+            if (!nome) {
+                mostraErrore('Inserisci un nome');
+                return;
             }
             
-            let el = document.getElementById(containerId);
-            if (!el) {
-                el = document.createElement('div');
-                el.id = 'tempAlert_' + Date.now();
-                el.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;max-width:90%;';
-                document.body.appendChild(el);
+            if (dipendenti.some(d => d.nome.toLowerCase() === nome.toLowerCase())) {
+                mostraErrore('Dipendente già esistente');
+                return;
             }
             
-            el.className = `alert alert-${type}`;
-            el.innerHTML = msg;
-            el.style.display = 'flex';
+            const nuovo = {
+                id: Date.now(),
+                nome: nome,
+                attivo: true,
+                creatoIl: new Date().toISOString()
+            };
             
-            alertTimeouts[containerId] = setTimeout(() => {
-                if (el.parentNode) {
-                    if (el.id.startsWith('tempAlert_')) {
-                        el.remove();
-                    } else {
-                        el.style.display = 'none';
-                    }
-                }
-            }, 5000);
+            dipendenti.push(nuovo);
+            saveData();
+            popolaSelectDipendenti();
+            updateStatDipendenti();
+            
+            input.value = '';
+            mostraSuccesso('Dipendente aggiunto: ' + nome);
         }
+
+        function popolaSelectDipendenti() {
+            const select = document.getElementById('dipendenteSelect');
+            const filter = document.getElementById('filterDipendente');
+            
+            const options = dipendenti.map(d => 
+                `<option value="${d.id}">${d.nome}</option>`
+            ).join('');
+            
+            select.innerHTML = '<option value="">Seleziona dipendente...</option>' + options;
+            filter.innerHTML = '<option value="">Tutti i dipendenti</option>' + options;
+        }
+
+        // ==========================================
+        // UTILITY UI
+        // ==========================================
+
+        function mostraErrore(messaggio) {
+            rimuoviAlert();
+            
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-error';
+            alert.innerHTML = `
+                <span class="alert-icon">❌</span>
+                <span class="alert-text">${messaggio}</span>
+                <button onclick="rimuoviAlert()" class="alert-close">×</button>
+            `;
+            
+            document.body.appendChild(alert);
+            setTimeout(rimuoviAlert, 5000);
+        }
+
+        function mostraSuccesso(messaggio) {
+            rimuoviAlert();
+            
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success';
+            alert.innerHTML = `
+                <span class="alert-icon">✅</span>
+                <span class="alert-text">${messaggio}</span>
+                <button onclick="rimuoviAlert()" class="alert-close">×</button>
+            `;
+            
+            document.body.appendChild(alert);
+            setTimeout(rimuoviAlert, 3000);
+        }
+
+        function rimuoviAlert() {
+            document.querySelectorAll('.alert').forEach(a => a.remove());
+        }
+
+        function ripristinaBottone(btn, testoOriginale) {
+            btn.disabled = false;
+            btn.innerHTML = testoOriginale;
+        }
+
+        function formatData(dataISO) {
+            if (!dataISO) return '-';
+            const [anno, mese, giorno] = dataISO.split('-');
+            return `${giorno}/${mese}/${anno}`;
+        }
+
+        function switchTab(e) {
+            const tabId = e.target.dataset.tab;
+            
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+        }
+
+        function showApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            updateUI();
+        }
+
+        function showLogin() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+        }
+
+        function updateUI() {
+            updateTabella();
+            updateStatistiche();
+            popolaSelectDipendenti();
+        }
+
+        // Espone funzioni globali per onclick inline
+        window.modificaTimbratura = modificaTimbratura;
+        window.eliminaTimbratura = eliminaTimbratura;
+        window.resetForm = resetForm;
+        window.updateTabella = updateTabella;
+        window.exportExcel = exportExcel;
+        window.exportPDF = exportPDF;
+        window.aggiungiDipendenteDaInput = aggiungiDipendenteDaInput;
     </script>
 </body>
 </html>
