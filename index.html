@@ -343,6 +343,35 @@
             }
         }
 
+        /* Alert Blocco Salvataggio (stile diverso, più visibile) */
+        .alert-block {
+            background: #fee2e2;
+            border: 3px solid #dc2626;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+        }
+
+        .alert-block-icon {
+            font-size: 28px;
+        }
+
+        .alert-block-text {
+            flex: 1;
+        }
+
+        .alert-block-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
         /* Badge per tipo timbratura */
         .badge {
             padding: 4px 10px;
@@ -356,6 +385,35 @@
         .badge-straordinario { background: #fef3c7; color: #92400e; }
         .badge-ferie { background: #d1fae5; color: #065f46; }
         .badge-malattia { background: #fee2e2; color: #991b1b; }
+
+        /* Info Box Registrazioni Esistenti */
+        .info-box {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box-title {
+            color: #1e40af;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-box-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #bfdbfe;
+        }
+
+        .info-box-item:last-child {
+            border-bottom: none;
+        }
 
         /* Utility */
         .text-center { text-align: center; }
@@ -529,6 +587,24 @@
 
                 <!-- Tab Timbrature -->
                 <div id="tabTimbrature" class="tab-content">
+                    
+                    <!-- Info Box Registrazioni Esistenti -->
+                    <div id="infoRegistrazioni" class="info-box hidden">
+                        <div class="info-box-title">
+                            📋 Registrazioni esistenti per questa data:
+                        </div>
+                        <div id="listaRegistrazioni"></div>
+                    </div>
+
+                    <!-- Alert Sovrapposizione (inizialmente nascosto) -->
+                    <div id="alertSovrapposizione" class="alert-block hidden">
+                        <div class="alert-block-icon">🚫</div>
+                        <div class="alert-block-text">
+                            <div class="alert-block-title">SALVATAGGIO BLOCCATO</div>
+                            <div id="testoSovrapposizione"></div>
+                        </div>
+                    </div>
+
                     <!-- Form Timbratura -->
                     <div class="card">
                         <h2 class="card-title">📝 Nuova Timbratura</h2>
@@ -536,30 +612,30 @@
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                                 <div class="form-group">
                                     <label>Data *</label>
-                                    <input type="date" id="dataInput" required>
+                                    <input type="date" id="dataInput" required onchange="mostraRegistrazioniEsistenti()">
                                 </div>
                                 <div class="form-group">
                                     <label>Dipendente *</label>
-                                    <select id="dipendenteSelect" required>
+                                    <select id="dipendenteSelect" required onchange="mostraRegistrazioniEsistenti()">
                                         <option value="">Seleziona...</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label>Ora Inizio *</label>
-                                    <input type="time" id="oraInizio" required>
+                                    <input type="time" id="oraInizio" required onchange="verificaSovrapposizioneInTempoReale()">
                                 </div>
                                 <div class="form-group">
                                     <label>Ora Fine *</label>
-                                    <input type="time" id="oraFine" required>
+                                    <input type="time" id="oraFine" required onchange="verificaSovrapposizioneInTempoReale()">
                                 </div>
                                 <div class="form-group">
                                     <label>Ore Pausa</label>
                                     <input type="number" id="orePausa" value="0" min="0" max="8" step="0.5">
                                 </div>
                                 <div class="form-group">
-                                    <label>Tipo</label>
-                                    <select id="tipoTimbratura">
-                                        <option value="normale">Normale</option>
+                                    <label>Tipo Presenza *</label>
+                                    <select id="tipoTimbratura" required>
+                                        <option value="normale">Lavoro Ordinario</option>
                                         <option value="straordinario">Straordinario</option>
                                         <option value="ferie">Ferie</option>
                                         <option value="malattia">Malattia</option>
@@ -570,8 +646,14 @@
                                 <label>Note</label>
                                 <input type="text" id="noteInput" placeholder="Note opzionali...">
                             </div>
+                            
+                            <!-- Riepilogo Ore -->
+                            <div id="riepilogoOre" style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center; color: #166534; font-weight: 600;">
+                                Totale: 0.00 ore
+                            </div>
+
                             <div style="display: flex; gap: 10px;">
-                                <button type="submit" id="btnSalva" class="btn-primary">
+                                <button type="submit" id="btnSalva" class="btn-primary" style="flex: 1;">
                                     💾 Salva Timbratura
                                 </button>
                                 <button type="button" id="btnAnnullaModifica" class="btn-secondary hidden" onclick="resetForm()">
@@ -689,17 +771,18 @@
     </div>
 
     <!-- ==========================================
-         JAVASCRIPT COMPLETO
+         JAVASCRIPT COMPLETO CON CONTROLLO BLOCCANTE
          ========================================== -->
     <script>
         // ==========================================
-        // TIMETRACK PRO - JAVASCRIPT COMPLETO
+        // TIMETRACK PRO - JAVASCRIPT CORRETTO
         // ==========================================
 
         let timbrature = [];
         let dipendenti = [];
         let currentUser = null;
         let editingId = null;
+        let sovrapposizioneAttuale = false; // Flag per tracciare sovrapposizione
 
         // ==========================================
         // INIZIALIZZAZIONE
@@ -717,6 +800,9 @@
             // Imposta data di oggi
             document.getElementById('dataInput').valueAsDate = new Date();
             
+            // Mostra registrazioni esistenti per oggi
+            mostraRegistrazioniEsistenti();
+            
             // Se c'è un utente loggato, mostra l'app
             if (localStorage.getItem('currentUser')) {
                 showApp();
@@ -729,10 +815,17 @@
             // Login
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             
-            // Form timbratura - IMPORTANTE: preventDefault qui
+            // Form timbratura - BLOCCA SUBMIT SE C'È SOVRAPPOSIZIONE
             document.getElementById('timbraturaForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // ⛔ CONTROLLO CRITICO: se c'è sovrapposizione, BLOCCA TUTTO
+                if (sovrapposizioneAttuale) {
+                    mostraErrore('⚠️ Correggi la sovrapposizione oraria prima di salvare!');
+                    return false; // BLOCCA IL SALVATAGGIO
+                }
+                
                 salvaTimbratura();
             });
             
@@ -781,7 +874,6 @@
                 return false;
             }
             
-            // Simulazione autenticazione
             if (password.length < 4) {
                 mostraErrore('Password non valida (min 4 caratteri)');
                 return false;
@@ -809,11 +901,141 @@
         }
 
         // ==========================================
-        // GESTIONE TIMBRATURE - CORE FUNCTION
+        // MOSTRA REGISTRAZIONI ESISTENTI (come nello screenshot)
+        // ==========================================
+
+        function mostraRegistrazioniEsistenti() {
+            const data = document.getElementById('dataInput').value;
+            const dipendenteId = document.getElementById('dipendenteSelect').value;
+            
+            if (!data || !dipendenteId) {
+                document.getElementById('infoRegistrazioni').classList.add('hidden');
+                return;
+            }
+            
+            const esistenti = timbrature.filter(t => 
+                t.data === data && 
+                t.dipendenteId === parseInt(dipendenteId) &&
+                t.id !== editingId // Esclude quello in modifica
+            );
+            
+            const container = document.getElementById('listaRegistrazioni');
+            
+            if (esistenti.length === 0) {
+                document.getElementById('infoRegistrazioni').classList.add('hidden');
+                return;
+            }
+            
+            document.getElementById('infoRegistrazioni').classList.remove('hidden');
+            
+            container.innerHTML = esistenti.map(t => `
+                <div class="info-box-item">
+                    <span>${t.oraInizio} - ${t.oraFine}</span>
+                    <span style="font-weight: 600; color: var(--primary);">${t.oreNette?.toFixed(2) || '0.00'}h</span>
+                </div>
+            `).join('');
+            
+            // Verifica subito se c'è sovrapposizione con i valori attuali
+            verificaSovrapposizioneInTempoReale();
+        }
+
+        // ==========================================
+        // VERIFICA SOVRAPPOSIZIONE IN TEMPO REALE
+        // ==========================================
+
+        function verificaSovrapposizioneInTempoReale() {
+            const data = document.getElementById('dataInput').value;
+            const oraInizio = document.getElementById('oraInizio').value;
+            const oraFine = document.getElementById('oraFine').value;
+            const dipendenteId = document.getElementById('dipendenteSelect').value;
+            
+            // Aggiorna riepilogo ore
+            aggiornaRiepilogoOre();
+            
+            // Se mancano dati, nascondi alert
+            if (!data || !oraInizio || !oraFine || !dipendenteId) {
+                nascondiAlertSovrapposizione();
+                return;
+            }
+            
+            // Controllo orario valido
+            if (oraFine <= oraInizio) {
+                mostraAlertSovrapposizione('L\'ora di fine deve essere successiva all\'ora di inizio');
+                sovrapposizioneAttuale = true;
+                bloccaBottoneSalva();
+                return;
+            }
+            
+            // Controllo sovrapposizioni con altre timbrature
+            const result = controllaSovrapposizioni(data, oraInizio, oraFine, dipendenteId, editingId);
+            
+            if (result.esiste) {
+                mostraAlertSovrapposizione(result.messaggio);
+                sovrapposizioneAttuale = true;
+                bloccaBottoneSalva();
+            } else {
+                nascondiAlertSovrapposizione();
+                sovrapposizioneAttuale = false;
+                sbloccaBottoneSalva();
+            }
+        }
+
+        function mostraAlertSovrapposizione(messaggio) {
+            const alert = document.getElementById('alertSovrapposizione');
+            const testo = document.getElementById('testoSovrapposizione');
+            testo.textContent = messaggio;
+            alert.classList.remove('hidden');
+        }
+
+        function nascondiAlertSovrapposizione() {
+            document.getElementById('alertSovrapposizione').classList.add('hidden');
+        }
+
+        function bloccaBottoneSalva() {
+            const btn = document.getElementById('btnSalva');
+            btn.disabled = true;
+            btn.innerHTML = '🚫 Sovrapposizione!';
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-secondary');
+        }
+
+        function sbloccaBottoneSalva() {
+            const btn = document.getElementById('btnSalva');
+            btn.disabled = false;
+            btn.innerHTML = editingId ? '🔄 Aggiorna Timbratura' : '💾 Salva Timbratura';
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-primary');
+        }
+
+        function aggiornaRiepilogoOre() {
+            const oraInizio = document.getElementById('oraInizio').value;
+            const oraFine = document.getElementById('oraFine').value;
+            const orePausa = parseFloat(document.getElementById('orePausa').value) || 0;
+            
+            const riepilogo = document.getElementById('riepilogoOre');
+            
+            if (!oraInizio || !oraFine) {
+                riepilogo.textContent = 'Totale: 0.00 ore';
+                return;
+            }
+            
+            const oreTotali = calcolaOreTotali(oraInizio, oraFine);
+            const oreNette = Math.max(0, oreTotali - orePausa);
+            
+            riepilogo.textContent = `Totale: ${oreNette.toFixed(2)} ore`;
+        }
+
+        // ==========================================
+        // GESTIONE TIMBRATURE - SALVATAGGIO BLOCCATO SE ERRORE
         // ==========================================
 
         function salvaTimbratura() {
-            // 1. DISABILITA BOTTONE SUBITO
+            // Doppio controllo di sicurezza
+            if (sovrapposizioneAttuale) {
+                mostraErrore('⚠️ Impossibile salvare: sovrapposizione oraria rilevata!');
+                return false;
+            }
+            
             const btnSalva = document.getElementById('btnSalva');
             const originalText = btnSalva.innerHTML;
             
@@ -821,7 +1043,7 @@
             btnSalva.innerHTML = '⏳ Salvataggio...';
             
             try {
-                // 2. RACCOLTA DATI
+                // Raccolta dati
                 const dataInput = document.getElementById('dataInput').value;
                 const oraInizio = document.getElementById('oraInizio').value;
                 const oraFine = document.getElementById('oraFine').value;
@@ -830,40 +1052,27 @@
                 const note = document.getElementById('noteInput').value.trim();
                 const orePausa = parseFloat(document.getElementById('orePausa').value) || 0;
                 
-                // 3. VALIDAZIONE CAMPI OBBLIGATORI
+                // Validazione
                 if (!dataInput || !oraInizio || !oraFine || !dipendenteId) {
                     mostraErrore('Compila tutti i campi obbligatori (*)');
-                    ripristinaBottone(btnSalva, originalText);
                     return false;
                 }
                 
-                // 4. VALIDAZIONE ORARIO (fine > inizio)
-                if (oraFine <= oraInizio) {
-                    mostraErrore('L\'ora di fine deve essere successiva all\'ora di inizio');
+                // Controllo finale sovrapposizioni (doppia sicurezza)
+                const result = controllaSovrapposizioni(dataInput, oraInizio, oraFine, dipendenteId, editingId);
+                if (result.esiste) {
+                    mostraErrore(result.messaggio);
                     ripristinaBottone(btnSalva, originalText);
-                    return false;
+                    sovrapposizioneAttuale = true;
+                    bloccaBottoneSalva();
+                    return false; // ⛔ BLOCCA SALVATAGGIO
                 }
                 
-                // 5. CONTROLLO SOVRAPPOSIZIONI ORARIE (CRITICO)
-                const sovrapposizione = controllaSovrapposizioni(
-                    dataInput, 
-                    oraInizio, 
-                    oraFine, 
-                    dipendenteId, 
-                    editingId
-                );
-                
-                if (sovrapposizione.esiste) {
-                    mostraErrore(sovrapposizione.messaggio);
-                    ripristinaBottone(btnSalva, originalText);
-                    return false; // ← BLOCCA QUI, NON SALVA!
-                }
-                
-                // 6. CALCOLO ORE
+                // Calcolo ore
                 const oreTotali = calcolaOreTotali(oraInizio, oraFine);
                 const oreNette = Math.max(0, oreTotali - orePausa);
                 
-                // 7. CREAZIONE OGGETTO
+                // Creazione oggetto
                 const nuovaTimbratura = {
                     id: editingId || Date.now(),
                     data: dataInput,
@@ -880,7 +1089,7 @@
                     modificatoIl: new Date().toISOString()
                 };
                 
-                // 8. SALVATAGGIO
+                // Salva
                 if (editingId) {
                     const index = timbrature.findIndex(t => t.id === editingId);
                     if (index !== -1) {
@@ -893,10 +1102,11 @@
                 
                 saveData();
                 
-                // 9. AGGIORNAMENTO UI
+                // Aggiorna UI
                 updateTabella();
                 updateStatistiche();
                 resetForm();
+                mostraRegistrazioniEsistenti(); // Aggiorna la lista
                 
                 const msg = editingId ? 'Timbratura aggiornata' : 'Timbratura salvata';
                 mostraSuccesso(msg + ` (${oreNette.toFixed(2)} ore)`);
@@ -907,7 +1117,9 @@
                 console.error('Errore:', error);
                 mostraErrore('Errore durante il salvataggio');
             } finally {
-                ripristinaBottone(btnSalva, originalText);
+                if (!sovrapposizioneAttuale) {
+                    ripristinaBottone(btnSalva, originalText);
+                }
             }
         }
 
@@ -934,15 +1146,13 @@
                 const esistenteInizio = timeToMinutes(t.oraInizio);
                 const esistenteFine = timeToMinutes(t.oraFine);
                 
+                // Sovrapposizione se: inizio < fine_esistente AND fine > inizio_esistente
                 const sovrappone = (nuovoInizio < esistenteFine) && (nuovoFine > esistenteInizio);
                 
                 if (sovrappone) {
                     return {
                         esiste: true,
-                        messaggio: `⚠️ Sovrapposizione oraria rilevata!\n\n` +
-                                  `Esistente: ${t.oraInizio} - ${t.oraFine}\n` +
-                                  `Nuovo: ${oraInizio} - ${oraFine}\n\n` +
-                                  `Modifica l'orario esistente o scegli un altro slot.`
+                        messaggio: `Orario ${oraInizio}-${oraFine} si sovrappone con ${t.oraInizio}-${t.oraFine}`
                     };
                 }
             }
@@ -969,13 +1179,15 @@
             document.getElementById('timbraturaForm').reset();
             document.getElementById('dataInput').valueAsDate = new Date();
             editingId = null;
+            sovrapposizioneAttuale = false;
             
-            const btnSalva = document.getElementById('btnSalva');
-            btnSalva.innerHTML = '💾 Salva Timbratura';
-            btnSalva.classList.remove('btn-warning');
-            btnSalva.classList.add('btn-primary');
+            nascondiAlertSovrapposizione();
+            sbloccaBottoneSalva();
             
             document.getElementById('btnAnnullaModifica').classList.add('hidden');
+            document.getElementById('riepilogoOre').textContent = 'Totale: 0.00 ore';
+            
+            mostraRegistrazioniEsistenti();
         }
 
         function modificaTimbratura(id) {
@@ -983,6 +1195,7 @@
             if (!t) return;
             
             editingId = id;
+            sovrapposizioneAttuale = false;
             
             document.getElementById('dataInput').value = t.data;
             document.getElementById('oraInizio').value = t.oraInizio;
@@ -992,12 +1205,11 @@
             document.getElementById('orePausa').value = t.orePausa || 0;
             document.getElementById('noteInput').value = t.note || '';
             
-            const btnSalva = document.getElementById('btnSalva');
-            btnSalva.innerHTML = '🔄 Aggiorna Timbratura';
-            btnSalva.classList.remove('btn-primary');
-            btnSalva.classList.add('btn-warning');
-            
+            sbloccaBottoneSalva();
             document.getElementById('btnAnnullaModifica').classList.remove('hidden');
+            
+            aggiornaRiepilogoOre();
+            mostraRegistrazioniEsistenti();
             
             document.getElementById('timbraturaForm').scrollIntoView({ behavior: 'smooth' });
         }
@@ -1009,6 +1221,7 @@
             saveData();
             updateTabella();
             updateStatistiche();
+            mostraRegistrazioniEsistenti();
             mostraSuccesso('Timbratura eliminata');
             
             if (editingId === id) {
@@ -1234,8 +1447,10 @@
         }
 
         function ripristinaBottone(btn, testoOriginale) {
-            btn.disabled = false;
-            btn.innerHTML = testoOriginale;
+            if (btn && !sovrapposizioneAttuale) {
+                btn.disabled = false;
+                btn.innerHTML = testoOriginale;
+            }
         }
 
         function formatData(dataISO) {
@@ -1271,7 +1486,7 @@
             popolaSelectDipendenti();
         }
 
-        // Espone funzioni globali per onclick inline
+        // Espone funzioni globali
         window.modificaTimbratura = modificaTimbratura;
         window.eliminaTimbratura = eliminaTimbratura;
         window.resetForm = resetForm;
@@ -1279,6 +1494,8 @@
         window.exportExcel = exportExcel;
         window.exportPDF = exportPDF;
         window.aggiungiDipendenteDaInput = aggiungiDipendenteDaInput;
+        window.mostraRegistrazioniEsistenti = mostraRegistrazioniEsistenti;
+        window.verificaSovrapposizioneInTempoReale = verificaSovrapposizioneInTempoReale;
     </script>
 </body>
 </html>
