@@ -1,1501 +1,1770 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#6366f1">
-    <title>TimeTrack Pro - Gestione Presenze</title>
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiVGltZVRyYWNrIFBybyIsInNob3J0X25hbWUiOiJUaW1lVHJhY2siLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzYzNjZmMSJ9">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        /* ==========================================
-           TIMETRACK PRO - CSS COMPLETO
-           ========================================== */
-        
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-
-        :root { 
-            --primary: #4f46e5; 
-            --primary-dark: #3730a3; 
-            --success: #059669; 
-            --danger: #dc2626; 
-            --warning: #d97706; 
-            --gray: #64748b; 
-            --dark: #1e293b; 
-            --light: #f8fafc; 
-            --border: #e2e8f0; 
-        }
-
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            min-height: 100vh; 
-            color: var(--dark); 
-            line-height: 1.5; 
-        }
-
-        .container { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            padding: 20px; 
-        }
-
-        .login-screen, .app-container { 
-            background: white; 
-            border-radius: 24px; 
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); 
-            overflow: hidden; 
-            min-height: 90vh; 
-        }
-
-        .header { 
-            background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%); 
-            color: white; 
-            padding: 40px 30px; 
-            text-align: center; 
-            position: relative; 
-        }
-
-        .header h1 { 
-            font-size: 2.2rem; 
-            font-weight: 700; 
-            margin-bottom: 8px; 
-            letter-spacing: -0.5px; 
-        }
-
-        .header p { 
-            font-size: 1rem; 
-            opacity: 0.9; 
-            font-weight: 400; 
-        }
-
-        .content { 
-            padding: 30px; 
-            display: grid; 
-            grid-template-columns: 1fr 320px; 
-            gap: 30px; 
-        }
-
-        .content.single-column { 
-            grid-template-columns: 1fr; 
-        }
-
-        .main-area { 
-            min-width: 0; 
-        }
-
-        .sidebar { 
-            background: var(--light); 
-            border-radius: 20px; 
-            padding: 25px; 
-            height: fit-content; 
-            position: sticky; 
-            top: 20px; 
-        }
-
-        .sidebar-title { 
-            font-size: 0.875rem; 
-            font-weight: 600; 
-            color: var(--gray); 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-            margin-bottom: 20px; 
-        }
-
-        .stat-card { 
-            background: white; 
-            border-radius: 16px; 
-            padding: 20px; 
-            margin-bottom: 15px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-        }
-
-        .stat-value { 
-            font-size: 2.5rem; 
-            font-weight: 700; 
-            color: var(--primary); 
-            line-height: 1; 
-        }
-
-        .stat-value.time-format { 
-            font-size: 1.8rem; 
-            font-family: 'SF Mono', Monaco, monospace; 
-        }
-
-        .stat-label { 
-            font-size: 0.875rem; 
-            color: var(--gray); 
-            margin-top: 8px; 
-            font-weight: 500; 
-        }
-
-        .form-group { 
-            margin-bottom: 20px; 
-        }
-
-        label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-weight: 600; 
-            font-size: 0.9rem; 
-            color: var(--dark); 
-        }
-
-        input, select { 
-            width: 100%; 
-            padding: 14px 16px; 
-            border: 2px solid var(--border); 
-            border-radius: 12px; 
-            font-size: 16px; 
-            transition: all 0.2s; 
-            background: white; 
-        }
-
-        input:focus, select:focus { 
-            outline: none; 
-            border-color: var(--primary); 
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); 
-        }
-
-        button { 
-            padding: 14px 24px; 
-            border: none; 
-            border-radius: 12px; 
-            font-size: 0.95rem; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-        }
-
-        button:hover:not(:disabled) { 
-            transform: translateY(-1px); 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-        }
-
-        button:active:not(:disabled) { 
-            transform: scale(0.98); 
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .btn-primary { 
-            background: var(--primary); 
-            color: white; 
-        }
-
-        .btn-success { 
-            background: var(--success); 
-            color: white; 
-        }
-
-        .btn-danger { 
-            background: var(--danger); 
-            color: white; 
-        }
-
-        .btn-warning { 
-            background: var(--warning); 
-            color: white; 
-        }
-
-        .btn-secondary { 
-            background: white; 
-            color: var(--dark); 
-            border: 2px solid var(--border); 
-        }
-
-        .hidden { 
-            display: none !important; 
-        }
-
-        .nav-tabs { 
-            display: flex; 
-            gap: 8px; 
-            margin-bottom: 25px; 
-            padding: 6px; 
-            background: var(--light); 
-            border-radius: 16px; 
-        }
-
-        .nav-tab { 
-            flex: 1; 
-            padding: 12px 16px; 
-            background: transparent; 
-            border: none; 
-            border-radius: 12px; 
-            color: var(--gray); 
-            font-weight: 600; 
-            font-size: 0.85rem; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-        }
-
-        .nav-tab:hover { 
-            background: rgba(255,255,255,0.5); 
-        }
-
-        .nav-tab.active { 
-            background: white; 
-            color: var(--primary); 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
-        }
-
-        .card { 
-            background: white; 
-            border-radius: 20px; 
-            padding: 25px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08); 
-            border: 1px solid var(--border); 
-        }
-
-        .card-title { 
-            font-size: 1.25rem; 
-            font-weight: 700; 
-            margin-bottom: 20px; 
-            color: var(--dark); 
-            display: flex; 
-            align-items: center; 
-            gap: 10px;
-        }
-
-        /* Alert Notifications */
-        .alert {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 20px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            z-index: 10000;
-            animation: slideIn 0.3s ease;
-            max-width: 400px;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            border: 2px solid #dc2626;
-            color: #991b1b;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            border: 2px solid #059669;
-            color: #065f46;
-        }
-
-        .alert-icon {
-            font-size: 20px;
-        }
-
-        .alert-text {
-            flex: 1;
-            font-weight: 500;
-            font-size: 0.95rem;
-            white-space: pre-line;
-        }
-
-        .alert-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.6;
-            transition: opacity 0.2s;
-        }
-
-        .alert-close:hover {
-            opacity: 1;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Alert Blocco Salvataggio (stile diverso, più visibile) */
-        .alert-block {
-            background: #fee2e2;
-            border: 3px solid #dc2626;
-            color: #991b1b;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-weight: 600;
-        }
-
-        .alert-block-icon {
-            font-size: 28px;
-        }
-
-        .alert-block-text {
-            flex: 1;
-        }
-
-        .alert-block-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-
-        /* Badge per tipo timbratura */
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .badge-normale { background: #e0e7ff; color: #3730a3; }
-        .badge-straordinario { background: #fef3c7; color: #92400e; }
-        .badge-ferie { background: #d1fae5; color: #065f46; }
-        .badge-malattia { background: #fee2e2; color: #991b1b; }
-
-        /* Info Box Registrazioni Esistenti */
-        .info-box {
-            background: #eff6ff;
-            border: 2px solid #3b82f6;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .info-box-title {
-            color: #1e40af;
-            font-weight: 600;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .info-box-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #bfdbfe;
-        }
-
-        .info-box-item:last-child {
-            border-bottom: none;
-        }
-
-        /* Utility */
-        .text-center { text-align: center; }
-        .text-gray-500 { color: #64748b; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-
-        /* Tabella */
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th {
-            background: var(--light);
-            font-weight: 600;
-            color: var(--gray);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-
-        tr:hover {
-            background: var(--light);
-        }
-
-        /* Azioni tabella */
-        .actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
-
-        .btn-edit { background: #e0e7ff; }
-        .btn-edit:hover { background: #c7d2fe; }
-        .btn-delete { background: #fee2e2; }
-        .btn-delete:hover { background: #fecaca; }
-
-        /* Statistiche dipendenti */
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .stat-row:last-child { border-bottom: none; }
-
-        .stat-name { font-weight: 500; }
-        .stat-ore { 
-            font-family: 'SF Mono', Monaco, monospace;
-            font-weight: 600;
-            color: var(--primary);
-        }
-        .stat-giorni {
-            font-size: 0.8rem;
-            color: var(--gray);
-            background: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-
-        /* Login form */
-        .login-form {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        .login-form h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: var(--dark);
-        }
-
-        /* Responsive */
-        @media (max-width: 968px) {
-            .content {
-                grid-template-columns: 1fr;
-            }
-            .sidebar {
-                position: static;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .alert {
-                left: 10px;
-                right: 10px;
-                top: 10px;
-                max-width: none;
-            }
-            
-            .header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .content {
-                padding: 15px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0f">
+<title>TimeTrack Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* ============================================
+   RESET & ROOT
+   ============================================ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+:root {
+  --bg:        #0a0a0f;
+  --bg2:       #111118;
+  --bg3:       #18181f;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --accent:    #e8ff47;
+  --accent2:   #47ffb8;
+  --danger:    #ff4747;
+  --warning:   #ffaa47;
+  --text:      #f0f0f5;
+  --text2:     #8888a0;
+  --text3:     #55556a;
+  --radius:    16px;
+  --radius2:   10px;
+  --mono:      'DM Mono', monospace;
+  --head:      'Syne', sans-serif;
+  --body:      'DM Sans', sans-serif;
+  --shadow:    0 8px 40px rgba(0,0,0,0.5);
+}
+
+html { font-size:16px; }
+
+body {
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   BG DECORATION
+   ============================================ */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(232,255,71,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 10% 90%, rgba(71,255,184,0.03) 0%, transparent 60%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ============================================
+   LOGIN
+   ============================================ */
+#loginScreen {
+  position:fixed; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  z-index:100;
+  padding:20px;
+}
+
+.login-box {
+  width:100%; max-width:420px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius:24px;
+  padding:48px 40px;
+  position:relative;
+  animation: fadeUp 0.5s ease;
+}
+
+.login-box::before {
+  content:'';
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:200px; height:1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+.login-logo {
+  font-family:var(--head);
+  font-size:1.1rem;
+  font-weight:800;
+  letter-spacing:0.08em;
+  color:var(--accent);
+  text-transform:uppercase;
+  margin-bottom:8px;
+  text-align:center;
+}
+
+.login-title {
+  font-family:var(--head);
+  font-size:2rem;
+  font-weight:700;
+  color:var(--text);
+  text-align:center;
+  margin-bottom:6px;
+}
+
+.login-sub {
+  color:var(--text2);
+  font-size:0.875rem;
+  text-align:center;
+  margin-bottom:36px;
+}
+
+.field {
+  margin-bottom:18px;
+}
+
+.field label {
+  display:block;
+  font-size:0.78rem;
+  font-weight:600;
+  color:var(--text2);
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  margin-bottom:8px;
+}
+
+.field input,
+.field select {
+  width:100%;
+  padding:13px 16px;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:var(--radius2);
+  color:var(--text);
+  font-size:0.95rem;
+  font-family:var(--body);
+  transition:border-color 0.2s, box-shadow 0.2s;
+  appearance:none;
+}
+
+.field input:focus,
+.field select:focus {
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(232,255,71,0.08);
+}
+
+.field input::placeholder { color:var(--text3); }
+
+.btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:8px;
+  padding:13px 22px;
+  border:none; border-radius:var(--radius2);
+  font-family:var(--body);
+  font-size:0.9rem; font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+  white-space:nowrap;
+  text-decoration:none;
+}
+
+.btn:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.1); }
+.btn:active:not(:disabled) { transform:scale(0.98); }
+.btn:disabled { opacity:0.4; cursor:not-allowed; transform:none !important; }
+
+.btn-accent  { background:var(--accent);  color:#0a0a0f; }
+.btn-green   { background:var(--accent2); color:#0a0a0f; }
+.btn-danger  { background:var(--danger);  color:white; }
+.btn-ghost   { background:transparent; color:var(--text2); border:1px solid var(--border2); }
+.btn-ghost:hover { color:var(--text); border-color:var(--border2); }
+.btn-full    { width:100%; }
+
+/* ============================================
+   APP LAYOUT
+   ============================================ */
+#appScreen {
+  display:none;
+  min-height:100vh;
+  position:relative;
+  z-index:1;
+}
+
+/* TOP BAR */
+.topbar {
+  position:sticky; top:0; z-index:50;
+  background:rgba(10,10,15,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;
+  height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+
+.topbar-brand {
+  font-family:var(--head);
+  font-size:1.05rem; font-weight:800;
+  letter-spacing:0.06em;
+  color:var(--accent);
+  text-transform:uppercase;
+}
+
+.topbar-center {
+  display:flex; gap:4px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  padding:4px; border-radius:12px;
+}
+
+.tab-btn {
+  padding:7px 18px;
+  border:none; border-radius:8px;
+  background:transparent;
+  color:var(--text2);
+  font-family:var(--body);
+  font-size:0.85rem; font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+
+.tab-btn.active {
+  background:var(--bg);
+  color:var(--text);
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+
+.topbar-right {
+  display:flex; align-items:center; gap:14px;
+}
+
+.user-chip {
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  padding:6px 14px 6px 10px;
+  border-radius:50px;
+}
+
+.user-avatar {
+  width:28px; height:28px; border-radius:50%;
+  background:var(--accent);
+  color:#0a0a0f;
+  font-family:var(--mono);
+  font-size:0.7rem; font-weight:500;
+  display:flex; align-items:center; justify-content:center;
+}
+
+.user-name {
+  font-size:0.85rem; font-weight:500;
+  color:var(--text2);
+}
+
+/* MAIN WRAPPER */
+.main-wrap {
+  max-width:1320px;
+  margin:0 auto;
+  padding:32px;
+  display:grid;
+  grid-template-columns:1fr 300px;
+  gap:28px;
+  align-items:start;
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+.card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px;
+  margin-bottom:20px;
+}
+
+.card-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:22px;
+}
+
+.card-title {
+  font-family:var(--head);
+  font-size:1rem; font-weight:700;
+  color:var(--text);
+  letter-spacing:0.02em;
+}
+
+.card-badge {
+  font-family:var(--mono);
+  font-size:0.72rem;
+  color:var(--text3);
+  background:var(--bg3);
+  padding:3px 10px; border-radius:50px;
+}
+
+/* ============================================
+   FORM GRID
+   ============================================ */
+.form-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.form-grid.col3 { grid-template-columns:1fr 1fr 1fr; }
+.form-grid.col1 { grid-template-columns:1fr; }
+
+.field select {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2388889a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  padding-right:36px;
+}
+
+/* ============================================
+   ORE PREVIEW
+   ============================================ */
+.ore-preview {
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:16px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+  margin:4px 0 16px;
+  transition:border-color 0.3s;
+}
+
+.ore-preview.ok    { border-color:rgba(71,255,184,0.3); }
+.ore-preview.warn  { border-color:rgba(255,170,71,0.3); }
+.ore-preview.error { border-color:rgba(255,71,71,0.3); }
+
+.ore-label { font-size:0.8rem; color:var(--text2); font-weight:500; }
+.ore-value {
+  font-family:var(--mono);
+  font-size:1.6rem; font-weight:500;
+  color:var(--accent);
+  transition:color 0.3s;
+}
+.ore-preview.warn  .ore-value { color:var(--warning); }
+.ore-preview.error .ore-value { color:var(--danger); }
+
+/* ============================================
+   OVERLAP ALERT
+   ============================================ */
+.overlap-alert {
+  display:none;
+  background:rgba(255,71,71,0.08);
+  border:1px solid rgba(255,71,71,0.35);
+  border-radius:var(--radius2);
+  padding:14px 18px;
+  margin-bottom:16px;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.overlap-alert.visible { display:flex; animation:fadeUp 0.2s ease; }
+
+.overlap-icon { font-size:1.2rem; flex-shrink:0; line-height:1.4; }
+.overlap-body {}
+.overlap-title { font-weight:700; color:var(--danger); font-size:0.85rem; margin-bottom:3px; }
+.overlap-desc { color:#ff9a9a; font-size:0.82rem; }
+
+/* Existing entries info */
+.existing-box {
+  display:none;
+  background:rgba(71,255,184,0.04);
+  border:1px solid rgba(71,255,184,0.15);
+  border-radius:var(--radius2);
+  padding:14px 18px;
+  margin-bottom:16px;
+}
+.existing-box.visible { display:block; animation:fadeUp 0.2s ease; }
+.existing-title { font-size:0.76rem; color:var(--accent2); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; }
+.existing-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  font-size:0.83rem;
+}
+.existing-row:last-child { border:none; }
+.existing-time { font-family:var(--mono); color:var(--text); }
+.existing-ore  { font-family:var(--mono); color:var(--accent2); font-weight:600; }
+
+/* ============================================
+   ACTION ROW
+   ============================================ */
+.action-row {
+  display:flex; gap:10px;
+}
+
+/* ============================================
+   TABLE
+   ============================================ */
+.tbl-wrap { overflow-x:auto; margin:-4px; }
+
+table {
+  width:100%; border-collapse:collapse;
+  font-size:0.875rem;
+}
+
+th {
+  font-family:var(--mono);
+  font-size:0.7rem; font-weight:500;
+  color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.08em;
+  padding:10px 14px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+
+td {
+  padding:13px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  color:var(--text2);
+  vertical-align:middle;
+}
+
+tr:hover td { background:rgba(255,255,255,0.02); }
+tr:last-child td { border:none; }
+
+.td-date   { font-family:var(--mono); color:var(--text); font-size:0.82rem; }
+.td-name   { color:var(--text); font-weight:500; }
+.td-time   { font-family:var(--mono); font-size:0.83rem; }
+.td-ore    { font-family:var(--mono); font-weight:600; color:var(--accent); }
+
+.badge {
+  display:inline-flex; padding:3px 9px;
+  border-radius:50px; font-size:0.72rem; font-weight:600;
+  text-transform:uppercase; letter-spacing:0.04em;
+}
+.badge-work        { background:rgba(232,255,71,0.1);  color:var(--accent); }
+.badge-straordinario { background:rgba(71,255,184,0.1); color:var(--accent2); }
+.badge-ferie       { background:rgba(71,100,255,0.1);  color:#7b9fff; }
+.badge-malattia    { background:rgba(255,170,71,0.1);  color:var(--warning); }
+
+/* ============================================
+   ICON BUTTONS
+   ============================================ */
+.icon-btn {
+  width:30px; height:30px;
+  border:none; border-radius:8px;
+  cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:13px; transition:all 0.2s;
+}
+.icon-edit   { background:rgba(232,255,71,0.08);  color:var(--accent); }
+.icon-edit:hover { background:rgba(232,255,71,0.18); }
+.icon-del    { background:rgba(255,71,71,0.08);   color:var(--danger); }
+.icon-del:hover { background:rgba(255,71,71,0.18); }
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+.sidebar { position:sticky; top:96px; }
+
+.stat-widget {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:22px;
+  margin-bottom:16px;
+}
+
+.sw-label {
+  font-size:0.72rem; font-weight:600;
+  color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.08em;
+  margin-bottom:10px;
+}
+
+.sw-val {
+  font-family:var(--mono);
+  font-size:2.2rem; font-weight:500;
+  color:var(--accent);
+  line-height:1;
+}
+.sw-val.green { color:var(--accent2); }
+.sw-val.white { color:var(--text); font-size:1.8rem; }
+
+.sw-sub {
+  font-size:0.78rem; color:var(--text3);
+  margin-top:4px;
+}
+
+/* Divider */
+.divider {
+  height:1px;
+  background:var(--border);
+  margin:8px 0 16px;
+}
+
+/* Dipendente row */
+.dip-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:9px 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.dip-row:last-child { border:none; }
+.dip-name { font-size:0.85rem; color:var(--text); font-weight:500; }
+.dip-ore  { font-family:var(--mono); font-size:0.85rem; color:var(--accent); }
+.dip-gg   {
+  font-size:0.72rem; color:var(--text3);
+  background:var(--bg3); padding:2px 8px; border-radius:50px;
+}
+
+/* ============================================
+   FILTERS
+   ============================================ */
+.filters {
+  display:flex; gap:10px; align-items:flex-end;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+.filters .field { margin:0; flex:1; min-width:140px; }
+
+/* ============================================
+   STATS TAB
+   ============================================ */
+.stats-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+  margin-bottom:24px;
+}
+
+.big-stat {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+}
+.bs-val { font-family:var(--mono); font-size:2rem; font-weight:500; color:var(--accent); }
+.bs-label { font-size:0.8rem; color:var(--text3); margin-top:6px; }
+
+/* ============================================
+   TOAST
+   ============================================ */
+#toastWrap {
+  position:fixed; bottom:28px; right:28px;
+  z-index:9999;
+  display:flex; flex-direction:column; gap:10px;
+}
+
+.toast {
+  display:flex; align-items:center; gap:12px;
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:14px;
+  padding:14px 18px;
+  box-shadow:var(--shadow);
+  animation:toastIn 0.3s ease;
+  max-width:360px;
+  min-width:260px;
+}
+
+.toast.success { border-left:3px solid var(--accent2); }
+.toast.error   { border-left:3px solid var(--danger); }
+.toast.warning { border-left:3px solid var(--warning); }
+
+.toast-icon { font-size:1.1rem; }
+.toast-msg  { flex:1; font-size:0.875rem; color:var(--text); }
+
+@keyframes toastIn {
+  from { transform:translateX(120%); opacity:0; }
+  to   { transform:translateX(0);    opacity:1; }
+}
+
+@keyframes toastOut {
+  from { transform:translateX(0);    opacity:1; max-height:60px; margin:0; }
+  to   { transform:translateX(120%); opacity:0; max-height:0;   margin:-10px; }
+}
+
+/* ============================================
+   MODAL CONFIRM
+   ============================================ */
+.modal-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(4px);
+  z-index:200;
+  align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; }
+
+.modal {
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  padding:32px;
+  max-width:400px; width:90%;
+  animation:fadeUp 0.25s ease;
+}
+
+.modal-title { font-family:var(--head); font-size:1.1rem; font-weight:700; margin-bottom:10px; }
+.modal-body  { color:var(--text2); font-size:0.9rem; line-height:1.6; margin-bottom:24px; }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.empty {
+  text-align:center;
+  padding:48px 24px;
+  color:var(--text3);
+}
+.empty-icon { font-size:2.5rem; margin-bottom:12px; }
+.empty-msg  { font-size:0.9rem; }
+
+/* ============================================
+   SPINNER
+   ============================================ */
+.spin {
+  width:18px; height:18px; border-radius:50%;
+  border:2px solid rgba(10,10,15,0.3);
+  border-top-color:#0a0a0f;
+  animation:rot 0.8s linear infinite; display:inline-block;
+}
+.spin-light {
+  border-color:rgba(255,255,255,0.1);
+  border-top-color:rgba(255,255,255,0.6);
+}
+
+@keyframes rot { to { transform:rotate(360deg); } }
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeUp {
+  from { transform:translateY(16px); opacity:0; }
+  to   { transform:translateY(0);    opacity:1; }
+}
+
+.tab-content { display:none; animation:fadeUp 0.3s ease; }
+.tab-content.active { display:block; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media(max-width:1024px) {
+  .main-wrap { grid-template-columns:1fr; }
+  .sidebar { position:static; }
+  .stats-grid { grid-template-columns:1fr 1fr; }
+}
+
+@media(max-width:640px) {
+  .main-wrap { padding:16px; }
+  .topbar { padding:0 16px; }
+  .topbar-center { display:none; }
+  .form-grid { grid-template-columns:1fr; }
+  .form-grid.col3 { grid-template-columns:1fr; }
+  .stats-grid { grid-template-columns:1fr; }
+  .card { padding:20px; }
+  .action-row { flex-wrap:wrap; }
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--bg3); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--border2); }
+
+/* Loading overlay */
+.loader-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(10,10,15,0.9);
+  z-index:300;
+  align-items:center; justify-content:center;
+  flex-direction:column; gap:16px;
+}
+.loader-overlay.active { display:flex; }
+.loader-text { font-family:var(--mono); font-size:0.85rem; color:var(--text2); }
+</style>
 </head>
 <body>
 
-    <!-- ==========================================
-         SCHERMATA LOGIN
-         ========================================== -->
-    <div id="loginScreen" class="login-screen">
-        <div class="header">
-            <h1>⏰ TimeTrack Pro</h1>
-            <p>Gestione Presenze Dipendenti</p>
-        </div>
-        <div class="login-form">
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="username" placeholder="Inserisci username" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="password" placeholder="Inserisci password" required>
-                </div>
-                <button type="submit" class="btn-primary" style="width: 100%;">
-                    🔐 Accedi
-                </button>
-            </form>
-        </div>
+<!-- ============================================
+     LOADER
+     ============================================ -->
+<div id="loaderOverlay" class="loader-overlay">
+  <div class="spin spin-light" style="width:32px;height:32px;border-width:3px;"></div>
+  <div class="loader-text" id="loaderText">Connessione...</div>
+</div>
+
+<!-- ============================================
+     TOAST CONTAINER
+     ============================================ -->
+<div id="toastWrap"></div>
+
+<!-- ============================================
+     MODAL CONFERMA ELIMINAZIONE
+     ============================================ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">Conferma eliminazione</div>
+    <div class="modal-body" id="modalBody">Sei sicuro di voler eliminare questa timbratura? L'azione è irreversibile.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Annulla</button>
+      <button class="btn btn-danger" id="modalConfirmBtn">Elimina</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     LOGIN SCREEN
+     ============================================ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">TimeTrack Pro</div>
+    <div class="login-title">Accedi</div>
+    <div class="login-sub">Gestione presenze dipendenti</div>
+
+    <form id="loginForm" autocomplete="off">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="nome@azienda.com" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPwd" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-accent btn-full" id="loginBtn" style="margin-top:8px;">
+        Entra
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================
+     APP
+     ============================================ -->
+<div id="appScreen">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand">⏱ TimeTrack</div>
+
+    <div class="topbar-center">
+      <button class="tab-btn active" data-tab="tabTimbrature">Timbrature</button>
+      <button class="tab-btn" data-tab="tabStatistiche">Statistiche</button>
     </div>
 
-    <!-- ==========================================
-         APP CONTAINER (nascosto all'inizio)
-         ========================================== -->
-    <div id="appContainer" class="app-container hidden">
-        <div class="header">
-            <h1>⏰ TimeTrack Pro</h1>
-            <p>Gestione Presenze Dipendenti</p>
-            <button id="btnLogout" class="btn-secondary" style="position: absolute; top: 20px; right: 20px;">
-                🚪 Logout
-            </button>
-        </div>
-
-        <div class="content">
-            <div class="main-area">
-                <!-- Tabs -->
-                <div class="nav-tabs">
-                    <button class="nav-tab active" data-tab="tabTimbrature">📝 Timbrature</button>
-                    <button class="nav-tab" data-tab="tabStatistiche">📊 Statistiche</button>
-                </div>
-
-                <!-- Tab Timbrature -->
-                <div id="tabTimbrature" class="tab-content">
-                    
-                    <!-- Info Box Registrazioni Esistenti -->
-                    <div id="infoRegistrazioni" class="info-box hidden">
-                        <div class="info-box-title">
-                            📋 Registrazioni esistenti per questa data:
-                        </div>
-                        <div id="listaRegistrazioni"></div>
-                    </div>
-
-                    <!-- Alert Sovrapposizione (inizialmente nascosto) -->
-                    <div id="alertSovrapposizione" class="alert-block hidden">
-                        <div class="alert-block-icon">🚫</div>
-                        <div class="alert-block-text">
-                            <div class="alert-block-title">SALVATAGGIO BLOCCATO</div>
-                            <div id="testoSovrapposizione"></div>
-                        </div>
-                    </div>
-
-                    <!-- Form Timbratura -->
-                    <div class="card">
-                        <h2 class="card-title">📝 Nuova Timbratura</h2>
-                        <form id="timbraturaForm">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                                <div class="form-group">
-                                    <label>Data *</label>
-                                    <input type="date" id="dataInput" required onchange="mostraRegistrazioniEsistenti()">
-                                </div>
-                                <div class="form-group">
-                                    <label>Dipendente *</label>
-                                    <select id="dipendenteSelect" required onchange="mostraRegistrazioniEsistenti()">
-                                        <option value="">Seleziona...</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Ora Inizio *</label>
-                                    <input type="time" id="oraInizio" required onchange="verificaSovrapposizioneInTempoReale()">
-                                </div>
-                                <div class="form-group">
-                                    <label>Ora Fine *</label>
-                                    <input type="time" id="oraFine" required onchange="verificaSovrapposizioneInTempoReale()">
-                                </div>
-                                <div class="form-group">
-                                    <label>Ore Pausa</label>
-                                    <input type="number" id="orePausa" value="0" min="0" max="8" step="0.5">
-                                </div>
-                                <div class="form-group">
-                                    <label>Tipo Presenza *</label>
-                                    <select id="tipoTimbratura" required>
-                                        <option value="normale">Lavoro Ordinario</option>
-                                        <option value="straordinario">Straordinario</option>
-                                        <option value="ferie">Ferie</option>
-                                        <option value="malattia">Malattia</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Note</label>
-                                <input type="text" id="noteInput" placeholder="Note opzionali...">
-                            </div>
-                            
-                            <!-- Riepilogo Ore -->
-                            <div id="riepilogoOre" style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center; color: #166534; font-weight: 600;">
-                                Totale: 0.00 ore
-                            </div>
-
-                            <div style="display: flex; gap: 10px;">
-                                <button type="submit" id="btnSalva" class="btn-primary" style="flex: 1;">
-                                    💾 Salva Timbratura
-                                </button>
-                                <button type="button" id="btnAnnullaModifica" class="btn-secondary hidden" onclick="resetForm()">
-                                    ❌ Annulla
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Filtri -->
-                    <div class="card">
-                        <h3 class="card-title" style="font-size: 1rem;">🔍 Filtri</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label>Filtra per Data</label>
-                                <input type="date" id="filterData">
-                            </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label>Filtra per Dipendente</label>
-                                <select id="filterDipendente">
-                                    <option value="">Tutti</option>
-                                </select>
-                            </div>
-                            <button onclick="updateTabella()" class="btn-secondary">
-                                🔄 Aggiorna
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Tabella Timbrature -->
-                    <div class="card">
-                        <h2 class="card-title">📋 Storico Timbrature</h2>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Data</th>
-                                        <th>Dipendente</th>
-                                        <th>Orario</th>
-                                        <th>Ore</th>
-                                        <th>Tipo</th>
-                                        <th>Note</th>
-                                        <th>Azioni</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabellaTimbrature">
-                                    <tr>
-                                        <td colspan="7" class="text-center text-gray-500 py-8">
-                                            Nessuna timbratura trovata
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Export -->
-                    <div class="card">
-                        <h3 class="card-title" style="font-size: 1rem;">📤 Export Dati</h3>
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="exportExcel()" class="btn-success">
-                                📊 Excel
-                            </button>
-                            <button onclick="exportPDF()" class="btn-danger">
-                                📄 PDF
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab Statistiche -->
-                <div id="tabStatistiche" class="tab-content hidden">
-                    <div class="card">
-                        <h2 class="card-title">📊 Statistiche Mensili</h2>
-                        <div id="statisticheMensili">
-                            <p class="text-gray-500">Seleziona un mese per visualizzare le statistiche</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <div class="sidebar-title">📈 Riepilogo Oggi</div>
-                
-                <div class="stat-card">
-                    <div class="stat-value time-format" id="statOreOggi">0.00h</div>
-                    <div class="stat-label">Ore lavorate oggi</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-value" id="statTimbrature">0</div>
-                    <div class="stat-label">Timbrature totali</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-value time-format" id="statOreMese">0.00h</div>
-                    <div class="stat-label">Ore questo mese</div>
-                </div>
-
-                <div class="sidebar-title" style="margin-top: 30px;">👥 Ore per Dipendente</div>
-                <div id="statDipendenti">
-                    <p class="text-gray-500">Nessun dato</p>
-                </div>
-
-                <div class="sidebar-title" style="margin-top: 30px;">➕ Aggiungi Dipendente</div>
-                <div class="form-group">
-                    <input type="text" id="nuovoDipendente" placeholder="Nome dipendente...">
-                </div>
-                <button onclick="aggiungiDipendenteDaInput()" class="btn-primary" style="width: 100%;">
-                    ➕ Aggiungi
-                </button>
-            </div>
-        </div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-avatar" id="userAvatar">??</div>
+        <span class="user-name" id="userName">—</span>
+      </div>
+      <button class="btn btn-ghost" id="logoutBtn" style="padding:7px 14px; font-size:0.82rem;">
+        Esci
+      </button>
     </div>
+  </div>
 
-    <!-- ==========================================
-         JAVASCRIPT COMPLETO CON CONTROLLO BLOCCANTE
-         ========================================== -->
-    <script>
-        // ==========================================
-        // TIMETRACK PRO - JAVASCRIPT CORRETTO
-        // ==========================================
+  <!-- MAIN AREA -->
+  <div class="main-wrap">
 
-        let timbrature = [];
-        let dipendenti = [];
-        let currentUser = null;
-        let editingId = null;
-        let sovrapposizioneAttuale = false; // Flag per tracciare sovrapposizione
+    <!-- LEFT COLUMN -->
+    <div>
 
-        // ==========================================
-        // INIZIALIZZAZIONE
-        // ==========================================
+      <!-- ====== TAB: TIMBRATURE ====== -->
+      <div id="tabTimbrature" class="tab-content active">
 
-        document.addEventListener('DOMContentLoaded', function() {
-            initApp();
-        });
+        <!-- FORM NUOVA TIMBRATURA -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" id="formTitle">Nuova Timbratura</span>
+            <span class="card-badge" id="formBadge">INSERIMENTO</span>
+          </div>
 
-        function initApp() {
-            loadData();
-            setupEventListeners();
-            updateUI();
-            
-            // Imposta data di oggi
-            document.getElementById('dataInput').valueAsDate = new Date();
-            
-            // Mostra registrazioni esistenti per oggi
-            mostraRegistrazioniEsistenti();
-            
-            // Se c'è un utente loggato, mostra l'app
-            if (localStorage.getItem('currentUser')) {
-                showApp();
-            } else {
-                showLogin();
-            }
-        }
+          <form id="timbraturaForm" autocomplete="off">
 
-        function setupEventListeners() {
-            // Login
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            
-            // Form timbratura - BLOCCA SUBMIT SE C'È SOVRAPPOSIZIONE
-            document.getElementById('timbraturaForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // ⛔ CONTROLLO CRITICO: se c'è sovrapposizione, BLOCCA TUTTO
-                if (sovrapposizioneAttuale) {
-                    mostraErrore('⚠️ Correggi la sovrapposizione oraria prima di salvare!');
-                    return false; // BLOCCA IL SALVATAGGIO
-                }
-                
-                salvaTimbratura();
-            });
-            
-            // Navigazione tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.addEventListener('click', switchTab);
-            });
-            
-            // Logout
-            document.getElementById('btnLogout').addEventListener('click', logout);
-        }
+            <div class="form-grid">
+              <div class="field">
+                <label>Data *</label>
+                <input type="date" id="f_data" required>
+              </div>
+              <div class="field">
+                <label>Dipendente *</label>
+                <select id="f_dip" required>
+                  <option value="">Seleziona dipendente...</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Ora inizio *</label>
+                <input type="time" id="f_inizio" required>
+              </div>
+              <div class="field">
+                <label>Ora fine *</label>
+                <input type="time" id="f_fine" required>
+              </div>
+              <div class="field">
+                <label>Pausa (ore)</label>
+                <input type="number" id="f_pausa" value="0" min="0" max="8" step="0.5">
+              </div>
+              <div class="field">
+                <label>Tipo *</label>
+                <select id="f_tipo" required>
+                  <option value="work">Lavoro Ordinario</option>
+                  <option value="straordinario">Straordinario</option>
+                  <option value="ferie">Ferie</option>
+                  <option value="malattia">Malattia</option>
+                </select>
+              </div>
+            </div>
 
-        // ==========================================
-        // GESTIONE DATI LOCALSTORAGE
-        // ==========================================
+            <div class="field form-grid col1">
+              <div class="field" style="margin-bottom:0;">
+                <label>Note</label>
+                <input type="text" id="f_note" placeholder="Opzionale…">
+              </div>
+            </div>
 
-        function loadData() {
-            try {
-                timbrature = JSON.parse(localStorage.getItem('timbature')) || [];
-                dipendenti = JSON.parse(localStorage.getItem('dipendenti')) || [];
-                currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-            } catch (e) {
-                console.error('Errore caricamento dati:', e);
-                timbrature = [];
-                dipendenti = [];
-            }
-        }
+            <!-- ORE PREVIEW -->
+            <div class="ore-preview" id="orePreview">
+              <span class="ore-label">Ore nette</span>
+              <span class="ore-value" id="oreVal">—</span>
+            </div>
 
-        function saveData() {
-            localStorage.setItem('timbature', JSON.stringify(timbrature));
-            localStorage.setItem('dipendenti', JSON.stringify(dipendenti));
-        }
+            <!-- REGISTRAZIONI ESISTENTI -->
+            <div class="existing-box" id="existingBox">
+              <div class="existing-title">Registrazioni esistenti questo giorno</div>
+              <div id="existingList"></div>
+            </div>
 
-        // ==========================================
-        // AUTENTICAZIONE
-        // ==========================================
+            <!-- OVERLAP ALERT -->
+            <div class="overlap-alert" id="overlapAlert">
+              <span class="overlap-icon">⛔</span>
+              <div class="overlap-body">
+                <div class="overlap-title">SALVATAGGIO BLOCCATO</div>
+                <div class="overlap-desc" id="overlapDesc">Sovrapposizione oraria rilevata.</div>
+              </div>
+            </div>
 
-        function handleLogin(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            
-            if (!username || !password) {
-                mostraErrore('Inserisci username e password');
-                return false;
-            }
-            
-            if (password.length < 4) {
-                mostraErrore('Password non valida (min 4 caratteri)');
-                return false;
-            }
-            
-            currentUser = {
-                id: Date.now(),
-                username: username,
-                nome: username,
-                ruolo: 'admin'
-            };
-            
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            mostraSuccesso('Benvenuto ' + username);
-            showApp();
-            return true;
-        }
+            <!-- BUTTONS -->
+            <div class="action-row">
+              <button type="submit" class="btn btn-accent" id="btnSalva" style="flex:1;">
+                Salva
+              </button>
+              <button type="button" class="btn btn-ghost" id="btnAnnulla" onclick="resetForm()" style="display:none;">
+                Annulla
+              </button>
+            </div>
 
-        function logout() {
-            if (confirm('Sei sicuro di voler uscire?')) {
-                localStorage.removeItem('currentUser');
-                currentUser = null;
-                showLogin();
-            }
-        }
+          </form>
+        </div>
 
-        // ==========================================
-        // MOSTRA REGISTRAZIONI ESISTENTI (come nello screenshot)
-        // ==========================================
+        <!-- FILTRI -->
+        <div class="card" style="padding:20px 28px;">
+          <div class="filters">
+            <div class="field">
+              <label>Filtra data</label>
+              <input type="date" id="fl_data">
+            </div>
+            <div class="field">
+              <label>Filtra dipendente</label>
+              <select id="fl_dip">
+                <option value="">Tutti</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Filtra tipo</label>
+              <select id="fl_tipo">
+                <option value="">Tutti</option>
+                <option value="work">Lavoro</option>
+                <option value="straordinario">Straordinario</option>
+                <option value="ferie">Ferie</option>
+                <option value="malattia">Malattia</option>
+              </select>
+            </div>
+            <button class="btn btn-ghost" onclick="renderTabella()" style="align-self:flex-end;">Applica</button>
+            <button class="btn btn-ghost" onclick="clearFiltri()" style="align-self:flex-end;">Reset</button>
+          </div>
+        </div>
 
-        function mostraRegistrazioniEsistenti() {
-            const data = document.getElementById('dataInput').value;
-            const dipendenteId = document.getElementById('dipendenteSelect').value;
-            
-            if (!data || !dipendenteId) {
-                document.getElementById('infoRegistrazioni').classList.add('hidden');
-                return;
-            }
-            
-            const esistenti = timbrature.filter(t => 
-                t.data === data && 
-                t.dipendenteId === parseInt(dipendenteId) &&
-                t.id !== editingId // Esclude quello in modifica
-            );
-            
-            const container = document.getElementById('listaRegistrazioni');
-            
-            if (esistenti.length === 0) {
-                document.getElementById('infoRegistrazioni').classList.add('hidden');
-                return;
-            }
-            
-            document.getElementById('infoRegistrazioni').classList.remove('hidden');
-            
-            container.innerHTML = esistenti.map(t => `
-                <div class="info-box-item">
-                    <span>${t.oraInizio} - ${t.oraFine}</span>
-                    <span style="font-weight: 600; color: var(--primary);">${t.oreNette?.toFixed(2) || '0.00'}h</span>
-                </div>
-            `).join('');
-            
-            // Verifica subito se c'è sovrapposizione con i valori attuali
-            verificaSovrapposizioneInTempoReale();
-        }
+        <!-- TABELLA -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Storico Timbrature</span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost" onclick="exportExcel()" style="font-size:0.8rem;padding:7px 14px;">
+                Excel ↓
+              </button>
+              <button class="btn btn-ghost" onclick="exportPDF()" style="font-size:0.8rem;padding:7px 14px;">
+                Stampa
+              </button>
+            </div>
+          </div>
 
-        // ==========================================
-        // VERIFICA SOVRAPPOSIZIONE IN TEMPO REALE
-        // ==========================================
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Dipendente</th>
+                  <th>Orario</th>
+                  <th>Ore</th>
+                  <th>Tipo</th>
+                  <th>Note</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tabellaBody">
+                <tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><div class="empty-msg">Caricamento...</div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-        function verificaSovrapposizioneInTempoReale() {
-            const data = document.getElementById('dataInput').value;
-            const oraInizio = document.getElementById('oraInizio').value;
-            const oraFine = document.getElementById('oraFine').value;
-            const dipendenteId = document.getElementById('dipendenteSelect').value;
-            
-            // Aggiorna riepilogo ore
-            aggiornaRiepilogoOre();
-            
-            // Se mancano dati, nascondi alert
-            if (!data || !oraInizio || !oraFine || !dipendenteId) {
-                nascondiAlertSovrapposizione();
-                return;
-            }
-            
-            // Controllo orario valido
-            if (oraFine <= oraInizio) {
-                mostraAlertSovrapposizione('L\'ora di fine deve essere successiva all\'ora di inizio');
-                sovrapposizioneAttuale = true;
-                bloccaBottoneSalva();
-                return;
-            }
-            
-            // Controllo sovrapposizioni con altre timbrature
-            const result = controllaSovrapposizioni(data, oraInizio, oraFine, dipendenteId, editingId);
-            
-            if (result.esiste) {
-                mostraAlertSovrapposizione(result.messaggio);
-                sovrapposizioneAttuale = true;
-                bloccaBottoneSalva();
-            } else {
-                nascondiAlertSovrapposizione();
-                sovrapposizioneAttuale = false;
-                sbloccaBottoneSalva();
-            }
-        }
+      </div><!-- /tabTimbrature -->
 
-        function mostraAlertSovrapposizione(messaggio) {
-            const alert = document.getElementById('alertSovrapposizione');
-            const testo = document.getElementById('testoSovrapposizione');
-            testo.textContent = messaggio;
-            alert.classList.remove('hidden');
-        }
+      <!-- ====== TAB: STATISTICHE ====== -->
+      <div id="tabStatistiche" class="tab-content">
 
-        function nascondiAlertSovrapposizione() {
-            document.getElementById('alertSovrapposizione').classList.add('hidden');
-        }
+        <div class="stats-grid" id="statsGrid">
+          <!-- populate via JS -->
+        </div>
 
-        function bloccaBottoneSalva() {
-            const btn = document.getElementById('btnSalva');
-            btn.disabled = true;
-            btn.innerHTML = '🚫 Sovrapposizione!';
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-secondary');
-        }
+        <!-- Tabella ore per dipendente per mese -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Ore per Dipendente — Mese Corrente</span>
+          </div>
+          <div id="statsTable"></div>
+        </div>
 
-        function sbloccaBottoneSalva() {
-            const btn = document.getElementById('btnSalva');
-            btn.disabled = false;
-            btn.innerHTML = editingId ? '🔄 Aggiorna Timbratura' : '💾 Salva Timbratura';
-            btn.classList.remove('btn-secondary');
-            btn.classList.add('btn-primary');
-        }
+        <!-- Tabella dettaglio mensile -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Riepilogo Mensile Completo</span>
+          </div>
+          <div id="statsMonthly"></div>
+        </div>
 
-        function aggiornaRiepilogoOre() {
-            const oraInizio = document.getElementById('oraInizio').value;
-            const oraFine = document.getElementById('oraFine').value;
-            const orePausa = parseFloat(document.getElementById('orePausa').value) || 0;
-            
-            const riepilogo = document.getElementById('riepilogoOre');
-            
-            if (!oraInizio || !oraFine) {
-                riepilogo.textContent = 'Totale: 0.00 ore';
-                return;
-            }
-            
-            const oreTotali = calcolaOreTotali(oraInizio, oraFine);
-            const oreNette = Math.max(0, oreTotali - orePausa);
-            
-            riepilogo.textContent = `Totale: ${oreNette.toFixed(2)} ore`;
-        }
+      </div><!-- /tabStatistiche -->
 
-        // ==========================================
-        // GESTIONE TIMBRATURE - SALVATAGGIO BLOCCATO SE ERRORE
-        // ==========================================
+    </div><!-- /left -->
 
-        function salvaTimbratura() {
-            // Doppio controllo di sicurezza
-            if (sovrapposizioneAttuale) {
-                mostraErrore('⚠️ Impossibile salvare: sovrapposizione oraria rilevata!');
-                return false;
-            }
-            
-            const btnSalva = document.getElementById('btnSalva');
-            const originalText = btnSalva.innerHTML;
-            
-            btnSalva.disabled = true;
-            btnSalva.innerHTML = '⏳ Salvataggio...';
-            
-            try {
-                // Raccolta dati
-                const dataInput = document.getElementById('dataInput').value;
-                const oraInizio = document.getElementById('oraInizio').value;
-                const oraFine = document.getElementById('oraFine').value;
-                const dipendenteId = document.getElementById('dipendenteSelect').value;
-                const tipo = document.getElementById('tipoTimbratura').value;
-                const note = document.getElementById('noteInput').value.trim();
-                const orePausa = parseFloat(document.getElementById('orePausa').value) || 0;
-                
-                // Validazione
-                if (!dataInput || !oraInizio || !oraFine || !dipendenteId) {
-                    mostraErrore('Compila tutti i campi obbligatori (*)');
-                    return false;
-                }
-                
-                // Controllo finale sovrapposizioni (doppia sicurezza)
-                const result = controllaSovrapposizioni(dataInput, oraInizio, oraFine, dipendenteId, editingId);
-                if (result.esiste) {
-                    mostraErrore(result.messaggio);
-                    ripristinaBottone(btnSalva, originalText);
-                    sovrapposizioneAttuale = true;
-                    bloccaBottoneSalva();
-                    return false; // ⛔ BLOCCA SALVATAGGIO
-                }
-                
-                // Calcolo ore
-                const oreTotali = calcolaOreTotali(oraInizio, oraFine);
-                const oreNette = Math.max(0, oreTotali - orePausa);
-                
-                // Creazione oggetto
-                const nuovaTimbratura = {
-                    id: editingId || Date.now(),
-                    data: dataInput,
-                    oraInizio: oraInizio,
-                    oraFine: oraFine,
-                    oreTotali: oreTotali,
-                    orePausa: orePausa,
-                    oreNette: oreNette,
-                    dipendenteId: parseInt(dipendenteId),
-                    tipo: tipo,
-                    note: note,
-                    creatoDa: currentUser?.id,
-                    creatoIl: editingId ? undefined : new Date().toISOString(),
-                    modificatoIl: new Date().toISOString()
-                };
-                
-                // Salva
-                if (editingId) {
-                    const index = timbrature.findIndex(t => t.id === editingId);
-                    if (index !== -1) {
-                        nuovaTimbratura.creatoIl = timbrature[index].creatoIl;
-                        timbrature[index] = nuovaTimbratura;
-                    }
-                } else {
-                    timbrature.push(nuovaTimbratura);
-                }
-                
-                saveData();
-                
-                // Aggiorna UI
-                updateTabella();
-                updateStatistiche();
-                resetForm();
-                mostraRegistrazioniEsistenti(); // Aggiorna la lista
-                
-                const msg = editingId ? 'Timbratura aggiornata' : 'Timbratura salvata';
-                mostraSuccesso(msg + ` (${oreNette.toFixed(2)} ore)`);
-                
-                editingId = null;
-                
-            } catch (error) {
-                console.error('Errore:', error);
-                mostraErrore('Errore durante il salvataggio');
-            } finally {
-                if (!sovrapposizioneAttuale) {
-                    ripristinaBottone(btnSalva, originalText);
-                }
-            }
-        }
+    <!-- RIGHT SIDEBAR -->
+    <div class="sidebar">
 
-        // ==========================================
-        // CONTROLLO SOVRAPPOSIZIONI ORARIE
-        // ==========================================
+      <div class="stat-widget">
+        <div class="sw-label">Ore Oggi</div>
+        <div class="sw-val" id="sw_oggi">0.00h</div>
+        <div class="sw-sub" id="sw_oggi_n">0 registrazioni</div>
+      </div>
 
-        function controllaSovrapposizioni(data, oraInizio, oraFine, dipendenteId, excludeId) {
-            const timbratureGiorno = timbrature.filter(t => {
-                if (t.data !== data) return false;
-                if (t.dipendenteId !== parseInt(dipendenteId)) return false;
-                if (excludeId && t.id === excludeId) return false;
-                return true;
-            });
-            
-            if (timbratureGiorno.length === 0) {
-                return { esiste: false };
-            }
-            
-            const nuovoInizio = timeToMinutes(oraInizio);
-            const nuovoFine = timeToMinutes(oraFine);
-            
-            for (const t of timbratureGiorno) {
-                const esistenteInizio = timeToMinutes(t.oraInizio);
-                const esistenteFine = timeToMinutes(t.oraFine);
-                
-                // Sovrapposizione se: inizio < fine_esistente AND fine > inizio_esistente
-                const sovrappone = (nuovoInizio < esistenteFine) && (nuovoFine > esistenteInizio);
-                
-                if (sovrappone) {
-                    return {
-                        esiste: true,
-                        messaggio: `Orario ${oraInizio}-${oraFine} si sovrappone con ${t.oraInizio}-${t.oraFine}`
-                    };
-                }
-            }
-            
-            return { esiste: false };
-        }
+      <div class="stat-widget">
+        <div class="sw-label">Ore Questo Mese</div>
+        <div class="sw-val green" id="sw_mese">0.00h</div>
+        <div class="sw-sub" id="sw_mese_n">—</div>
+      </div>
 
-        function timeToMinutes(timeStr) {
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            return hours * 60 + minutes;
-        }
+      <div class="stat-widget">
+        <div class="sw-label">Totale Timbrature</div>
+        <div class="sw-val white" id="sw_tot">0</div>
+        <div class="sw-sub">In archivio</div>
+      </div>
 
-        function calcolaOreTotali(oraInizio, oraFine) {
-            const inizio = timeToMinutes(oraInizio);
-            const fine = timeToMinutes(oraFine);
-            return (fine - inizio) / 60;
-        }
+      <div class="stat-widget">
+        <div class="sw-label">Dipendenti — Ore Totali</div>
+        <div class="divider"></div>
+        <div id="sw_dip">
+          <div class="empty" style="padding:16px 0;"><div class="empty-msg">Nessun dato</div></div>
+        </div>
+      </div>
 
-        // ==========================================
-        // GESTIONE FORM E UI
-        // ==========================================
+    </div><!-- /sidebar -->
 
-        function resetForm() {
-            document.getElementById('timbraturaForm').reset();
-            document.getElementById('dataInput').valueAsDate = new Date();
-            editingId = null;
-            sovrapposizioneAttuale = false;
-            
-            nascondiAlertSovrapposizione();
-            sbloccaBottoneSalva();
-            
-            document.getElementById('btnAnnullaModifica').classList.add('hidden');
-            document.getElementById('riepilogoOre').textContent = 'Totale: 0.00 ore';
-            
-            mostraRegistrazioniEsistenti();
-        }
+  </div><!-- /main-wrap -->
+</div><!-- /appScreen -->
 
-        function modificaTimbratura(id) {
-            const t = timbrature.find(x => x.id === id);
-            if (!t) return;
-            
-            editingId = id;
-            sovrapposizioneAttuale = false;
-            
-            document.getElementById('dataInput').value = t.data;
-            document.getElementById('oraInizio').value = t.oraInizio;
-            document.getElementById('oraFine').value = t.oraFine;
-            document.getElementById('dipendenteSelect').value = t.dipendenteId;
-            document.getElementById('tipoTimbratura').value = t.tipo || 'normale';
-            document.getElementById('orePausa').value = t.orePausa || 0;
-            document.getElementById('noteInput').value = t.note || '';
-            
-            sbloccaBottoneSalva();
-            document.getElementById('btnAnnullaModifica').classList.remove('hidden');
-            
-            aggiornaRiepilogoOre();
-            mostraRegistrazioniEsistenti();
-            
-            document.getElementById('timbraturaForm').scrollIntoView({ behavior: 'smooth' });
-        }
+<!-- ============================================
+     SCRIPT
+     ============================================ -->
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const API_URL = 'https://script.google.com/macros/s/AKfycbzCHH0x-8Gw1YNOoBqJ_rZH74PYBAfKUeczK8H1SXYXCSvhRCVSMHa6_coHPhypUArR/exec';
 
-        function eliminaTimbratura(id) {
-            if (!confirm('Sei sicuro di voler eliminare questa timbratura?')) return;
-            
-            timbrature = timbrature.filter(t => t.id !== id);
-            saveData();
-            updateTabella();
-            updateStatistiche();
-            mostraRegistrazioniEsistenti();
-            mostraSuccesso('Timbratura eliminata');
-            
-            if (editingId === id) {
-                resetForm();
-            }
-        }
+// ============================================================
+// STATE
+// ============================================================
+let timbrature  = [];   // Array<Entry>
+let dipendenti  = [];   // Array<User>
+let currentUser = null;
+let editingId   = null;
+let blockSave   = false; // true se c'è sovrapposizione valida
 
-        // ==========================================
-        // AGGIORNAMENTO UI
-        // ==========================================
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  setupFormListeners();
+  setupTabListeners();
+  setupAuthListeners();
 
-        function updateTabella() {
-            const tbody = document.getElementById('tabellaTimbrature');
-            const filtroData = document.getElementById('filterData').value;
-            const filtroDip = document.getElementById('filterDipendente').value;
-            
-            let filtrate = [...timbrature].sort((a, b) => {
-                if (a.data !== b.data) return b.data.localeCompare(a.data);
-                return a.oraInizio.localeCompare(b.oraInizio);
-            });
-            
-            if (filtroData) filtrate = filtrate.filter(t => t.data === filtroData);
-            if (filtroDip) filtrate = filtrate.filter(t => t.dipendenteId === parseInt(filtroDip));
-            
-            if (filtrate.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center text-gray-500 py-8">
-                            Nessuna timbratura trovata
-                        </td>
-                    </tr>`;
-                return;
-            }
-            
-            tbody.innerHTML = filtrate.map(t => {
-                const dip = dipendenti.find(d => d.id === t.dipendenteId);
-                const nomeDip = dip ? dip.nome : 'Sconosciuto';
-                
-                return `
-                    <tr data-id="${t.id}">
-                        <td>${formatData(t.data)}</td>
-                        <td>${nomeDip}</td>
-                        <td>${t.oraInizio} - ${t.oraFine}</td>
-                        <td class="time-format">${t.oreNette?.toFixed(2) || '0.00'}h</td>
-                        <td><span class="badge badge-${t.tipo || 'normale'}">${t.tipo || 'Normale'}</span></td>
-                        <td>${t.note || '-'}</td>
-                        <td class="actions">
-                            <button onclick="modificaTimbratura(${t.id})" class="btn-icon btn-edit" title="Modifica">✏️</button>
-                            <button onclick="eliminaTimbratura(${t.id})" class="btn-icon btn-delete" title="Elimina">🗑️</button>
-                        </td>
-                    </tr>`;
-            }).join('');
-        }
+  const saved = localStorage.getItem('tt_user');
+  if (saved) {
+    try {
+      currentUser = JSON.parse(saved);
+      showApp();
+      loadData();
+    } catch { showLogin(); }
+  } else {
+    showLogin();
+  }
+});
 
-        function updateStatistiche() {
-            const oggi = new Date().toISOString().split('T')[0];
-            const timbratureOggi = timbrature.filter(t => t.data === oggi);
-            const oreOggi = timbratureOggi.reduce((sum, t) => sum + (t.oreNette || 0), 0);
-            
-            document.getElementById('statOreOggi').textContent = oreOggi.toFixed(2) + 'h';
-            document.getElementById('statTimbrature').textContent = timbrature.length;
-            
-            const oreMese = calcolaOreMese(new Date().getMonth(), new Date().getFullYear());
-            document.getElementById('statOreMese').textContent = oreMese.toFixed(2) + 'h';
-            
-            updateStatDipendenti();
-        }
+// ============================================================
+// AUTH
+// ============================================================
+function setupAuthListeners() {
+  document.getElementById('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const pwd   = document.getElementById('loginPwd').value;
+    const btn   = document.getElementById('loginBtn');
 
-        function updateStatDipendenti() {
-            const container = document.getElementById('statDipendenti');
-            const stats = {};
-            
-            timbrature.forEach(t => {
-                if (!stats[t.dipendenteId]) {
-                    stats[t.dipendenteId] = { ore: 0, giorni: new Set() };
-                }
-                stats[t.dipendenteId].ore += t.oreNette || 0;
-                stats[t.dipendenteId].giorni.add(t.data);
-            });
-            
-            const html = Object.entries(stats).map(([id, stat]) => {
-                const dip = dipendenti.find(d => d.id === parseInt(id));
-                const nome = dip ? dip.nome : 'Sconosciuto';
-                return `
-                    <div class="stat-row">
-                        <span class="stat-name">${nome}</span>
-                        <span class="stat-ore">${stat.ore.toFixed(1)}h</span>
-                        <span class="stat-giorni">${stat.giorni.size} gg</span>
-                    </div>`;
-            }).join('');
-            
-            container.innerHTML = html || '<p class="text-gray-500">Nessun dato disponibile</p>';
-        }
+    btn.innerHTML = '<span class="spin"></span>';
+    btn.disabled  = true;
 
-        function calcolaOreMese(mese, anno) {
-            return timbrature
-                .filter(t => {
-                    const d = new Date(t.data);
-                    return d.getMonth() === mese && d.getFullYear() === anno;
-                })
-                .reduce((sum, t) => sum + (t.oreNette || 0), 0);
-        }
+    const res = await api('login', { email, password: pwd });
 
-        // ==========================================
-        // EXPORT
-        // ==========================================
+    btn.innerHTML = 'Entra';
+    btn.disabled  = false;
 
-        function exportExcel() {
-            if (timbrature.length === 0) {
-                mostraErrore('Nessun dato da esportare');
-                return;
-            }
-            
-            const datiExport = timbrature.map(t => {
-                const dip = dipendenti.find(d => d.id === t.dipendenteId);
-                return {
-                    'Data': t.data,
-                    'Dipendente': dip?.nome || 'Sconosciuto',
-                    'Ora Inizio': t.oraInizio,
-                    'Ora Fine': t.oraFine,
-                    'Ore Totali': t.oreTotali,
-                    'Ore Pausa': t.orePausa,
-                    'Ore Nette': t.oreNette,
-                    'Tipo': t.tipo,
-                    'Note': t.note
-                };
-            });
-            
-            const ws = XLSX.utils.json_to_sheet(datiExport);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Timbrature");
-            
-            XLSX.writeFile(wb, `Timbrature_${new Date().toISOString().split('T')[0]}.xlsx`);
-            mostraSuccesso('Excel esportato con successo');
-        }
+    if (res.success) {
+      currentUser = res.user;
+      localStorage.setItem('tt_user', JSON.stringify(currentUser));
+      toast('Benvenuto ' + currentUser.nome, 'success');
+      showApp();
+      loadData();
+    } else {
+      toast(res.error || 'Credenziali errate', 'error');
+    }
+  });
 
-        function exportPDF() {
-            window.print();
-        }
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    if (confirm('Esci da TimeTrack Pro?')) {
+      localStorage.removeItem('tt_user');
+      currentUser = null;
+      showLogin();
+    }
+  });
+}
 
-        // ==========================================
-        // GESTIONE DIPENDENTI
-        // ==========================================
+function showApp() {
+  document.getElementById('loginScreen').style.display  = 'none';
+  document.getElementById('appScreen').style.display    = 'block';
+  if (currentUser) {
+    document.getElementById('userAvatar').textContent = currentUser.nome.charAt(0).toUpperCase();
+    document.getElementById('userName').textContent   = currentUser.nome.split(' ')[0];
+  }
+}
 
-        function aggiungiDipendenteDaInput() {
-            const input = document.getElementById('nuovoDipendente');
-            const nome = input.value.trim();
-            
-            if (!nome) {
-                mostraErrore('Inserisci un nome');
-                return;
-            }
-            
-            if (dipendenti.some(d => d.nome.toLowerCase() === nome.toLowerCase())) {
-                mostraErrore('Dipendente già esistente');
-                return;
-            }
-            
-            const nuovo = {
-                id: Date.now(),
-                nome: nome,
-                attivo: true,
-                creatoIl: new Date().toISOString()
-            };
-            
-            dipendenti.push(nuovo);
-            saveData();
-            popolaSelectDipendenti();
-            updateStatDipendenti();
-            
-            input.value = '';
-            mostraSuccesso('Dipendente aggiunto: ' + nome);
-        }
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appScreen').style.display   = 'none';
+}
 
-        function popolaSelectDipendenti() {
-            const select = document.getElementById('dipendenteSelect');
-            const filter = document.getElementById('filterDipendente');
-            
-            const options = dipendenti.map(d => 
-                `<option value="${d.id}">${d.nome}</option>`
-            ).join('');
-            
-            select.innerHTML = '<option value="">Seleziona dipendente...</option>' + options;
-            filter.innerHTML = '<option value="">Tutti i dipendenti</option>' + options;
-        }
+// ============================================================
+// API
+// ============================================================
+async function api(action, params = {}) {
+  try {
+    const url = new URL(API_URL);
+    url.searchParams.set('action', action);
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+    }
+    const resp = await fetch(url.toString());
+    return await resp.json();
+  } catch (err) {
+    return { success: false, error: 'Errore connessione: ' + err.message };
+  }
+}
 
-        // ==========================================
-        // UTILITY UI
-        // ==========================================
+// ============================================================
+// LOAD DATA
+// ============================================================
+async function loadData() {
+  showLoader('Caricamento dati...');
+  try {
+    const [usersRes, entriesRes] = await Promise.all([
+      api('get_users'),
+      api('get')
+    ]);
 
-        function mostraErrore(messaggio) {
-            rimuoviAlert();
-            
-            const alert = document.createElement('div');
-            alert.className = 'alert alert-error';
-            alert.innerHTML = `
-                <span class="alert-icon">❌</span>
-                <span class="alert-text">${messaggio}</span>
-                <button onclick="rimuoviAlert()" class="alert-close">×</button>
-            `;
-            
-            document.body.appendChild(alert);
-            setTimeout(rimuoviAlert, 5000);
-        }
+    if (usersRes.success) {
+      dipendenti = usersRes.users || [];
+      populateSelects();
+    }
 
-        function mostraSuccesso(messaggio) {
-            rimuoviAlert();
-            
-            const alert = document.createElement('div');
-            alert.className = 'alert alert-success';
-            alert.innerHTML = `
-                <span class="alert-icon">✅</span>
-                <span class="alert-text">${messaggio}</span>
-                <button onclick="rimuoviAlert()" class="alert-close">×</button>
-            `;
-            
-            document.body.appendChild(alert);
-            setTimeout(rimuoviAlert, 3000);
-        }
+    if (entriesRes.success) {
+      timbrature = entriesRes.data || [];
+      renderTabella();
+      renderSidebar();
+      renderStats();
+      checkExisting();
+    }
+  } finally {
+    hideLoader();
+  }
+}
 
-        function rimuoviAlert() {
-            document.querySelectorAll('.alert').forEach(a => a.remove());
-        }
+// ============================================================
+// POPULATE SELECTS
+// ============================================================
+function populateSelects() {
+  const opts = dipendenti.map(d => `<option value="${d.id}">${d.nome.trim()}</option>`).join('');
+  document.getElementById('f_dip').innerHTML   = '<option value="">Seleziona dipendente...</option>' + opts;
+  document.getElementById('fl_dip').innerHTML  = '<option value="">Tutti</option>' + opts;
+}
 
-        function ripristinaBottone(btn, testoOriginale) {
-            if (btn && !sovrapposizioneAttuale) {
-                btn.disabled = false;
-                btn.innerHTML = testoOriginale;
-            }
-        }
+// ============================================================
+// FORM LISTENERS
+// ============================================================
+function setupFormListeners() {
+  const ids = ['f_data','f_dip','f_inizio','f_fine','f_pausa','f_tipo'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('change', onFormChange);
+    el.addEventListener('input', onFormChange);
+  });
 
-        function formatData(dataISO) {
-            if (!dataISO) return '-';
-            const [anno, mese, giorno] = dataISO.split('-');
-            return `${giorno}/${mese}/${anno}`;
-        }
+  document.getElementById('timbraturaForm').addEventListener('submit', e => {
+    e.preventDefault();
+    if (blockSave) {
+      toast('Correggi la sovrapposizione prima di salvare', 'warning');
+      return;
+    }
+    salva();
+  });
+}
 
-        function switchTab(e) {
-            const tabId = e.target.dataset.tab;
-            
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active');
-            
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-        }
+function onFormChange() {
+  updateOrePreview();
+  checkExisting();
+  checkOverlap();
+}
 
-        function showApp() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('appContainer').classList.remove('hidden');
-            updateUI();
-        }
+// ============================================================
+// ORE PREVIEW
+// ============================================================
+function updateOrePreview() {
+  const inizio = document.getElementById('f_inizio').value;
+  const fine   = document.getElementById('f_fine').value;
+  const pausa  = parseFloat(document.getElementById('f_pausa').value) || 0;
+  const prev   = document.getElementById('orePreview');
+  const val    = document.getElementById('oreVal');
 
-        function showLogin() {
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('appContainer').classList.add('hidden');
-        }
+  if (!inizio || !fine) {
+    val.textContent = '—';
+    prev.className  = 'ore-preview';
+    return;
+  }
 
-        function updateUI() {
-            updateTabella();
-            updateStatistiche();
-            popolaSelectDipendenti();
-        }
+  const tot  = timeToMinutes(fine) - timeToMinutes(inizio);
+  const nette = Math.max(0, tot / 60 - pausa);
 
-        // Espone funzioni globali
-        window.modificaTimbratura = modificaTimbratura;
-        window.eliminaTimbratura = eliminaTimbratura;
-        window.resetForm = resetForm;
-        window.updateTabella = updateTabella;
-        window.exportExcel = exportExcel;
-        window.exportPDF = exportPDF;
-        window.aggiungiDipendenteDaInput = aggiungiDipendenteDaInput;
-        window.mostraRegistrazioniEsistenti = mostraRegistrazioniEsistenti;
-        window.verificaSovrapposizioneInTempoReale = verificaSovrapposizioneInTempoReale;
-    </script>
+  if (tot <= 0) {
+    val.textContent = 'Orario non valido';
+    prev.className  = 'ore-preview error';
+    return;
+  }
+
+  val.textContent = nette.toFixed(2) + 'h';
+  prev.className  = pausa > 0 ? 'ore-preview warn' : 'ore-preview ok';
+}
+
+// ============================================================
+// CHECK EXISTING
+// ============================================================
+function checkExisting() {
+  const data   = document.getElementById('f_data').value;
+  const userId = document.getElementById('f_dip').value;
+  const box    = document.getElementById('existingBox');
+  const list   = document.getElementById('existingList');
+
+  if (!data || !userId) { box.classList.remove('visible'); return; }
+
+  const esistenti = timbrature.filter(t =>
+    t.data   === data &&
+    t.userId === userId &&
+    t.tipo   === 'work' &&
+    t.id     !== editingId
+  );
+
+  if (esistenti.length === 0) { box.classList.remove('visible'); return; }
+
+  box.classList.add('visible');
+  list.innerHTML = esistenti
+    .sort((a,b) => a.inizio.localeCompare(b.inizio))
+    .map(t => `
+      <div class="existing-row">
+        <span class="existing-time">${t.inizio} → ${t.fine}</span>
+        <span class="existing-ore">${(t.ore||0).toFixed(2)}h</span>
+      </div>`)
+    .join('');
+}
+
+// ============================================================
+// OVERLAP CHECK  ← cuore della logica
+// ============================================================
+function checkOverlap() {
+  const data   = document.getElementById('f_data').value;
+  const inizio = document.getElementById('f_inizio').value;
+  const fine   = document.getElementById('f_fine').value;
+  const userId = document.getElementById('f_dip').value;
+  const tipo   = document.getElementById('f_tipo').value;
+
+  const alert_el = document.getElementById('overlapAlert');
+  const desc_el  = document.getElementById('overlapDesc');
+  const btnSalva = document.getElementById('btnSalva');
+
+  // Reset
+  function clearBlock() {
+    blockSave = false;
+    alert_el.classList.remove('visible');
+    btnSalva.disabled = false;
+    btnSalva.innerHTML = editingId ? 'Aggiorna' : 'Salva';
+    btnSalva.className = 'btn btn-accent';
+  }
+
+  // Blocca per orario non valido
+  if (!data || !inizio || !fine || !userId) { clearBlock(); return; }
+
+  const iMin = timeToMinutes(inizio);
+  const fMin = timeToMinutes(fine);
+
+  if (fMin <= iMin) {
+    blockSave = true;
+    desc_el.textContent = `L'ora di fine (${fine}) deve essere successiva all'ora di inizio (${inizio}).`;
+    alert_el.classList.add('visible');
+    btnSalva.disabled   = true;
+    btnSalva.innerHTML  = '⛔ Orario non valido';
+    btnSalva.className  = 'btn btn-ghost';
+    return;
+  }
+
+  // Solo per tipo 'work' controlliamo sovrapposizioni
+  if (tipo !== 'work') { clearBlock(); return; }
+
+  // Cerca sovrapposizioni con entries esistenti
+  const collisione = trovaSovrapposizione(userId, data, inizio, fine, editingId);
+
+  if (collisione) {
+    blockSave = true;
+    desc_el.textContent = `L'orario ${inizio}–${fine} si sovrappone con ${collisione.inizio}–${collisione.fine} (${(collisione.ore||0).toFixed(2)}h già registrate).`;
+    alert_el.classList.add('visible');
+    btnSalva.disabled   = true;
+    btnSalva.innerHTML  = '⛔ Sovrapposizione!';
+    btnSalva.className  = 'btn btn-ghost';
+  } else {
+    clearBlock();
+  }
+}
+
+/**
+ * Trova la prima entry che si sovrappone con l'intervallo dato.
+ * Gestisce anche turni a cavallo della mezzanotte.
+ * Restituisce l'entry collidente oppure null.
+ */
+function trovaSovrapposizione(userId, data, inizio, fine, excludeId) {
+  const candidates = timbrature.filter(t =>
+    t.data   === data &&
+    t.userId === userId &&
+    t.tipo   === 'work' &&
+    t.id     !== excludeId
+  );
+
+  if (candidates.length === 0) return null;
+
+  let nI = timeToMinutes(inizio);
+  let nF = timeToMinutes(fine);
+  if (nF <= nI) nF += 1440; // mezzanotte
+
+  for (const t of candidates) {
+    let eI = timeToMinutes(t.inizio);
+    let eF = timeToMinutes(t.fine);
+    if (!eI && eI !== 0) continue;
+    if (!eF && eF !== 0) continue;
+    if (eF <= eI) eF += 1440;
+
+    // Sovrapposizione: [nI,nF) ∩ [eI,eF) ≠ ∅
+    if (nI < eF && eI < nF) return t;
+  }
+
+  return null;
+}
+
+// ============================================================
+// SALVA / UPDATE
+// ============================================================
+async function salva() {
+  if (blockSave) return;
+
+  const data   = document.getElementById('f_data').value;
+  const userId = document.getElementById('f_dip').value;
+  const inizio = document.getElementById('f_inizio').value;
+  const fine   = document.getElementById('f_fine').value;
+  const tipo   = document.getElementById('f_tipo').value;
+  const pausa  = parseFloat(document.getElementById('f_pausa').value) || 0;
+  const note   = document.getElementById('f_note').value.trim();
+
+  if (!data || !userId || !inizio || !fine) {
+    toast('Compila tutti i campi obbligatori', 'warning');
+    return;
+  }
+
+  // Calcolo ore nette
+  const totMin = timeToMinutes(fine) - timeToMinutes(inizio);
+  if (totMin <= 0) { toast('Orario non valido', 'error'); return; }
+  const oreNette = Math.max(0, totMin / 60 - pausa);
+
+  const dip  = dipendenti.find(d => d.id === userId);
+  const nome = dip?.nome?.trim() || '';
+
+  const params = { userId, nome, data, tipo, inizio, fine, ore: oreNette.toFixed(4) };
+  if (note) params.note = note;
+
+  const btn = document.getElementById('btnSalva');
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="spin"></span>';
+
+  let res;
+  if (editingId) {
+    res = await api('update', { id: editingId, ...params });
+  } else {
+    res = await api('save', params);
+  }
+
+  btn.disabled  = false;
+  btn.innerHTML = editingId ? 'Aggiorna' : 'Salva';
+
+  if (res.success) {
+    toast(editingId ? 'Timbratura aggiornata ✓' : 'Timbratura salvata ✓', 'success');
+    resetForm();
+    await loadData();
+  } else {
+    // Doppio controllo: il server ha bloccato per overlap
+    if (res.code === 'OVERLAP_BLOCKED') {
+      blockSave = true;
+      document.getElementById('overlapDesc').textContent = res.error;
+      document.getElementById('overlapAlert').classList.add('visible');
+      btn.disabled  = true;
+      btn.innerHTML = '⛔ Sovrapposizione!';
+      btn.className = 'btn btn-ghost';
+    }
+    toast(res.error || 'Errore durante il salvataggio', 'error');
+  }
+}
+
+// ============================================================
+// MODIFICA
+// ============================================================
+function modificaEntry(id) {
+  const t = timbrature.find(x => x.id === id);
+  if (!t) return;
+
+  editingId = id;
+  blockSave = false;
+
+  document.getElementById('f_data').value   = t.data;
+  document.getElementById('f_dip').value    = t.userId;
+  document.getElementById('f_inizio').value = t.inizio;
+  document.getElementById('f_fine').value   = t.fine;
+  document.getElementById('f_tipo').value   = t.tipo || 'work';
+  document.getElementById('f_note').value   = t.note || '';
+
+  // Ricava pausa
+  const totMin = timeToMinutes(t.fine) - timeToMinutes(t.inizio);
+  const pausa  = Math.max(0, totMin / 60 - (t.ore || 0));
+  document.getElementById('f_pausa').value = pausa.toFixed(1);
+
+  document.getElementById('formTitle').textContent  = 'Modifica Timbratura';
+  document.getElementById('formBadge').textContent  = 'MODIFICA';
+  document.getElementById('btnSalva').innerHTML     = 'Aggiorna';
+  document.getElementById('btnAnnulla').style.display = 'inline-flex';
+
+  onFormChange();
+
+  // Switch to tab
+  switchTab('tabTimbrature');
+  document.getElementById('timbraturaForm').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ============================================================
+// ELIMINA
+// ============================================================
+function eliminaEntry(id) {
+  const t = timbrature.find(x => x.id === id);
+  if (!t) return;
+
+  const dip = dipendenti.find(d => d.id === t.userId);
+  document.getElementById('modalBody').textContent =
+    `Eliminare la timbratura di ${dip?.nome || '—'} del ${fmtDate(t.data)} (${t.inizio}–${t.fine})?`;
+
+  document.getElementById('modalConfirmBtn').onclick = async () => {
+    closeModal();
+    const res = await api('delete', { id });
+    if (res.success) {
+      toast('Timbratura eliminata', 'success');
+      await loadData();
+    } else {
+      // Fallback: rimuovi solo localmente (se backend non ha delete)
+      timbrature = timbrature.filter(x => x.id !== id);
+      renderTabella();
+      renderSidebar();
+      toast('Eliminata localmente (aggiungi delete al backend)', 'warning');
+    }
+  };
+
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ============================================================
+// RESET FORM
+// ============================================================
+function resetForm() {
+  document.getElementById('timbraturaForm').reset();
+  document.getElementById('f_data').valueAsDate = new Date();
+  editingId = null;
+  blockSave = false;
+
+  document.getElementById('formTitle').textContent  = 'Nuova Timbratura';
+  document.getElementById('formBadge').textContent  = 'INSERIMENTO';
+  document.getElementById('btnSalva').innerHTML     = 'Salva';
+  document.getElementById('btnSalva').disabled      = false;
+  document.getElementById('btnSalva').className     = 'btn btn-accent';
+  document.getElementById('btnAnnulla').style.display = 'none';
+
+  document.getElementById('overlapAlert').classList.remove('visible');
+  document.getElementById('existingBox').classList.remove('visible');
+  document.getElementById('orePreview').className  = 'ore-preview';
+  document.getElementById('oreVal').textContent    = '—';
+}
+
+// ============================================================
+// RENDER TABELLA
+// ============================================================
+function renderTabella() {
+  const fl_data  = document.getElementById('fl_data').value;
+  const fl_dip   = document.getElementById('fl_dip').value;
+  const fl_tipo  = document.getElementById('fl_tipo').value;
+
+  let rows = [...timbrature].sort((a,b) => {
+    if (a.data !== b.data) return b.data.localeCompare(a.data);
+    return (a.inizio||'').localeCompare(b.inizio||'');
+  });
+
+  if (fl_data) rows = rows.filter(t => t.data === fl_data);
+  if (fl_dip)  rows = rows.filter(t => t.userId === fl_dip);
+  if (fl_tipo) rows = rows.filter(t => t.tipo === fl_tipo);
+
+  const tbody = document.getElementById('tabellaBody');
+
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-msg">Nessuna timbratura trovata</div></div></td></tr>`;
+    return;
+  }
+
+  const tipoLabel = { work:'Lavoro', straordinario:'Straord.', ferie:'Ferie', malattia:'Malattia' };
+
+  tbody.innerHTML = rows.map(t => {
+    const dip  = dipendenti.find(d => d.id === t.userId);
+    const nome = dip ? dip.nome.trim() : t.nome || '—';
+    return `
+      <tr>
+        <td class="td-date">${fmtDate(t.data)}</td>
+        <td class="td-name">${nome}</td>
+        <td class="td-time">${t.inizio||'—'} → ${t.fine||'—'}</td>
+        <td class="td-ore">${(t.ore||0).toFixed(2)}h</td>
+        <td><span class="badge badge-${t.tipo||'work'}">${tipoLabel[t.tipo]||t.tipo}</span></td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.note||''}">${t.note||'—'}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button class="icon-btn icon-edit" onclick="modificaEntry('${t.id}')" title="Modifica">✏️</button>
+            <button class="icon-btn icon-del"  onclick="eliminaEntry('${t.id}')"  title="Elimina">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function clearFiltri() {
+  document.getElementById('fl_data').value  = '';
+  document.getElementById('fl_dip').value   = '';
+  document.getElementById('fl_tipo').value  = '';
+  renderTabella();
+}
+
+// ============================================================
+// RENDER SIDEBAR
+// ============================================================
+function renderSidebar() {
+  const oggi   = todayISO();
+  const mese   = new Date().getMonth();
+  const anno   = new Date().getFullYear();
+
+  const oggiRows  = timbrature.filter(t => t.data === oggi);
+  const oreOggi   = sum(oggiRows);
+  const meseRows  = timbrature.filter(t => {
+    const d = new Date(t.data);
+    return d.getMonth() === mese && d.getFullYear() === anno;
+  });
+  const oreMese   = sum(meseRows);
+
+  document.getElementById('sw_oggi').textContent   = oreOggi.toFixed(2) + 'h';
+  document.getElementById('sw_oggi_n').textContent = oggiRows.length + ' registraz.';
+  document.getElementById('sw_mese').textContent   = oreMese.toFixed(2) + 'h';
+  document.getElementById('sw_mese_n').textContent = meseRows.length + ' registraz.';
+  document.getElementById('sw_tot').textContent    = timbrature.length;
+
+  // Ore per dipendente
+  const byDip = {};
+  timbrature.forEach(t => {
+    if (!byDip[t.userId]) byDip[t.userId] = { ore:0, giorni:new Set() };
+    byDip[t.userId].ore += t.ore || 0;
+    byDip[t.userId].giorni.add(t.data);
+  });
+
+  const html = Object.entries(byDip)
+    .sort((a,b) => b[1].ore - a[1].ore)
+    .map(([id, s]) => {
+      const dip  = dipendenti.find(d => d.id === id);
+      const nome = dip ? dip.nome.trim() : '—';
+      return `
+        <div class="dip-row">
+          <span class="dip-name">${nome}</span>
+          <span class="dip-ore">${s.ore.toFixed(1)}h</span>
+          <span class="dip-gg">${s.giorni.size}gg</span>
+        </div>`;
+    }).join('');
+
+  document.getElementById('sw_dip').innerHTML = html ||
+    '<div class="empty" style="padding:12px 0;"><div class="empty-msg">Nessun dato</div></div>';
+}
+
+// ============================================================
+// RENDER STATS
+// ============================================================
+function renderStats() {
+  const mese = new Date().getMonth();
+  const anno = new Date().getFullYear();
+  const meseTxt = new Date().toLocaleString('it-IT', { month:'long', year:'numeric' });
+
+  const meseRows = timbrature.filter(t => {
+    const d = new Date(t.data);
+    return d.getMonth() === mese && d.getFullYear() === anno;
+  });
+
+  const oreWork  = sum(meseRows.filter(t => t.tipo === 'work'));
+  const oreExtra = sum(meseRows.filter(t => t.tipo === 'straordinario'));
+  const gg       = new Set(meseRows.map(t => t.data)).size;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="big-stat">
+      <div class="bs-val">${oreWork.toFixed(1)}h</div>
+      <div class="bs-label">Ore lavoro — ${meseTxt}</div>
+    </div>
+    <div class="big-stat">
+      <div class="bs-val" style="color:var(--accent2)">${oreExtra.toFixed(1)}h</div>
+      <div class="bs-label">Straordinari — ${meseTxt}</div>
+    </div>
+    <div class="big-stat">
+      <div class="bs-val" style="color:var(--text)">${gg}</div>
+      <div class="bs-label">Giorni con presenze</div>
+    </div>
+  `;
+
+  // Tabella ore per dipendente
+  const byDip = {};
+  meseRows.forEach(t => {
+    if (!byDip[t.userId]) byDip[t.userId] = { work:0, extra:0, ferie:0, malattia:0, giorni:new Set() };
+    const key = t.tipo === 'straordinario' ? 'extra' : (t.tipo || 'work');
+    byDip[t.userId][key] = (byDip[t.userId][key] || 0) + (t.ore || 0);
+    byDip[t.userId].giorni.add(t.data);
+  });
+
+  const statsHtml = Object.keys(byDip).length === 0
+    ? '<div class="empty"><div class="empty-msg">Nessun dato per il mese corrente</div></div>'
+    : `<div class="tbl-wrap"><table>
+        <thead><tr>
+          <th>Dipendente</th><th>Giorni</th>
+          <th>Ore Lavoro</th><th>Straordinari</th>
+          <th>Ferie</th><th>Malattia</th><th>Totale</th>
+        </tr></thead>
+        <tbody>
+          ${Object.entries(byDip).map(([id,s]) => {
+            const dip  = dipendenti.find(d => d.id === id);
+            const nome = dip ? dip.nome.trim() : '—';
+            const tot  = (s.work||0)+(s.extra||0)+(s.ferie||0)+(s.malattia||0);
+            return `<tr>
+              <td class="td-name">${nome}</td>
+              <td>${s.giorni.size}</td>
+              <td class="td-ore">${(s.work||0).toFixed(2)}h</td>
+              <td style="color:var(--accent2);font-family:var(--mono);">${(s.extra||0).toFixed(2)}h</td>
+              <td style="color:#7b9fff;font-family:var(--mono);">${(s.ferie||0).toFixed(2)}h</td>
+              <td style="color:var(--warning);font-family:var(--mono);">${(s.malattia||0).toFixed(2)}h</td>
+              <td class="td-ore" style="font-size:0.95rem;">${tot.toFixed(2)}h</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>`;
+
+  document.getElementById('statsTable').innerHTML = statsHtml;
+
+  // Riepilogo mensile completo (ultimi 6 mesi)
+  const mesi = [];
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(anno, mese - i, 1);
+    mesi.push({ m: d.getMonth(), y: d.getFullYear(), label: d.toLocaleString('it-IT',{month:'long',year:'numeric'}) });
+  }
+
+  const monthlyHtml = `<div class="tbl-wrap"><table>
+    <thead><tr>
+      <th>Mese</th><th>Registrazioni</th>
+      <th>Ore Lavoro</th><th>Straord.</th><th>Totale</th>
+    </tr></thead>
+    <tbody>
+      ${mesi.map(({m,y,label}) => {
+        const rows = timbrature.filter(t => { const d=new Date(t.data); return d.getMonth()===m && d.getFullYear()===y; });
+        const ow = sum(rows.filter(t=>t.tipo==='work'));
+        const oe = sum(rows.filter(t=>t.tipo==='straordinario'));
+        return `<tr>
+          <td class="td-name">${label}</td>
+          <td>${rows.length}</td>
+          <td class="td-ore">${ow.toFixed(2)}h</td>
+          <td style="color:var(--accent2);font-family:var(--mono);">${oe.toFixed(2)}h</td>
+          <td class="td-ore">${(ow+oe).toFixed(2)}h</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table></div>`;
+
+  document.getElementById('statsMonthly').innerHTML = monthlyHtml;
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function setupTabListeners() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.dataset.tab);
+      // Sync bottom tabs if any
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === btn.dataset.tab));
+    });
+  });
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportExcel() {
+  if (!timbrature.length) { toast('Nessun dato da esportare', 'warning'); return; }
+
+  const rows = timbrature.map(t => {
+    const dip = dipendenti.find(d => d.id === t.userId);
+    return {
+      'Data': t.data,
+      'Dipendente': dip?.nome?.trim() || '—',
+      'Inizio': t.inizio,
+      'Fine': t.fine,
+      'Ore': +(t.ore||0).toFixed(4),
+      'Tipo': t.tipo,
+      'Note': t.note || ''
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Timbrature');
+  XLSX.writeFile(wb, `TimeTrack_${todayISO()}.xlsx`);
+  toast('Excel esportato', 'success');
+}
+
+function exportPDF() { window.print(); }
+
+// ============================================================
+// UTILITY
+// ============================================================
+function timeToMinutes(str) {
+  if (!str || typeof str !== 'string') return 0;
+  const [h, m] = str.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+
+function sum(arr) {
+  return arr.reduce((s, t) => s + (t.ore || 0), 0);
+}
+
+function todayISO() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type = 'success') {
+  const wrap = document.getElementById('toastWrap');
+  const icons = { success:'✅', error:'❌', warning:'⚠️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span>`;
+  wrap.appendChild(el);
+
+  setTimeout(() => {
+    el.style.animation = 'toastOut 0.3s ease forwards';
+    setTimeout(() => el.remove(), 320);
+  }, 3500);
+}
+
+// ============================================================
+// LOADER
+// ============================================================
+function showLoader(msg) {
+  document.getElementById('loaderText').textContent = msg || 'Caricamento...';
+  document.getElementById('loaderOverlay').classList.add('active');
+}
+function hideLoader() {
+  document.getElementById('loaderOverlay').classList.remove('active');
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+
+// Imposta data di default
+document.addEventListener('DOMContentLoaded', () => {
+  const fd = document.getElementById('f_data');
+  if (fd) fd.valueAsDate = new Date();
+});
+
+// Esponi globali per onclick HTML
+window.modificaEntry = modificaEntry;
+window.eliminaEntry  = eliminaEntry;
+window.resetForm     = resetForm;
+window.renderTabella = renderTabella;
+window.clearFiltri   = clearFiltri;
+window.exportExcel   = exportExcel;
+window.exportPDF     = exportPDF;
+window.closeModal    = closeModal;
+</script>
+
 </body>
 </html>
