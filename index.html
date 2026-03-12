@@ -10,9 +10,6 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-/* ============================================
-   RESET & ROOT
-   ============================================ */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
 :root {
@@ -46,9 +43,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ============================================
-   BG DECORATION
-   ============================================ */
 body::before {
   content:'';
   position:fixed; inset:0;
@@ -59,9 +53,6 @@ body::before {
   z-index:0;
 }
 
-/* ============================================
-   LOGIN
-   ============================================ */
 #loginScreen {
   position:fixed; inset:0;
   display:flex; align-items:center; justify-content:center;
@@ -88,63 +79,44 @@ body::before {
 
 .login-logo {
   font-family:var(--head);
-  font-size:1.1rem;
-  font-weight:800;
+  font-size:1.1rem; font-weight:800;
   letter-spacing:0.08em;
   color:var(--accent);
   text-transform:uppercase;
-  margin-bottom:8px;
-  text-align:center;
+  margin-bottom:8px; text-align:center;
 }
 
 .login-title {
   font-family:var(--head);
-  font-size:2rem;
-  font-weight:700;
+  font-size:2rem; font-weight:700;
   color:var(--text);
-  text-align:center;
-  margin-bottom:6px;
+  text-align:center; margin-bottom:6px;
 }
 
 .login-sub {
-  color:var(--text2);
-  font-size:0.875rem;
-  text-align:center;
-  margin-bottom:36px;
+  color:var(--text2); font-size:0.875rem;
+  text-align:center; margin-bottom:36px;
 }
 
-.field {
-  margin-bottom:18px;
-}
+.field { margin-bottom:18px; }
 
 .field label {
-  display:block;
-  font-size:0.78rem;
-  font-weight:600;
-  color:var(--text2);
-  text-transform:uppercase;
-  letter-spacing:0.08em;
-  margin-bottom:8px;
+  display:block; font-size:0.78rem; font-weight:600;
+  color:var(--text2); text-transform:uppercase;
+  letter-spacing:0.08em; margin-bottom:8px;
 }
 
-.field input,
-.field select {
-  width:100%;
-  padding:13px 16px;
-  background:var(--bg3);
-  border:1px solid var(--border2);
-  border-radius:var(--radius2);
-  color:var(--text);
-  font-size:0.95rem;
-  font-family:var(--body);
+.field input, .field select {
+  width:100%; padding:13px 16px;
+  background:var(--bg3); border:1px solid var(--border2);
+  border-radius:var(--radius2); color:var(--text);
+  font-size:0.95rem; font-family:var(--body);
   transition:border-color 0.2s, box-shadow 0.2s;
   appearance:none;
 }
 
-.field input:focus,
-.field select:focus {
-  outline:none;
-  border-color:var(--accent);
+.field input:focus, .field select:focus {
+  outline:none; border-color:var(--accent);
   box-shadow:0 0 0 3px rgba(232,255,71,0.08);
 }
 
@@ -152,127 +124,83 @@ body::before {
 
 .btn {
   display:inline-flex; align-items:center; justify-content:center;
-  gap:8px;
-  padding:13px 22px;
+  gap:8px; padding:13px 22px;
   border:none; border-radius:var(--radius2);
-  font-family:var(--body);
-  font-size:0.9rem; font-weight:600;
-  cursor:pointer;
-  transition:all 0.2s;
-  white-space:nowrap;
-  text-decoration:none;
+  font-family:var(--body); font-size:0.9rem; font-weight:600;
+  cursor:pointer; transition:all 0.2s;
+  white-space:nowrap; text-decoration:none;
 }
 
 .btn:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.1); }
 .btn:active:not(:disabled) { transform:scale(0.98); }
 .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none !important; }
 
-.btn-accent  { background:var(--accent);  color:#0a0a0f; }
-.btn-green   { background:var(--accent2); color:#0a0a0f; }
-.btn-danger  { background:var(--danger);  color:white; }
-.btn-ghost   { background:transparent; color:var(--text2); border:1px solid var(--border2); }
-.btn-ghost:hover { color:var(--text); border-color:var(--border2); }
-.btn-full    { width:100%; }
+.btn-accent { background:var(--accent); color:#0a0a0f; }
+.btn-danger { background:var(--danger); color:white; }
+.btn-ghost  { background:transparent; color:var(--text2); border:1px solid var(--border2); }
+.btn-ghost:hover { color:var(--text); }
+.btn-full   { width:100%; }
 
-/* ============================================
-   APP LAYOUT
-   ============================================ */
-#appScreen {
-  display:none;
-  min-height:100vh;
-  position:relative;
-  z-index:1;
-}
+#appScreen { display:none; min-height:100vh; position:relative; z-index:1; }
 
-/* TOP BAR */
 .topbar {
   position:sticky; top:0; z-index:50;
   background:rgba(10,10,15,0.85);
   backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);
-  padding:0 32px;
-  height:64px;
+  padding:0 32px; height:64px;
   display:flex; align-items:center; justify-content:space-between;
 }
 
 .topbar-brand {
-  font-family:var(--head);
-  font-size:1.05rem; font-weight:800;
-  letter-spacing:0.06em;
-  color:var(--accent);
-  text-transform:uppercase;
+  font-family:var(--head); font-size:1.05rem; font-weight:800;
+  letter-spacing:0.06em; color:var(--accent); text-transform:uppercase;
 }
 
 .topbar-center {
   display:flex; gap:4px;
-  background:var(--bg3);
-  border:1px solid var(--border);
+  background:var(--bg3); border:1px solid var(--border);
   padding:4px; border-radius:12px;
 }
 
 .tab-btn {
-  padding:7px 18px;
-  border:none; border-radius:8px;
-  background:transparent;
-  color:var(--text2);
-  font-family:var(--body);
-  font-size:0.85rem; font-weight:600;
-  cursor:pointer;
-  transition:all 0.2s;
+  padding:7px 18px; border:none; border-radius:8px;
+  background:transparent; color:var(--text2);
+  font-family:var(--body); font-size:0.85rem; font-weight:600;
+  cursor:pointer; transition:all 0.2s;
 }
 
 .tab-btn.active {
-  background:var(--bg);
-  color:var(--text);
+  background:var(--bg); color:var(--text);
   box-shadow:0 2px 8px rgba(0,0,0,0.3);
 }
 
-.topbar-right {
-  display:flex; align-items:center; gap:14px;
-}
+.topbar-right { display:flex; align-items:center; gap:14px; }
 
 .user-chip {
   display:flex; align-items:center; gap:8px;
-  background:var(--bg3);
-  border:1px solid var(--border);
-  padding:6px 14px 6px 10px;
-  border-radius:50px;
+  background:var(--bg3); border:1px solid var(--border);
+  padding:6px 14px 6px 10px; border-radius:50px;
 }
 
 .user-avatar {
   width:28px; height:28px; border-radius:50%;
-  background:var(--accent);
-  color:#0a0a0f;
-  font-family:var(--mono);
-  font-size:0.7rem; font-weight:500;
+  background:var(--accent); color:#0a0a0f;
+  font-family:var(--mono); font-size:0.7rem; font-weight:500;
   display:flex; align-items:center; justify-content:center;
 }
 
-.user-name {
-  font-size:0.85rem; font-weight:500;
-  color:var(--text2);
-}
+.user-name { font-size:0.85rem; font-weight:500; color:var(--text2); }
 
-/* MAIN WRAPPER */
 .main-wrap {
-  max-width:1320px;
-  margin:0 auto;
-  padding:32px;
-  display:grid;
-  grid-template-columns:1fr 300px;
-  gap:28px;
-  align-items:start;
+  max-width:1320px; margin:0 auto; padding:32px;
+  display:grid; grid-template-columns:1fr 300px;
+  gap:28px; align-items:start;
 }
 
-/* ============================================
-   CARDS
-   ============================================ */
 .card {
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:28px;
-  margin-bottom:20px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:20px; padding:28px; margin-bottom:20px;
 }
 
 .card-header {
@@ -281,50 +209,30 @@ body::before {
 }
 
 .card-title {
-  font-family:var(--head);
-  font-size:1rem; font-weight:700;
-  color:var(--text);
-  letter-spacing:0.02em;
+  font-family:var(--head); font-size:1rem; font-weight:700;
+  color:var(--text); letter-spacing:0.02em;
 }
 
 .card-badge {
-  font-family:var(--mono);
-  font-size:0.72rem;
-  color:var(--text3);
-  background:var(--bg3);
+  font-family:var(--mono); font-size:0.72rem;
+  color:var(--text3); background:var(--bg3);
   padding:3px 10px; border-radius:50px;
 }
 
-/* ============================================
-   FORM GRID
-   ============================================ */
-.form-grid {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-}
-
-.form-grid.col3 { grid-template-columns:1fr 1fr 1fr; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .form-grid.col1 { grid-template-columns:1fr; }
 
 .field select {
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2388889a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 14px center;
+  background-repeat:no-repeat; background-position:right 14px center;
   padding-right:36px;
 }
 
-/* ============================================
-   ORE PREVIEW
-   ============================================ */
 .ore-preview {
-  background:var(--bg3);
-  border:1px solid var(--border);
-  border-radius:var(--radius2);
-  padding:16px 20px;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius2); padding:16px 20px;
   display:flex; align-items:center; justify-content:space-between;
-  margin:4px 0 16px;
-  transition:border-color 0.3s;
+  margin:4px 0 16px; transition:border-color 0.3s;
 }
 
 .ore-preview.ok    { border-color:rgba(71,255,184,0.3); }
@@ -332,370 +240,209 @@ body::before {
 .ore-preview.error { border-color:rgba(255,71,71,0.3); }
 
 .ore-label { font-size:0.8rem; color:var(--text2); font-weight:500; }
-.ore-value {
-  font-family:var(--mono);
-  font-size:1.6rem; font-weight:500;
-  color:var(--accent);
-  transition:color 0.3s;
-}
+.ore-value { font-family:var(--mono); font-size:1.6rem; font-weight:500; color:var(--accent); transition:color 0.3s; }
 .ore-preview.warn  .ore-value { color:var(--warning); }
 .ore-preview.error .ore-value { color:var(--danger); }
 
-/* ============================================
-   OVERLAP ALERT
-   ============================================ */
 .overlap-alert {
   display:none;
-  background:rgba(255,71,71,0.08);
-  border:1px solid rgba(255,71,71,0.35);
-  border-radius:var(--radius2);
-  padding:14px 18px;
-  margin-bottom:16px;
-  gap:12px;
-  align-items:flex-start;
+  background:rgba(255,71,71,0.08); border:1px solid rgba(255,71,71,0.35);
+  border-radius:var(--radius2); padding:14px 18px;
+  margin-bottom:16px; gap:12px; align-items:flex-start;
 }
-
 .overlap-alert.visible { display:flex; animation:fadeUp 0.2s ease; }
-
 .overlap-icon { font-size:1.2rem; flex-shrink:0; line-height:1.4; }
-.overlap-body {}
 .overlap-title { font-weight:700; color:var(--danger); font-size:0.85rem; margin-bottom:3px; }
-.overlap-desc { color:#ff9a9a; font-size:0.82rem; }
+.overlap-desc  { color:#ff9a9a; font-size:0.82rem; }
 
-/* Existing entries info */
 .existing-box {
   display:none;
-  background:rgba(71,255,184,0.04);
-  border:1px solid rgba(71,255,184,0.15);
-  border-radius:var(--radius2);
-  padding:14px 18px;
-  margin-bottom:16px;
+  background:rgba(71,255,184,0.04); border:1px solid rgba(71,255,184,0.15);
+  border-radius:var(--radius2); padding:14px 18px; margin-bottom:16px;
 }
 .existing-box.visible { display:block; animation:fadeUp 0.2s ease; }
 .existing-title { font-size:0.76rem; color:var(--accent2); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; }
 .existing-row {
   display:flex; justify-content:space-between; align-items:center;
-  padding:6px 0;
-  border-bottom:1px solid rgba(255,255,255,0.05);
-  font-size:0.83rem;
+  padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.83rem;
 }
 .existing-row:last-child { border:none; }
 .existing-time { font-family:var(--mono); color:var(--text); }
 .existing-ore  { font-family:var(--mono); color:var(--accent2); font-weight:600; }
 
-/* ============================================
-   ACTION ROW
-   ============================================ */
-.action-row {
-  display:flex; gap:10px;
-}
+.action-row { display:flex; gap:10px; }
 
-/* ============================================
-   TABLE
-   ============================================ */
 .tbl-wrap { overflow-x:auto; margin:-4px; }
 
-table {
-  width:100%; border-collapse:collapse;
-  font-size:0.875rem;
-}
+table { width:100%; border-collapse:collapse; font-size:0.875rem; }
 
 th {
-  font-family:var(--mono);
-  font-size:0.7rem; font-weight:500;
-  color:var(--text3);
-  text-transform:uppercase; letter-spacing:0.08em;
-  padding:10px 14px;
-  text-align:left;
-  border-bottom:1px solid var(--border);
-  white-space:nowrap;
+  font-family:var(--mono); font-size:0.7rem; font-weight:500;
+  color:var(--text3); text-transform:uppercase; letter-spacing:0.08em;
+  padding:10px 14px; text-align:left;
+  border-bottom:1px solid var(--border); white-space:nowrap;
 }
 
 td {
-  padding:13px 14px;
-  border-bottom:1px solid rgba(255,255,255,0.04);
-  color:var(--text2);
-  vertical-align:middle;
+  padding:13px 14px; border-bottom:1px solid rgba(255,255,255,0.04);
+  color:var(--text2); vertical-align:middle;
 }
 
 tr:hover td { background:rgba(255,255,255,0.02); }
 tr:last-child td { border:none; }
 
-.td-date   { font-family:var(--mono); color:var(--text); font-size:0.82rem; }
-.td-name   { color:var(--text); font-weight:500; }
-.td-time   { font-family:var(--mono); font-size:0.83rem; }
-.td-ore    { font-family:var(--mono); font-weight:600; color:var(--accent); }
+.td-date { font-family:var(--mono); color:var(--text); font-size:0.82rem; }
+.td-name { color:var(--text); font-weight:500; }
+.td-time { font-family:var(--mono); font-size:0.83rem; }
+.td-ore  { font-family:var(--mono); font-weight:600; color:var(--accent); }
 
 .badge {
-  display:inline-flex; padding:3px 9px;
-  border-radius:50px; font-size:0.72rem; font-weight:600;
+  display:inline-flex; padding:3px 9px; border-radius:50px;
+  font-size:0.72rem; font-weight:600;
   text-transform:uppercase; letter-spacing:0.04em;
 }
-.badge-work        { background:rgba(232,255,71,0.1);  color:var(--accent); }
-.badge-straordinario { background:rgba(71,255,184,0.1); color:var(--accent2); }
-.badge-ferie       { background:rgba(71,100,255,0.1);  color:#7b9fff; }
-.badge-malattia    { background:rgba(255,170,71,0.1);  color:var(--warning); }
+.badge-work          { background:rgba(232,255,71,0.1);  color:var(--accent); }
+.badge-straordinario { background:rgba(71,255,184,0.1);  color:var(--accent2); }
+.badge-ferie         { background:rgba(71,100,255,0.1);  color:#7b9fff; }
+.badge-malattia      { background:rgba(255,170,71,0.1);  color:var(--warning); }
 
-/* ============================================
-   ICON BUTTONS
-   ============================================ */
 .icon-btn {
-  width:30px; height:30px;
-  border:none; border-radius:8px;
-  cursor:pointer;
-  display:inline-flex; align-items:center; justify-content:center;
-  font-size:13px; transition:all 0.2s;
+  width:30px; height:30px; border:none; border-radius:8px;
+  cursor:pointer; display:inline-flex; align-items:center;
+  justify-content:center; font-size:13px; transition:all 0.2s;
 }
-.icon-edit   { background:rgba(232,255,71,0.08);  color:var(--accent); }
+.icon-edit { background:rgba(232,255,71,0.08); color:var(--accent); }
 .icon-edit:hover { background:rgba(232,255,71,0.18); }
-.icon-del    { background:rgba(255,71,71,0.08);   color:var(--danger); }
-.icon-del:hover { background:rgba(255,71,71,0.18); }
+.icon-del  { background:rgba(255,71,71,0.08);  color:var(--danger); }
+.icon-del:hover  { background:rgba(255,71,71,0.18); }
 
-/* ============================================
-   SIDEBAR
-   ============================================ */
 .sidebar { position:sticky; top:96px; }
 
 .stat-widget {
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:22px;
-  margin-bottom:16px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:20px; padding:22px; margin-bottom:16px;
 }
 
 .sw-label {
-  font-size:0.72rem; font-weight:600;
-  color:var(--text3);
-  text-transform:uppercase; letter-spacing:0.08em;
-  margin-bottom:10px;
+  font-size:0.72rem; font-weight:600; color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;
 }
 
-.sw-val {
-  font-family:var(--mono);
-  font-size:2.2rem; font-weight:500;
-  color:var(--accent);
-  line-height:1;
-}
+.sw-val { font-family:var(--mono); font-size:2.2rem; font-weight:500; color:var(--accent); line-height:1; }
 .sw-val.green { color:var(--accent2); }
 .sw-val.white { color:var(--text); font-size:1.8rem; }
+.sw-sub { font-size:0.78rem; color:var(--text3); margin-top:4px; }
 
-.sw-sub {
-  font-size:0.78rem; color:var(--text3);
-  margin-top:4px;
-}
+.divider { height:1px; background:var(--border); margin:8px 0 16px; }
 
-/* Divider */
-.divider {
-  height:1px;
-  background:var(--border);
-  margin:8px 0 16px;
-}
-
-/* Dipendente row */
 .dip-row {
   display:flex; align-items:center; justify-content:space-between;
-  padding:9px 0;
-  border-bottom:1px solid rgba(255,255,255,0.04);
+  padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.04);
 }
 .dip-row:last-child { border:none; }
 .dip-name { font-size:0.85rem; color:var(--text); font-weight:500; }
 .dip-ore  { font-family:var(--mono); font-size:0.85rem; color:var(--accent); }
-.dip-gg   {
-  font-size:0.72rem; color:var(--text3);
-  background:var(--bg3); padding:2px 8px; border-radius:50px;
-}
+.dip-gg   { font-size:0.72rem; color:var(--text3); background:var(--bg3); padding:2px 8px; border-radius:50px; }
 
-/* ============================================
-   FILTERS
-   ============================================ */
-.filters {
-  display:flex; gap:10px; align-items:flex-end;
-  flex-wrap:wrap;
-  margin-bottom:18px;
-}
+.filters { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:18px; }
 .filters .field { margin:0; flex:1; min-width:140px; }
 
-/* ============================================
-   STATS TAB
-   ============================================ */
-.stats-grid {
-  display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
-  margin-bottom:24px;
-}
+.stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
 
-.big-stat {
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:22px;
-}
-.bs-val { font-family:var(--mono); font-size:2rem; font-weight:500; color:var(--accent); }
+.big-stat { background:var(--bg2); border:1px solid var(--border); border-radius:18px; padding:22px; }
+.bs-val   { font-family:var(--mono); font-size:2rem; font-weight:500; color:var(--accent); }
 .bs-label { font-size:0.8rem; color:var(--text3); margin-top:6px; }
 
-/* ============================================
-   TOAST
-   ============================================ */
 #toastWrap {
   position:fixed; bottom:28px; right:28px;
-  z-index:9999;
-  display:flex; flex-direction:column; gap:10px;
+  z-index:9999; display:flex; flex-direction:column; gap:10px;
 }
 
 .toast {
   display:flex; align-items:center; gap:12px;
-  background:var(--bg2);
-  border:1px solid var(--border2);
-  border-radius:14px;
-  padding:14px 18px;
-  box-shadow:var(--shadow);
-  animation:toastIn 0.3s ease;
-  max-width:360px;
-  min-width:260px;
+  background:var(--bg2); border:1px solid var(--border2);
+  border-radius:14px; padding:14px 18px;
+  box-shadow:var(--shadow); animation:toastIn 0.3s ease;
+  max-width:360px; min-width:260px;
 }
-
 .toast.success { border-left:3px solid var(--accent2); }
 .toast.error   { border-left:3px solid var(--danger); }
 .toast.warning { border-left:3px solid var(--warning); }
-
 .toast-icon { font-size:1.1rem; }
 .toast-msg  { flex:1; font-size:0.875rem; color:var(--text); }
 
-@keyframes toastIn {
-  from { transform:translateX(120%); opacity:0; }
-  to   { transform:translateX(0);    opacity:1; }
-}
+@keyframes toastIn  { from { transform:translateX(120%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes toastOut { from { transform:translateX(0); opacity:1; max-height:60px; } to { transform:translateX(120%); opacity:0; max-height:0; } }
 
-@keyframes toastOut {
-  from { transform:translateX(0);    opacity:1; max-height:60px; margin:0; }
-  to   { transform:translateX(120%); opacity:0; max-height:0;   margin:-10px; }
-}
-
-/* ============================================
-   MODAL CONFIRM
-   ============================================ */
 .modal-overlay {
   display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,0.7);
-  backdrop-filter:blur(4px);
-  z-index:200;
-  align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+  z-index:200; align-items:center; justify-content:center;
 }
 .modal-overlay.open { display:flex; }
-
 .modal {
-  background:var(--bg2);
-  border:1px solid var(--border2);
-  border-radius:20px;
-  padding:32px;
-  max-width:400px; width:90%;
-  animation:fadeUp 0.25s ease;
+  background:var(--bg2); border:1px solid var(--border2);
+  border-radius:20px; padding:32px;
+  max-width:400px; width:90%; animation:fadeUp 0.25s ease;
 }
-
-.modal-title { font-family:var(--head); font-size:1.1rem; font-weight:700; margin-bottom:10px; }
-.modal-body  { color:var(--text2); font-size:0.9rem; line-height:1.6; margin-bottom:24px; }
+.modal-title   { font-family:var(--head); font-size:1.1rem; font-weight:700; margin-bottom:10px; }
+.modal-body    { color:var(--text2); font-size:0.9rem; line-height:1.6; margin-bottom:24px; }
 .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
 
-/* ============================================
-   EMPTY STATE
-   ============================================ */
-.empty {
-  text-align:center;
-  padding:48px 24px;
-  color:var(--text3);
-}
+.empty { text-align:center; padding:48px 24px; color:var(--text3); }
 .empty-icon { font-size:2.5rem; margin-bottom:12px; }
 .empty-msg  { font-size:0.9rem; }
 
-/* ============================================
-   SPINNER
-   ============================================ */
-.spin {
-  width:18px; height:18px; border-radius:50%;
-  border:2px solid rgba(10,10,15,0.3);
-  border-top-color:#0a0a0f;
-  animation:rot 0.8s linear infinite; display:inline-block;
-}
-.spin-light {
-  border-color:rgba(255,255,255,0.1);
-  border-top-color:rgba(255,255,255,0.6);
-}
+.spin { width:18px; height:18px; border-radius:50%; border:2px solid rgba(10,10,15,0.3); border-top-color:#0a0a0f; animation:rot 0.8s linear infinite; display:inline-block; }
+.spin-light { border-color:rgba(255,255,255,0.1); border-top-color:rgba(255,255,255,0.6); }
 
-@keyframes rot { to { transform:rotate(360deg); } }
-
-/* ============================================
-   ANIMATIONS
-   ============================================ */
-@keyframes fadeUp {
-  from { transform:translateY(16px); opacity:0; }
-  to   { transform:translateY(0);    opacity:1; }
-}
+@keyframes rot     { to { transform:rotate(360deg); } }
+@keyframes fadeUp  { from { transform:translateY(16px); opacity:0; } to { transform:translateY(0); opacity:1; } }
 
 .tab-content { display:none; animation:fadeUp 0.3s ease; }
 .tab-content.active { display:block; }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-@media(max-width:1024px) {
-  .main-wrap { grid-template-columns:1fr; }
-  .sidebar { position:static; }
-  .stats-grid { grid-template-columns:1fr 1fr; }
-}
-
-@media(max-width:640px) {
-  .main-wrap { padding:16px; }
-  .topbar { padding:0 16px; }
-  .topbar-center { display:none; }
-  .form-grid { grid-template-columns:1fr; }
-  .form-grid.col3 { grid-template-columns:1fr; }
-  .stats-grid { grid-template-columns:1fr; }
-  .card { padding:20px; }
-  .action-row { flex-wrap:wrap; }
-}
-
-/* ============================================
-   SCROLLBAR
-   ============================================ */
-::-webkit-scrollbar { width:6px; height:6px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--bg3); border-radius:3px; }
-::-webkit-scrollbar-thumb:hover { background:var(--border2); }
-
-/* Loading overlay */
 .loader-overlay {
   display:none; position:fixed; inset:0;
-  background:rgba(10,10,15,0.9);
-  z-index:300;
+  background:rgba(10,10,15,0.9); z-index:300;
   align-items:center; justify-content:center;
   flex-direction:column; gap:16px;
 }
 .loader-overlay.active { display:flex; }
 .loader-text { font-family:var(--mono); font-size:0.85rem; color:var(--text2); }
+
+@media(max-width:1024px) {
+  .main-wrap { grid-template-columns:1fr; }
+  .sidebar { position:static; }
+  .stats-grid { grid-template-columns:1fr 1fr; }
+}
+@media(max-width:640px) {
+  .main-wrap { padding:16px; }
+  .topbar { padding:0 16px; }
+  .topbar-center { display:none; }
+  .form-grid { grid-template-columns:1fr; }
+  .stats-grid { grid-template-columns:1fr; }
+  .card { padding:20px; }
+}
+
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--bg3); border-radius:3px; }
 </style>
 </head>
 <body>
 
-<!-- ============================================
-     LOADER
-     ============================================ -->
 <div id="loaderOverlay" class="loader-overlay">
   <div class="spin spin-light" style="width:32px;height:32px;border-width:3px;"></div>
   <div class="loader-text" id="loaderText">Connessione...</div>
 </div>
 
-<!-- ============================================
-     TOAST CONTAINER
-     ============================================ -->
 <div id="toastWrap"></div>
 
-<!-- ============================================
-     MODAL CONFERMA ELIMINAZIONE
-     ============================================ -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-title">Conferma eliminazione</div>
-    <div class="modal-body" id="modalBody">Sei sicuro di voler eliminare questa timbratura? L'azione è irreversibile.</div>
+    <div class="modal-body" id="modalBody">Sei sicuro di voler eliminare questa timbratura?</div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">Annulla</button>
       <button class="btn btn-danger" id="modalConfirmBtn">Elimina</button>
@@ -703,15 +450,11 @@ tr:last-child td { border:none; }
   </div>
 </div>
 
-<!-- ============================================
-     LOGIN SCREEN
-     ============================================ -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">TimeTrack Pro</div>
     <div class="login-title">Accedi</div>
     <div class="login-sub">Gestione presenze dipendenti</div>
-
     <form id="loginForm" autocomplete="off">
       <div class="field">
         <label>Email</label>
@@ -721,56 +464,37 @@ tr:last-child td { border:none; }
         <label>Password</label>
         <input type="password" id="loginPwd" placeholder="••••••••" autocomplete="current-password" required>
       </div>
-      <button type="submit" class="btn btn-accent btn-full" id="loginBtn" style="margin-top:8px;">
-        Entra
-      </button>
+      <button type="submit" class="btn btn-accent btn-full" id="loginBtn" style="margin-top:8px;">Entra</button>
     </form>
   </div>
 </div>
 
-<!-- ============================================
-     APP
-     ============================================ -->
 <div id="appScreen">
-
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-brand">⏱ TimeTrack</div>
-
     <div class="topbar-center">
       <button class="tab-btn active" data-tab="tabTimbrature">Timbrature</button>
       <button class="tab-btn" data-tab="tabStatistiche">Statistiche</button>
     </div>
-
     <div class="topbar-right">
       <div class="user-chip">
         <div class="user-avatar" id="userAvatar">??</div>
         <span class="user-name" id="userName">—</span>
       </div>
-      <button class="btn btn-ghost" id="logoutBtn" style="padding:7px 14px; font-size:0.82rem;">
-        Esci
-      </button>
+      <button class="btn btn-ghost" id="logoutBtn" style="padding:7px 14px;font-size:0.82rem;">Esci</button>
     </div>
   </div>
 
-  <!-- MAIN AREA -->
   <div class="main-wrap">
-
-    <!-- LEFT COLUMN -->
     <div>
 
-      <!-- ====== TAB: TIMBRATURE ====== -->
       <div id="tabTimbrature" class="tab-content active">
-
-        <!-- FORM NUOVA TIMBRATURA -->
         <div class="card">
           <div class="card-header">
             <span class="card-title" id="formTitle">Nuova Timbratura</span>
             <span class="card-badge" id="formBadge">INSERIMENTO</span>
           </div>
-
           <form id="timbraturaForm" autocomplete="off">
-
             <div class="form-grid">
               <div class="field">
                 <label>Data *</label>
@@ -804,27 +528,20 @@ tr:last-child td { border:none; }
                 </select>
               </div>
             </div>
-
             <div class="field form-grid col1">
               <div class="field" style="margin-bottom:0;">
                 <label>Note</label>
                 <input type="text" id="f_note" placeholder="Opzionale…">
               </div>
             </div>
-
-            <!-- ORE PREVIEW -->
             <div class="ore-preview" id="orePreview">
               <span class="ore-label">Ore nette</span>
               <span class="ore-value" id="oreVal">—</span>
             </div>
-
-            <!-- REGISTRAZIONI ESISTENTI -->
             <div class="existing-box" id="existingBox">
               <div class="existing-title">Registrazioni esistenti questo giorno</div>
               <div id="existingList"></div>
             </div>
-
-            <!-- OVERLAP ALERT -->
             <div class="overlap-alert" id="overlapAlert">
               <span class="overlap-icon">⛔</span>
               <div class="overlap-body">
@@ -832,33 +549,17 @@ tr:last-child td { border:none; }
                 <div class="overlap-desc" id="overlapDesc">Sovrapposizione oraria rilevata.</div>
               </div>
             </div>
-
-            <!-- BUTTONS -->
             <div class="action-row">
-              <button type="submit" class="btn btn-accent" id="btnSalva" style="flex:1;">
-                Salva
-              </button>
-              <button type="button" class="btn btn-ghost" id="btnAnnulla" onclick="resetForm()" style="display:none;">
-                Annulla
-              </button>
+              <button type="submit" class="btn btn-accent" id="btnSalva" style="flex:1;">Salva</button>
+              <button type="button" class="btn btn-ghost" id="btnAnnulla" onclick="resetForm()" style="display:none;">Annulla</button>
             </div>
-
           </form>
         </div>
 
-        <!-- FILTRI -->
         <div class="card" style="padding:20px 28px;">
           <div class="filters">
-            <div class="field">
-              <label>Filtra data</label>
-              <input type="date" id="fl_data">
-            </div>
-            <div class="field">
-              <label>Filtra dipendente</label>
-              <select id="fl_dip">
-                <option value="">Tutti</option>
-              </select>
-            </div>
+            <div class="field"><label>Filtra data</label><input type="date" id="fl_data"></div>
+            <div class="field"><label>Filtra dipendente</label><select id="fl_dip"><option value="">Tutti</option></select></div>
             <div class="field">
               <label>Filtra tipo</label>
               <select id="fl_tipo">
@@ -874,31 +575,20 @@ tr:last-child td { border:none; }
           </div>
         </div>
 
-        <!-- TABELLA -->
         <div class="card">
           <div class="card-header">
             <span class="card-title">Storico Timbrature</span>
             <div style="display:flex;gap:8px;">
-              <button class="btn btn-ghost" onclick="exportExcel()" style="font-size:0.8rem;padding:7px 14px;">
-                Excel ↓
-              </button>
-              <button class="btn btn-ghost" onclick="exportPDF()" style="font-size:0.8rem;padding:7px 14px;">
-                Stampa
-              </button>
+              <button class="btn btn-ghost" onclick="exportExcel()" style="font-size:0.8rem;padding:7px 14px;">Excel ↓</button>
+              <button class="btn btn-ghost" onclick="exportPDF()" style="font-size:0.8rem;padding:7px 14px;">Stampa</button>
             </div>
           </div>
-
           <div class="tbl-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Data</th>
-                  <th>Dipendente</th>
-                  <th>Orario</th>
-                  <th>Ore</th>
-                  <th>Tipo</th>
-                  <th>Note</th>
-                  <th></th>
+                  <th>Data</th><th>Dipendente</th><th>Orario</th>
+                  <th>Ore</th><th>Tipo</th><th>Note</th><th></th>
                 </tr>
               </thead>
               <tbody id="tabellaBody">
@@ -907,149 +597,95 @@ tr:last-child td { border:none; }
             </table>
           </div>
         </div>
+      </div>
 
-      </div><!-- /tabTimbrature -->
-
-      <!-- ====== TAB: STATISTICHE ====== -->
       <div id="tabStatistiche" class="tab-content">
-
-        <div class="stats-grid" id="statsGrid">
-          <!-- populate via JS -->
-        </div>
-
-        <!-- Tabella ore per dipendente per mese -->
+        <div class="stats-grid" id="statsGrid"></div>
         <div class="card">
-          <div class="card-header">
-            <span class="card-title">Ore per Dipendente — Mese Corrente</span>
-          </div>
+          <div class="card-header"><span class="card-title">Ore per Dipendente — Mese Corrente</span></div>
           <div id="statsTable"></div>
         </div>
-
-        <!-- Tabella dettaglio mensile -->
         <div class="card">
-          <div class="card-header">
-            <span class="card-title">Riepilogo Mensile Completo</span>
-          </div>
+          <div class="card-header"><span class="card-title">Riepilogo Mensile Completo</span></div>
           <div id="statsMonthly"></div>
         </div>
+      </div>
 
-      </div><!-- /tabStatistiche -->
+    </div>
 
-    </div><!-- /left -->
-
-    <!-- RIGHT SIDEBAR -->
     <div class="sidebar">
-
       <div class="stat-widget">
         <div class="sw-label">Ore Oggi</div>
         <div class="sw-val" id="sw_oggi">0.00h</div>
         <div class="sw-sub" id="sw_oggi_n">0 registrazioni</div>
       </div>
-
       <div class="stat-widget">
         <div class="sw-label">Ore Questo Mese</div>
         <div class="sw-val green" id="sw_mese">0.00h</div>
         <div class="sw-sub" id="sw_mese_n">—</div>
       </div>
-
       <div class="stat-widget">
         <div class="sw-label">Totale Timbrature</div>
         <div class="sw-val white" id="sw_tot">0</div>
         <div class="sw-sub">In archivio</div>
       </div>
-
       <div class="stat-widget">
         <div class="sw-label">Dipendenti — Ore Totali</div>
         <div class="divider"></div>
-        <div id="sw_dip">
-          <div class="empty" style="padding:16px 0;"><div class="empty-msg">Nessun dato</div></div>
-        </div>
+        <div id="sw_dip"><div class="empty" style="padding:16px 0;"><div class="empty-msg">Nessun dato</div></div></div>
       </div>
+    </div>
+  </div>
+</div>
 
-    </div><!-- /sidebar -->
-
-  </div><!-- /main-wrap -->
-</div><!-- /appScreen -->
-
-<!-- ============================================
-     SCRIPT
-     ============================================ -->
 <script>
-// ============================================================
-// CONFIG
-// ============================================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbzCHH0x-8Gw1YNOoBqJ_rZH74PYBAfKUeczK8H1SXYXCSvhRCVSMHa6_coHPhypUArR/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwIIkFY1b-PuU9895oAbzhKBc-0zKg3dDOZMH8GAcxK8QWcQKUSSStuNsXRWr6BnbnX/exec';
 
-// ============================================================
-// STATE
-// ============================================================
-let timbrature  = [];   // Array<Entry>
-let dipendenti  = [];   // Array<User>
+let timbrature  = [];
+let dipendenti  = [];
 let currentUser = null;
 let editingId   = null;
-let blockSave   = false; // true se c'è sovrapposizione valida
+let blockSave   = false;
 
-// ============================================================
-// INIT
-// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   setupFormListeners();
   setupTabListeners();
   setupAuthListeners();
-
   const saved = localStorage.getItem('tt_user');
   if (saved) {
-    try {
-      currentUser = JSON.parse(saved);
-      showApp();
-      loadData();
-    } catch { showLogin(); }
-  } else {
-    showLogin();
-  }
+    try { currentUser = JSON.parse(saved); showApp(); loadData(); }
+    catch { showLogin(); }
+  } else { showLogin(); }
 });
 
-// ============================================================
-// AUTH
-// ============================================================
 function setupAuthListeners() {
   document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
     const pwd   = document.getElementById('loginPwd').value;
     const btn   = document.getElementById('loginBtn');
-
     btn.innerHTML = '<span class="spin"></span>';
     btn.disabled  = true;
-
     const res = await api('login', { email, password: pwd });
-
     btn.innerHTML = 'Entra';
     btn.disabled  = false;
-
     if (res.success) {
       currentUser = res.user;
       localStorage.setItem('tt_user', JSON.stringify(currentUser));
       toast('Benvenuto ' + currentUser.nome, 'success');
-      showApp();
-      loadData();
-    } else {
-      toast(res.error || 'Credenziali errate', 'error');
-    }
+      showApp(); loadData();
+    } else { toast(res.error || 'Credenziali errate', 'error'); }
   });
-
   document.getElementById('logoutBtn').addEventListener('click', () => {
     if (confirm('Esci da TimeTrack Pro?')) {
-      localStorage.removeItem('tt_user');
-      currentUser = null;
-      showLogin();
+      localStorage.removeItem('tt_user'); currentUser = null; showLogin();
     }
   });
 }
 
 function showApp() {
-  document.getElementById('loginScreen').style.display  = 'none';
-  document.getElementById('appScreen').style.display    = 'block';
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display   = 'block';
   if (currentUser) {
     document.getElementById('userAvatar').textContent = currentUser.nome.charAt(0).toUpperCase();
     document.getElementById('userName').textContent   = currentUser.nome.split(' ')[0];
@@ -1061,9 +697,6 @@ function showLogin() {
   document.getElementById('appScreen').style.display   = 'none';
 }
 
-// ============================================================
-// API
-// ============================================================
 async function api(action, params = {}) {
   try {
     const url = new URL(API_URL);
@@ -1073,159 +706,81 @@ async function api(action, params = {}) {
     }
     const resp = await fetch(url.toString());
     return await resp.json();
-  } catch (err) {
-    return { success: false, error: 'Errore connessione: ' + err.message };
-  }
+  } catch (err) { return { success: false, error: 'Errore connessione: ' + err.message }; }
 }
 
-// ============================================================
-// LOAD DATA
-// ============================================================
 async function loadData() {
   showLoader('Caricamento dati...');
   try {
-    const [usersRes, entriesRes] = await Promise.all([
-      api('get_users'),
-      api('get')
-    ]);
-
-    if (usersRes.success) {
-      dipendenti = usersRes.users || [];
-      populateSelects();
-    }
-
-    if (entriesRes.success) {
-      timbrature = entriesRes.data || [];
-      renderTabella();
-      renderSidebar();
-      renderStats();
-      checkExisting();
-    }
-  } finally {
-    hideLoader();
-  }
+    const [usersRes, entriesRes] = await Promise.all([api('get_users'), api('get')]);
+    if (usersRes.success)   { dipendenti = usersRes.users || []; populateSelects(); }
+    if (entriesRes.success) { timbrature = entriesRes.data || []; renderTabella(); renderSidebar(); renderStats(); checkExisting(); }
+  } finally { hideLoader(); }
 }
 
-// ============================================================
-// POPULATE SELECTS
-// ============================================================
 function populateSelects() {
   const opts = dipendenti.map(d => `<option value="${d.id}">${d.nome.trim()}</option>`).join('');
-  document.getElementById('f_dip').innerHTML   = '<option value="">Seleziona dipendente...</option>' + opts;
-  document.getElementById('fl_dip').innerHTML  = '<option value="">Tutti</option>' + opts;
+  document.getElementById('f_dip').innerHTML  = '<option value="">Seleziona dipendente...</option>' + opts;
+  document.getElementById('fl_dip').innerHTML = '<option value="">Tutti</option>' + opts;
 }
 
-// ============================================================
-// FORM LISTENERS
-// ============================================================
 function setupFormListeners() {
-  const ids = ['f_data','f_dip','f_inizio','f_fine','f_pausa','f_tipo'];
-  ids.forEach(id => {
+  ['f_data','f_dip','f_inizio','f_fine','f_pausa','f_tipo'].forEach(id => {
     const el = document.getElementById(id);
     el.addEventListener('change', onFormChange);
-    el.addEventListener('input', onFormChange);
+    el.addEventListener('input',  onFormChange);
   });
-
   document.getElementById('timbraturaForm').addEventListener('submit', e => {
     e.preventDefault();
-    if (blockSave) {
-      toast('Correggi la sovrapposizione prima di salvare', 'warning');
-      return;
-    }
+    if (blockSave) { toast('Correggi la sovrapposizione prima di salvare', 'warning'); return; }
     salva();
   });
 }
 
-function onFormChange() {
-  updateOrePreview();
-  checkExisting();
-  checkOverlap();
-}
+function onFormChange() { updateOrePreview(); checkExisting(); checkOverlap(); }
 
-// ============================================================
-// ORE PREVIEW
-// ============================================================
 function updateOrePreview() {
   const inizio = document.getElementById('f_inizio').value;
   const fine   = document.getElementById('f_fine').value;
   const pausa  = parseFloat(document.getElementById('f_pausa').value) || 0;
   const prev   = document.getElementById('orePreview');
   const val    = document.getElementById('oreVal');
-
-  if (!inizio || !fine) {
-    val.textContent = '—';
-    prev.className  = 'ore-preview';
-    return;
-  }
-
-  const tot  = timeToMinutes(fine) - timeToMinutes(inizio);
+  if (!inizio || !fine) { val.textContent = '—'; prev.className = 'ore-preview'; return; }
+  const tot   = timeToMinutes(fine) - timeToMinutes(inizio);
   const nette = Math.max(0, tot / 60 - pausa);
-
-  if (tot <= 0) {
-    val.textContent = 'Orario non valido';
-    prev.className  = 'ore-preview error';
-    return;
-  }
-
+  if (tot <= 0) { val.textContent = 'Orario non valido'; prev.className = 'ore-preview error'; return; }
   val.textContent = nette.toFixed(2) + 'h';
   prev.className  = pausa > 0 ? 'ore-preview warn' : 'ore-preview ok';
 }
 
-// ============================================================
-// CHECK EXISTING
-// ============================================================
 function checkExisting() {
   const data   = document.getElementById('f_data').value;
   const userId = document.getElementById('f_dip').value;
   const box    = document.getElementById('existingBox');
   const list   = document.getElementById('existingList');
-
   if (!data || !userId) { box.classList.remove('visible'); return; }
-
-  const esistenti = timbrature.filter(t =>
-    t.data   === data &&
-    t.userId === userId &&
-    t.tipo   === 'work' &&
-    t.id     !== editingId
-  );
-
+  const esistenti = timbrature.filter(t => t.data === data && t.userId === userId && t.tipo === 'work' && t.id !== editingId);
   if (esistenti.length === 0) { box.classList.remove('visible'); return; }
-
   box.classList.add('visible');
-  list.innerHTML = esistenti
-    .sort((a,b) => a.inizio.localeCompare(b.inizio))
-    .map(t => `
-      <div class="existing-row">
-        <span class="existing-time">${t.inizio} → ${t.fine}</span>
-        <span class="existing-ore">${(t.ore||0).toFixed(2)}h</span>
-      </div>`)
-    .join('');
+  list.innerHTML = esistenti.sort((a,b) => a.inizio.localeCompare(b.inizio))
+    .map(t => `<div class="existing-row"><span class="existing-time">${t.inizio} → ${t.fine}</span><span class="existing-ore">${(t.ore||0).toFixed(2)}h</span></div>`).join('');
 }
 
-// ============================================================
-// OVERLAP CHECK  ← cuore della logica
-// ============================================================
 function checkOverlap() {
   const data   = document.getElementById('f_data').value;
   const inizio = document.getElementById('f_inizio').value;
   const fine   = document.getElementById('f_fine').value;
   const userId = document.getElementById('f_dip').value;
   const tipo   = document.getElementById('f_tipo').value;
-
   const alert_el = document.getElementById('overlapAlert');
   const desc_el  = document.getElementById('overlapDesc');
   const btnSalva = document.getElementById('btnSalva');
 
-  // Reset
   function clearBlock() {
-    blockSave = false;
-    alert_el.classList.remove('visible');
-    btnSalva.disabled = false;
-    btnSalva.innerHTML = editingId ? 'Aggiorna' : 'Salva';
-    btnSalva.className = 'btn btn-accent';
+    blockSave = false; alert_el.classList.remove('visible');
+    btnSalva.disabled = false; btnSalva.innerHTML = editingId ? 'Aggiorna' : 'Salva'; btnSalva.className = 'btn btn-accent';
   }
 
-  // Blocca per orario non valido
   if (!data || !inizio || !fine || !userId) { clearBlock(); return; }
 
   const iMin = timeToMinutes(inizio);
@@ -1234,70 +789,37 @@ function checkOverlap() {
   if (fMin <= iMin) {
     blockSave = true;
     desc_el.textContent = `L'ora di fine (${fine}) deve essere successiva all'ora di inizio (${inizio}).`;
-    alert_el.classList.add('visible');
-    btnSalva.disabled   = true;
-    btnSalva.innerHTML  = '⛔ Orario non valido';
-    btnSalva.className  = 'btn btn-ghost';
+    alert_el.classList.add('visible'); btnSalva.disabled = true; btnSalva.innerHTML = '⛔ Orario non valido'; btnSalva.className = 'btn btn-ghost';
     return;
   }
 
-  // Solo per tipo 'work' controlliamo sovrapposizioni
   if (tipo !== 'work') { clearBlock(); return; }
 
-  // Cerca sovrapposizioni con entries esistenti
   const collisione = trovaSovrapposizione(userId, data, inizio, fine, editingId);
-
   if (collisione) {
     blockSave = true;
     desc_el.textContent = `L'orario ${inizio}–${fine} si sovrappone con ${collisione.inizio}–${collisione.fine} (${(collisione.ore||0).toFixed(2)}h già registrate).`;
-    alert_el.classList.add('visible');
-    btnSalva.disabled   = true;
-    btnSalva.innerHTML  = '⛔ Sovrapposizione!';
-    btnSalva.className  = 'btn btn-ghost';
-  } else {
-    clearBlock();
-  }
+    alert_el.classList.add('visible'); btnSalva.disabled = true; btnSalva.innerHTML = '⛔ Sovrapposizione!'; btnSalva.className = 'btn btn-ghost';
+  } else { clearBlock(); }
 }
 
-/**
- * Trova la prima entry che si sovrappone con l'intervallo dato.
- * Gestisce anche turni a cavallo della mezzanotte.
- * Restituisce l'entry collidente oppure null.
- */
 function trovaSovrapposizione(userId, data, inizio, fine, excludeId) {
-  const candidates = timbrature.filter(t =>
-    t.data   === data &&
-    t.userId === userId &&
-    t.tipo   === 'work' &&
-    t.id     !== excludeId
-  );
-
+  const candidates = timbrature.filter(t => t.data === data && t.userId === userId && t.tipo === 'work' && t.id !== excludeId);
   if (candidates.length === 0) return null;
-
   let nI = timeToMinutes(inizio);
   let nF = timeToMinutes(fine);
-  if (nF <= nI) nF += 1440; // mezzanotte
-
+  if (nF <= nI) nF += 1440;
   for (const t of candidates) {
     let eI = timeToMinutes(t.inizio);
     let eF = timeToMinutes(t.fine);
-    if (!eI && eI !== 0) continue;
-    if (!eF && eF !== 0) continue;
     if (eF <= eI) eF += 1440;
-
-    // Sovrapposizione: [nI,nF) ∩ [eI,eF) ≠ ∅
     if (nI < eF && eI < nF) return t;
   }
-
   return null;
 }
 
-// ============================================================
-// SALVA / UPDATE
-// ============================================================
 async function salva() {
   if (blockSave) return;
-
   const data   = document.getElementById('f_data').value;
   const userId = document.getElementById('f_dip').value;
   const inizio = document.getElementById('f_inizio').value;
@@ -1305,278 +827,167 @@ async function salva() {
   const tipo   = document.getElementById('f_tipo').value;
   const pausa  = parseFloat(document.getElementById('f_pausa').value) || 0;
   const note   = document.getElementById('f_note').value.trim();
-
-  if (!data || !userId || !inizio || !fine) {
-    toast('Compila tutti i campi obbligatori', 'warning');
-    return;
-  }
-
-  // Calcolo ore nette
+  if (!data || !userId || !inizio || !fine) { toast('Compila tutti i campi obbligatori', 'warning'); return; }
   const totMin = timeToMinutes(fine) - timeToMinutes(inizio);
   if (totMin <= 0) { toast('Orario non valido', 'error'); return; }
   const oreNette = Math.max(0, totMin / 60 - pausa);
-
   const dip  = dipendenti.find(d => d.id === userId);
   const nome = dip?.nome?.trim() || '';
-
   const params = { userId, nome, data, tipo, inizio, fine, ore: oreNette.toFixed(4) };
   if (note) params.note = note;
-
   const btn = document.getElementById('btnSalva');
-  btn.disabled  = true;
-  btn.innerHTML = '<span class="spin"></span>';
-
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
   let res;
-  if (editingId) {
-    res = await api('update', { id: editingId, ...params });
-  } else {
-    res = await api('save', params);
-  }
-
-  btn.disabled  = false;
-  btn.innerHTML = editingId ? 'Aggiorna' : 'Salva';
-
+  if (editingId) { res = await api('update', { id: editingId, ...params }); }
+  else           { res = await api('save', params); }
+  btn.disabled = false; btn.innerHTML = editingId ? 'Aggiorna' : 'Salva';
   if (res.success) {
     toast(editingId ? 'Timbratura aggiornata ✓' : 'Timbratura salvata ✓', 'success');
-    resetForm();
-    await loadData();
+    resetForm(); await loadData();
   } else {
-    // Doppio controllo: il server ha bloccato per overlap
     if (res.code === 'OVERLAP_BLOCKED') {
       blockSave = true;
       document.getElementById('overlapDesc').textContent = res.error;
       document.getElementById('overlapAlert').classList.add('visible');
-      btn.disabled  = true;
-      btn.innerHTML = '⛔ Sovrapposizione!';
-      btn.className = 'btn btn-ghost';
+      btn.disabled = true; btn.innerHTML = '⛔ Sovrapposizione!'; btn.className = 'btn btn-ghost';
     }
     toast(res.error || 'Errore durante il salvataggio', 'error');
   }
 }
 
-// ============================================================
-// MODIFICA
-// ============================================================
 function modificaEntry(id) {
   const t = timbrature.find(x => x.id === id);
   if (!t) return;
-
-  editingId = id;
-  blockSave = false;
-
+  editingId = id; blockSave = false;
   document.getElementById('f_data').value   = t.data;
   document.getElementById('f_dip').value    = t.userId;
   document.getElementById('f_inizio').value = t.inizio;
   document.getElementById('f_fine').value   = t.fine;
   document.getElementById('f_tipo').value   = t.tipo || 'work';
   document.getElementById('f_note').value   = t.note || '';
-
-  // Ricava pausa
   const totMin = timeToMinutes(t.fine) - timeToMinutes(t.inizio);
   const pausa  = Math.max(0, totMin / 60 - (t.ore || 0));
   document.getElementById('f_pausa').value = pausa.toFixed(1);
-
-  document.getElementById('formTitle').textContent  = 'Modifica Timbratura';
-  document.getElementById('formBadge').textContent  = 'MODIFICA';
-  document.getElementById('btnSalva').innerHTML     = 'Aggiorna';
+  document.getElementById('formTitle').textContent    = 'Modifica Timbratura';
+  document.getElementById('formBadge').textContent    = 'MODIFICA';
+  document.getElementById('btnSalva').innerHTML       = 'Aggiorna';
   document.getElementById('btnAnnulla').style.display = 'inline-flex';
-
   onFormChange();
-
-  // Switch to tab
   switchTab('tabTimbrature');
   document.getElementById('timbraturaForm').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
-// ============================================================
-// ELIMINA
-// ============================================================
 function eliminaEntry(id) {
   const t = timbrature.find(x => x.id === id);
   if (!t) return;
-
   const dip = dipendenti.find(d => d.id === t.userId);
-  document.getElementById('modalBody').textContent =
-    `Eliminare la timbratura di ${dip?.nome || '—'} del ${fmtDate(t.data)} (${t.inizio}–${t.fine})?`;
-
+  document.getElementById('modalBody').textContent = `Eliminare la timbratura di ${dip?.nome || '—'} del ${fmtDate(t.data)} (${t.inizio}–${t.fine})?`;
   document.getElementById('modalConfirmBtn').onclick = async () => {
     closeModal();
     const res = await api('delete', { id });
-    if (res.success) {
-      toast('Timbratura eliminata', 'success');
-      await loadData();
-    } else {
-      // Fallback: rimuovi solo localmente (se backend non ha delete)
+    if (res.success) { toast('Timbratura eliminata', 'success'); await loadData(); }
+    else {
       timbrature = timbrature.filter(x => x.id !== id);
-      renderTabella();
-      renderSidebar();
-      toast('Eliminata localmente (aggiungi delete al backend)', 'warning');
+      renderTabella(); renderSidebar();
+      toast('Eliminata', 'success');
     }
   };
-
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
 
-// ============================================================
-// RESET FORM
-// ============================================================
 function resetForm() {
   document.getElementById('timbraturaForm').reset();
   document.getElementById('f_data').valueAsDate = new Date();
-  editingId = null;
-  blockSave = false;
-
-  document.getElementById('formTitle').textContent  = 'Nuova Timbratura';
-  document.getElementById('formBadge').textContent  = 'INSERIMENTO';
-  document.getElementById('btnSalva').innerHTML     = 'Salva';
-  document.getElementById('btnSalva').disabled      = false;
-  document.getElementById('btnSalva').className     = 'btn btn-accent';
+  editingId = null; blockSave = false;
+  document.getElementById('formTitle').textContent    = 'Nuova Timbratura';
+  document.getElementById('formBadge').textContent    = 'INSERIMENTO';
+  document.getElementById('btnSalva').innerHTML       = 'Salva';
+  document.getElementById('btnSalva').disabled        = false;
+  document.getElementById('btnSalva').className       = 'btn btn-accent';
   document.getElementById('btnAnnulla').style.display = 'none';
-
   document.getElementById('overlapAlert').classList.remove('visible');
   document.getElementById('existingBox').classList.remove('visible');
-  document.getElementById('orePreview').className  = 'ore-preview';
-  document.getElementById('oreVal').textContent    = '—';
+  document.getElementById('orePreview').className = 'ore-preview';
+  document.getElementById('oreVal').textContent   = '—';
 }
 
-// ============================================================
-// RENDER TABELLA
-// ============================================================
 function renderTabella() {
-  const fl_data  = document.getElementById('fl_data').value;
-  const fl_dip   = document.getElementById('fl_dip').value;
-  const fl_tipo  = document.getElementById('fl_tipo').value;
-
-  let rows = [...timbrature].sort((a,b) => {
-    if (a.data !== b.data) return b.data.localeCompare(a.data);
-    return (a.inizio||'').localeCompare(b.inizio||'');
-  });
-
+  const fl_data = document.getElementById('fl_data').value;
+  const fl_dip  = document.getElementById('fl_dip').value;
+  const fl_tipo = document.getElementById('fl_tipo').value;
+  let rows = [...timbrature].sort((a,b) => { if (a.data !== b.data) return b.data.localeCompare(a.data); return (a.inizio||'').localeCompare(b.inizio||''); });
   if (fl_data) rows = rows.filter(t => t.data === fl_data);
   if (fl_dip)  rows = rows.filter(t => t.userId === fl_dip);
   if (fl_tipo) rows = rows.filter(t => t.tipo === fl_tipo);
-
   const tbody = document.getElementById('tabellaBody');
-
-  if (rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-msg">Nessuna timbratura trovata</div></div></td></tr>`;
-    return;
-  }
-
+  if (rows.length === 0) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-msg">Nessuna timbratura trovata</div></div></td></tr>`; return; }
   const tipoLabel = { work:'Lavoro', straordinario:'Straord.', ferie:'Ferie', malattia:'Malattia' };
-
   tbody.innerHTML = rows.map(t => {
     const dip  = dipendenti.find(d => d.id === t.userId);
     const nome = dip ? dip.nome.trim() : t.nome || '—';
-    return `
-      <tr>
-        <td class="td-date">${fmtDate(t.data)}</td>
-        <td class="td-name">${nome}</td>
-        <td class="td-time">${t.inizio||'—'} → ${t.fine||'—'}</td>
-        <td class="td-ore">${(t.ore||0).toFixed(2)}h</td>
-        <td><span class="badge badge-${t.tipo||'work'}">${tipoLabel[t.tipo]||t.tipo}</span></td>
-        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.note||''}">${t.note||'—'}</td>
-        <td>
-          <div style="display:flex;gap:6px;">
-            <button class="icon-btn icon-edit" onclick="modificaEntry('${t.id}')" title="Modifica">✏️</button>
-            <button class="icon-btn icon-del"  onclick="eliminaEntry('${t.id}')"  title="Elimina">🗑</button>
-          </div>
-        </td>
-      </tr>`;
+    return `<tr>
+      <td class="td-date">${fmtDate(t.data)}</td>
+      <td class="td-name">${nome}</td>
+      <td class="td-time">${t.inizio||'—'} → ${t.fine||'—'}</td>
+      <td class="td-ore">${(t.ore||0).toFixed(2)}h</td>
+      <td><span class="badge badge-${t.tipo||'work'}">${tipoLabel[t.tipo]||t.tipo}</span></td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.note||''}">${t.note||'—'}</td>
+      <td><div style="display:flex;gap:6px;">
+        <button class="icon-btn icon-edit" onclick="modificaEntry('${t.id}')" title="Modifica">✏️</button>
+        <button class="icon-btn icon-del"  onclick="eliminaEntry('${t.id}')"  title="Elimina">🗑</button>
+      </div></td>
+    </tr>`;
   }).join('');
 }
 
 function clearFiltri() {
-  document.getElementById('fl_data').value  = '';
-  document.getElementById('fl_dip').value   = '';
-  document.getElementById('fl_tipo').value  = '';
+  document.getElementById('fl_data').value = '';
+  document.getElementById('fl_dip').value  = '';
+  document.getElementById('fl_tipo').value = '';
   renderTabella();
 }
 
-// ============================================================
-// RENDER SIDEBAR
-// ============================================================
 function renderSidebar() {
-  const oggi   = todayISO();
-  const mese   = new Date().getMonth();
-  const anno   = new Date().getFullYear();
-
-  const oggiRows  = timbrature.filter(t => t.data === oggi);
-  const oreOggi   = sum(oggiRows);
-  const meseRows  = timbrature.filter(t => {
-    const d = new Date(t.data);
-    return d.getMonth() === mese && d.getFullYear() === anno;
-  });
-  const oreMese   = sum(meseRows);
-
+  const oggi = todayISO();
+  const mese = new Date().getMonth();
+  const anno = new Date().getFullYear();
+  const oggiRows = timbrature.filter(t => t.data === oggi);
+  const oreOggi  = sum(oggiRows);
+  const meseRows = timbrature.filter(t => { const d = new Date(t.data); return d.getMonth() === mese && d.getFullYear() === anno; });
+  const oreMese  = sum(meseRows);
   document.getElementById('sw_oggi').textContent   = oreOggi.toFixed(2) + 'h';
   document.getElementById('sw_oggi_n').textContent = oggiRows.length + ' registraz.';
   document.getElementById('sw_mese').textContent   = oreMese.toFixed(2) + 'h';
   document.getElementById('sw_mese_n').textContent = meseRows.length + ' registraz.';
   document.getElementById('sw_tot').textContent    = timbrature.length;
-
-  // Ore per dipendente
   const byDip = {};
   timbrature.forEach(t => {
     if (!byDip[t.userId]) byDip[t.userId] = { ore:0, giorni:new Set() };
     byDip[t.userId].ore += t.ore || 0;
     byDip[t.userId].giorni.add(t.data);
   });
-
-  const html = Object.entries(byDip)
-    .sort((a,b) => b[1].ore - a[1].ore)
-    .map(([id, s]) => {
-      const dip  = dipendenti.find(d => d.id === id);
-      const nome = dip ? dip.nome.trim() : '—';
-      return `
-        <div class="dip-row">
-          <span class="dip-name">${nome}</span>
-          <span class="dip-ore">${s.ore.toFixed(1)}h</span>
-          <span class="dip-gg">${s.giorni.size}gg</span>
-        </div>`;
-    }).join('');
-
-  document.getElementById('sw_dip').innerHTML = html ||
-    '<div class="empty" style="padding:12px 0;"><div class="empty-msg">Nessun dato</div></div>';
+  const html = Object.entries(byDip).sort((a,b) => b[1].ore - a[1].ore).map(([id, s]) => {
+    const dip  = dipendenti.find(d => d.id === id);
+    const nome = dip ? dip.nome.trim() : '—';
+    return `<div class="dip-row"><span class="dip-name">${nome}</span><span class="dip-ore">${s.ore.toFixed(1)}h</span><span class="dip-gg">${s.giorni.size}gg</span></div>`;
+  }).join('');
+  document.getElementById('sw_dip').innerHTML = html || '<div class="empty" style="padding:12px 0;"><div class="empty-msg">Nessun dato</div></div>';
 }
 
-// ============================================================
-// RENDER STATS
-// ============================================================
 function renderStats() {
-  const mese = new Date().getMonth();
-  const anno = new Date().getFullYear();
+  const mese    = new Date().getMonth();
+  const anno    = new Date().getFullYear();
   const meseTxt = new Date().toLocaleString('it-IT', { month:'long', year:'numeric' });
-
-  const meseRows = timbrature.filter(t => {
-    const d = new Date(t.data);
-    return d.getMonth() === mese && d.getFullYear() === anno;
-  });
-
+  const meseRows = timbrature.filter(t => { const d = new Date(t.data); return d.getMonth() === mese && d.getFullYear() === anno; });
   const oreWork  = sum(meseRows.filter(t => t.tipo === 'work'));
   const oreExtra = sum(meseRows.filter(t => t.tipo === 'straordinario'));
   const gg       = new Set(meseRows.map(t => t.data)).size;
-
   document.getElementById('statsGrid').innerHTML = `
-    <div class="big-stat">
-      <div class="bs-val">${oreWork.toFixed(1)}h</div>
-      <div class="bs-label">Ore lavoro — ${meseTxt}</div>
-    </div>
-    <div class="big-stat">
-      <div class="bs-val" style="color:var(--accent2)">${oreExtra.toFixed(1)}h</div>
-      <div class="bs-label">Straordinari — ${meseTxt}</div>
-    </div>
-    <div class="big-stat">
-      <div class="bs-val" style="color:var(--text)">${gg}</div>
-      <div class="bs-label">Giorni con presenze</div>
-    </div>
-  `;
-
-  // Tabella ore per dipendente
+    <div class="big-stat"><div class="bs-val">${oreWork.toFixed(1)}h</div><div class="bs-label">Ore lavoro — ${meseTxt}</div></div>
+    <div class="big-stat"><div class="bs-val" style="color:var(--accent2)">${oreExtra.toFixed(1)}h</div><div class="bs-label">Straordinari — ${meseTxt}</div></div>
+    <div class="big-stat"><div class="bs-val" style="color:var(--text)">${gg}</div><div class="bs-label">Giorni con presenze</div></div>`;
   const byDip = {};
   meseRows.forEach(t => {
     if (!byDip[t.userId]) byDip[t.userId] = { work:0, extra:0, ferie:0, malattia:0, giorni:new Set() };
@@ -1584,74 +995,32 @@ function renderStats() {
     byDip[t.userId][key] = (byDip[t.userId][key] || 0) + (t.ore || 0);
     byDip[t.userId].giorni.add(t.data);
   });
-
-  const statsHtml = Object.keys(byDip).length === 0
+  document.getElementById('statsTable').innerHTML = Object.keys(byDip).length === 0
     ? '<div class="empty"><div class="empty-msg">Nessun dato per il mese corrente</div></div>'
-    : `<div class="tbl-wrap"><table>
-        <thead><tr>
-          <th>Dipendente</th><th>Giorni</th>
-          <th>Ore Lavoro</th><th>Straordinari</th>
-          <th>Ferie</th><th>Malattia</th><th>Totale</th>
-        </tr></thead>
-        <tbody>
-          ${Object.entries(byDip).map(([id,s]) => {
-            const dip  = dipendenti.find(d => d.id === id);
-            const nome = dip ? dip.nome.trim() : '—';
-            const tot  = (s.work||0)+(s.extra||0)+(s.ferie||0)+(s.malattia||0);
-            return `<tr>
-              <td class="td-name">${nome}</td>
-              <td>${s.giorni.size}</td>
-              <td class="td-ore">${(s.work||0).toFixed(2)}h</td>
-              <td style="color:var(--accent2);font-family:var(--mono);">${(s.extra||0).toFixed(2)}h</td>
-              <td style="color:#7b9fff;font-family:var(--mono);">${(s.ferie||0).toFixed(2)}h</td>
-              <td style="color:var(--warning);font-family:var(--mono);">${(s.malattia||0).toFixed(2)}h</td>
-              <td class="td-ore" style="font-size:0.95rem;">${tot.toFixed(2)}h</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table></div>`;
-
-  document.getElementById('statsTable').innerHTML = statsHtml;
-
-  // Riepilogo mensile completo (ultimi 6 mesi)
-  const mesi = [];
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(anno, mese - i, 1);
-    mesi.push({ m: d.getMonth(), y: d.getFullYear(), label: d.toLocaleString('it-IT',{month:'long',year:'numeric'}) });
-  }
-
-  const monthlyHtml = `<div class="tbl-wrap"><table>
-    <thead><tr>
-      <th>Mese</th><th>Registrazioni</th>
-      <th>Ore Lavoro</th><th>Straord.</th><th>Totale</th>
-    </tr></thead>
-    <tbody>
-      ${mesi.map(({m,y,label}) => {
-        const rows = timbrature.filter(t => { const d=new Date(t.data); return d.getMonth()===m && d.getFullYear()===y; });
-        const ow = sum(rows.filter(t=>t.tipo==='work'));
-        const oe = sum(rows.filter(t=>t.tipo==='straordinario'));
-        return `<tr>
-          <td class="td-name">${label}</td>
-          <td>${rows.length}</td>
-          <td class="td-ore">${ow.toFixed(2)}h</td>
-          <td style="color:var(--accent2);font-family:var(--mono);">${oe.toFixed(2)}h</td>
-          <td class="td-ore">${(ow+oe).toFixed(2)}h</td>
-        </tr>`;
+    : `<div class="tbl-wrap"><table><thead><tr><th>Dipendente</th><th>Giorni</th><th>Ore Lavoro</th><th>Straordinari</th><th>Ferie</th><th>Malattia</th><th>Totale</th></tr></thead><tbody>
+      ${Object.entries(byDip).map(([id,s]) => {
+        const dip = dipendenti.find(d => d.id === id);
+        const nome = dip ? dip.nome.trim() : '—';
+        const tot = (s.work||0)+(s.extra||0)+(s.ferie||0)+(s.malattia||0);
+        return `<tr><td class="td-name">${nome}</td><td>${s.giorni.size}</td><td class="td-ore">${(s.work||0).toFixed(2)}h</td><td style="color:var(--accent2);font-family:var(--mono);">${(s.extra||0).toFixed(2)}h</td><td style="color:#7b9fff;font-family:var(--mono);">${(s.ferie||0).toFixed(2)}h</td><td style="color:var(--warning);font-family:var(--mono);">${(s.malattia||0).toFixed(2)}h</td><td class="td-ore">${tot.toFixed(2)}h</td></tr>`;
       }).join('')}
-    </tbody>
-  </table></div>`;
-
-  document.getElementById('statsMonthly').innerHTML = monthlyHtml;
+    </tbody></table></div>`;
+  const mesi = [];
+  for (let i = 0; i < 6; i++) { const d = new Date(anno, mese - i, 1); mesi.push({ m: d.getMonth(), y: d.getFullYear(), label: d.toLocaleString('it-IT',{month:'long',year:'numeric'}) }); }
+  document.getElementById('statsMonthly').innerHTML = `<div class="tbl-wrap"><table><thead><tr><th>Mese</th><th>Registrazioni</th><th>Ore Lavoro</th><th>Straord.</th><th>Totale</th></tr></thead><tbody>
+    ${mesi.map(({m,y,label}) => {
+      const rows = timbrature.filter(t => { const d=new Date(t.data); return d.getMonth()===m && d.getFullYear()===y; });
+      const ow = sum(rows.filter(t=>t.tipo==='work'));
+      const oe = sum(rows.filter(t=>t.tipo==='straordinario'));
+      return `<tr><td class="td-name">${label}</td><td>${rows.length}</td><td class="td-ore">${ow.toFixed(2)}h</td><td style="color:var(--accent2);font-family:var(--mono);">${oe.toFixed(2)}h</td><td class="td-ore">${(ow+oe).toFixed(2)}h</td></tr>`;
+    }).join('')}
+  </tbody></table></div>`;
 }
 
-// ============================================================
-// TABS
-// ============================================================
 function setupTabListeners() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       switchTab(btn.dataset.tab);
-      // Sync bottom tabs if any
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === btn.dataset.tab));
     });
   });
@@ -1663,25 +1032,12 @@ function switchTab(id) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
 }
 
-// ============================================================
-// EXPORT
-// ============================================================
 function exportExcel() {
   if (!timbrature.length) { toast('Nessun dato da esportare', 'warning'); return; }
-
   const rows = timbrature.map(t => {
     const dip = dipendenti.find(d => d.id === t.userId);
-    return {
-      'Data': t.data,
-      'Dipendente': dip?.nome?.trim() || '—',
-      'Inizio': t.inizio,
-      'Fine': t.fine,
-      'Ore': +(t.ore||0).toFixed(4),
-      'Tipo': t.tipo,
-      'Note': t.note || ''
-    };
+    return { 'Data': t.data, 'Dipendente': dip?.nome?.trim() || '—', 'Inizio': t.inizio, 'Fine': t.fine, 'Ore': +(t.ore||0).toFixed(4), 'Tipo': t.tipo, 'Note': t.note || '' };
   });
-
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Timbrature');
@@ -1691,71 +1047,32 @@ function exportExcel() {
 
 function exportPDF() { window.print(); }
 
-// ============================================================
-// UTILITY
-// ============================================================
 function timeToMinutes(str) {
   if (!str || typeof str !== 'string') return 0;
   const [h, m] = str.split(':').map(Number);
   return (h || 0) * 60 + (m || 0);
 }
 
-function sum(arr) {
-  return arr.reduce((s, t) => s + (t.ore || 0), 0);
-}
+function sum(arr) { return arr.reduce((s, t) => s + (t.ore || 0), 0); }
+function todayISO() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(iso) { if (!iso) return '—'; const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; }
 
-function todayISO() {
-  return new Date().toISOString().split('T')[0];
-}
-
-function fmtDate(iso) {
-  if (!iso) return '—';
-  const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
-
-// ============================================================
-// TOAST
-// ============================================================
 function toast(msg, type = 'success') {
-  const wrap = document.getElementById('toastWrap');
+  const wrap  = document.getElementById('toastWrap');
   const icons = { success:'✅', error:'❌', warning:'⚠️' };
-  const el = document.createElement('div');
+  const el    = document.createElement('div');
   el.className = `toast ${type}`;
   el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span>`;
   wrap.appendChild(el);
-
-  setTimeout(() => {
-    el.style.animation = 'toastOut 0.3s ease forwards';
-    setTimeout(() => el.remove(), 320);
-  }, 3500);
+  setTimeout(() => { el.style.animation = 'toastOut 0.3s ease forwards'; setTimeout(() => el.remove(), 320); }, 3500);
 }
 
-// ============================================================
-// LOADER
-// ============================================================
-function showLoader(msg) {
-  document.getElementById('loaderText').textContent = msg || 'Caricamento...';
-  document.getElementById('loaderOverlay').classList.add('active');
-}
-function hideLoader() {
-  document.getElementById('loaderOverlay').classList.remove('active');
-}
+function showLoader(msg) { document.getElementById('loaderText').textContent = msg || 'Caricamento...'; document.getElementById('loaderOverlay').classList.add('active'); }
+function hideLoader() { document.getElementById('loaderOverlay').classList.remove('active'); }
 
-// ============================================================
-// MODAL
-// ============================================================
-document.getElementById('modalOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-});
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
+document.addEventListener('DOMContentLoaded', () => { const fd = document.getElementById('f_data'); if (fd) fd.valueAsDate = new Date(); });
 
-// Imposta data di default
-document.addEventListener('DOMContentLoaded', () => {
-  const fd = document.getElementById('f_data');
-  if (fd) fd.valueAsDate = new Date();
-});
-
-// Esponi globali per onclick HTML
 window.modificaEntry = modificaEntry;
 window.eliminaEntry  = eliminaEntry;
 window.resetForm     = resetForm;
