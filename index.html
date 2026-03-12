@@ -34,238 +34,112 @@
 }
 
 html { font-size:16px; }
-
-body {
-  font-family: var(--body);
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+body { font-family:var(--body); background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
 
 body::before {
-  content:'';
-  position:fixed; inset:0;
-  background:
-    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(232,255,71,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 10% 90%, rgba(71,255,184,0.03) 0%, transparent 60%);
-  pointer-events:none;
-  z-index:0;
+  content:''; position:fixed; inset:0;
+  background: radial-gradient(ellipse 60% 40% at 80% 10%, rgba(232,255,71,0.04) 0%, transparent 60%),
+              radial-gradient(ellipse 50% 50% at 10% 90%, rgba(71,255,184,0.03) 0%, transparent 60%);
+  pointer-events:none; z-index:0;
 }
 
-#loginScreen {
-  position:fixed; inset:0;
-  display:flex; align-items:center; justify-content:center;
-  z-index:100;
-  padding:20px;
-}
+#loginScreen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; }
 
 .login-box {
-  width:100%; max-width:420px;
-  background: var(--bg2);
-  border: 1px solid var(--border2);
-  border-radius:24px;
-  padding:48px 40px;
-  position:relative;
-  animation: fadeUp 0.5s ease;
+  width:100%; max-width:420px; background:var(--bg2); border:1px solid var(--border2);
+  border-radius:24px; padding:48px 40px; position:relative; animation:fadeUp 0.5s ease;
 }
-
 .login-box::before {
-  content:'';
-  position:absolute; top:0; left:50%; transform:translateX(-50%);
-  width:200px; height:1px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:200px; height:1px; background:linear-gradient(90deg, transparent, var(--accent), transparent);
 }
-
-.login-logo {
-  font-family:var(--head);
-  font-size:1.1rem; font-weight:800;
-  letter-spacing:0.08em;
-  color:var(--accent);
-  text-transform:uppercase;
-  margin-bottom:8px; text-align:center;
-}
-
-.login-title {
-  font-family:var(--head);
-  font-size:2rem; font-weight:700;
-  color:var(--text);
-  text-align:center; margin-bottom:6px;
-}
-
-.login-sub {
-  color:var(--text2); font-size:0.875rem;
-  text-align:center; margin-bottom:36px;
-}
+.login-logo { font-family:var(--head); font-size:1.1rem; font-weight:800; letter-spacing:0.08em; color:var(--accent); text-transform:uppercase; margin-bottom:8px; text-align:center; }
+.login-title { font-family:var(--head); font-size:2rem; font-weight:700; color:var(--text); text-align:center; margin-bottom:6px; }
+.login-sub { color:var(--text2); font-size:0.875rem; text-align:center; margin-bottom:36px; }
 
 .field { margin-bottom:18px; }
-
-.field label {
-  display:block; font-size:0.78rem; font-weight:600;
-  color:var(--text2); text-transform:uppercase;
-  letter-spacing:0.08em; margin-bottom:8px;
-}
-
+.field label { display:block; font-size:0.78rem; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
 .field input, .field select {
-  width:100%; padding:13px 16px;
-  background:var(--bg3); border:1px solid var(--border2);
-  border-radius:var(--radius2); color:var(--text);
-  font-size:0.95rem; font-family:var(--body);
-  transition:border-color 0.2s, box-shadow 0.2s;
-  appearance:none;
+  width:100%; padding:13px 16px; background:var(--bg3); border:1px solid var(--border2);
+  border-radius:var(--radius2); color:var(--text); font-size:0.95rem; font-family:var(--body);
+  transition:border-color 0.2s, box-shadow 0.2s; appearance:none;
 }
-
-.field input:focus, .field select:focus {
-  outline:none; border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(232,255,71,0.08);
-}
-
+.field input:focus, .field select:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(232,255,71,0.08); }
 .field input::placeholder { color:var(--text3); }
 
 .btn {
-  display:inline-flex; align-items:center; justify-content:center;
-  gap:8px; padding:13px 22px;
-  border:none; border-radius:var(--radius2);
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:13px 22px; border:none; border-radius:var(--radius2);
   font-family:var(--body); font-size:0.9rem; font-weight:600;
-  cursor:pointer; transition:all 0.2s;
-  white-space:nowrap; text-decoration:none;
+  cursor:pointer; transition:all 0.2s; white-space:nowrap; text-decoration:none;
 }
-
 .btn:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.1); }
 .btn:active:not(:disabled) { transform:scale(0.98); }
 .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none !important; }
-
 .btn-accent { background:var(--accent); color:#0a0a0f; }
 .btn-danger { background:var(--danger); color:white; }
 .btn-ghost  { background:transparent; color:var(--text2); border:1px solid var(--border2); }
 .btn-ghost:hover { color:var(--text); }
-.btn-full   { width:100%; }
+.btn-full { width:100%; }
 
 #appScreen { display:none; min-height:100vh; position:relative; z-index:1; }
 
 .topbar {
-  position:sticky; top:0; z-index:50;
-  background:rgba(10,10,15,0.85);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  padding:0 32px; height:64px;
-  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:50; background:rgba(10,10,15,0.85);
+  backdrop-filter:blur(20px); border-bottom:1px solid var(--border);
+  padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between;
 }
-
-.topbar-brand {
-  font-family:var(--head); font-size:1.05rem; font-weight:800;
-  letter-spacing:0.06em; color:var(--accent); text-transform:uppercase;
-}
-
-.topbar-center {
-  display:flex; gap:4px;
-  background:var(--bg3); border:1px solid var(--border);
-  padding:4px; border-radius:12px;
-}
-
-.tab-btn {
-  padding:7px 18px; border:none; border-radius:8px;
-  background:transparent; color:var(--text2);
-  font-family:var(--body); font-size:0.85rem; font-weight:600;
-  cursor:pointer; transition:all 0.2s;
-}
-
-.tab-btn.active {
-  background:var(--bg); color:var(--text);
-  box-shadow:0 2px 8px rgba(0,0,0,0.3);
-}
-
+.topbar-brand { font-family:var(--head); font-size:1.05rem; font-weight:800; letter-spacing:0.06em; color:var(--accent); text-transform:uppercase; }
+.topbar-center { display:flex; gap:4px; background:var(--bg3); border:1px solid var(--border); padding:4px; border-radius:12px; }
+.tab-btn { padding:7px 18px; border:none; border-radius:8px; background:transparent; color:var(--text2); font-family:var(--body); font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.tab-btn.active { background:var(--bg); color:var(--text); box-shadow:0 2px 8px rgba(0,0,0,0.3); }
 .topbar-right { display:flex; align-items:center; gap:14px; }
-
-.user-chip {
-  display:flex; align-items:center; gap:8px;
-  background:var(--bg3); border:1px solid var(--border);
-  padding:6px 14px 6px 10px; border-radius:50px;
-}
-
-.user-avatar {
-  width:28px; height:28px; border-radius:50%;
-  background:var(--accent); color:#0a0a0f;
-  font-family:var(--mono); font-size:0.7rem; font-weight:500;
-  display:flex; align-items:center; justify-content:center;
-}
-
+.user-chip { display:flex; align-items:center; gap:8px; background:var(--bg3); border:1px solid var(--border); padding:6px 14px 6px 10px; border-radius:50px; }
+.user-avatar { width:28px; height:28px; border-radius:50%; background:var(--accent); color:#0a0a0f; font-family:var(--mono); font-size:0.7rem; font-weight:500; display:flex; align-items:center; justify-content:center; }
 .user-name { font-size:0.85rem; font-weight:500; color:var(--text2); }
 
-.main-wrap {
-  max-width:1320px; margin:0 auto; padding:32px;
-  display:grid; grid-template-columns:1fr 300px;
-  gap:28px; align-items:start;
+/* Badge ruolo */
+.role-badge {
+  font-family:var(--mono); font-size:0.65rem; font-weight:600;
+  padding:2px 8px; border-radius:50px; text-transform:uppercase; letter-spacing:0.06em;
 }
+.role-admin { background:rgba(232,255,71,0.15); color:var(--accent); }
+.role-dip   { background:rgba(255,255,255,0.06); color:var(--text3); }
 
-.card {
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:20px; padding:28px; margin-bottom:20px;
-}
+.main-wrap { max-width:1320px; margin:0 auto; padding:32px; display:grid; grid-template-columns:1fr 300px; gap:28px; align-items:start; }
 
-.card-header {
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:22px;
-}
-
-.card-title {
-  font-family:var(--head); font-size:1rem; font-weight:700;
-  color:var(--text); letter-spacing:0.02em;
-}
-
-.card-badge {
-  font-family:var(--mono); font-size:0.72rem;
-  color:var(--text3); background:var(--bg3);
-  padding:3px 10px; border-radius:50px;
-}
+.card { background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:20px; }
+.card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+.card-title { font-family:var(--head); font-size:1rem; font-weight:700; color:var(--text); letter-spacing:0.02em; }
+.card-badge { font-family:var(--mono); font-size:0.72rem; color:var(--text3); background:var(--bg3); padding:3px 10px; border-radius:50px; }
 
 .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .form-grid.col1 { grid-template-columns:1fr; }
 
 .field select {
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2388889a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-  background-repeat:no-repeat; background-position:right 14px center;
-  padding-right:36px;
+  background-repeat:no-repeat; background-position:right 14px center; padding-right:36px;
 }
 
-.ore-preview {
-  background:var(--bg3); border:1px solid var(--border);
-  border-radius:var(--radius2); padding:16px 20px;
-  display:flex; align-items:center; justify-content:space-between;
-  margin:4px 0 16px; transition:border-color 0.3s;
-}
-
+.ore-preview { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius2); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; margin:4px 0 16px; transition:border-color 0.3s; }
 .ore-preview.ok    { border-color:rgba(71,255,184,0.3); }
 .ore-preview.warn  { border-color:rgba(255,170,71,0.3); }
 .ore-preview.error { border-color:rgba(255,71,71,0.3); }
-
 .ore-label { font-size:0.8rem; color:var(--text2); font-weight:500; }
 .ore-value { font-family:var(--mono); font-size:1.6rem; font-weight:500; color:var(--accent); transition:color 0.3s; }
 .ore-preview.warn  .ore-value { color:var(--warning); }
 .ore-preview.error .ore-value { color:var(--danger); }
 
-.overlap-alert {
-  display:none;
-  background:rgba(255,71,71,0.08); border:1px solid rgba(255,71,71,0.35);
-  border-radius:var(--radius2); padding:14px 18px;
-  margin-bottom:16px; gap:12px; align-items:flex-start;
-}
+.overlap-alert { display:none; background:rgba(255,71,71,0.08); border:1px solid rgba(255,71,71,0.35); border-radius:var(--radius2); padding:14px 18px; margin-bottom:16px; gap:12px; align-items:flex-start; }
 .overlap-alert.visible { display:flex; animation:fadeUp 0.2s ease; }
-.overlap-icon { font-size:1.2rem; flex-shrink:0; line-height:1.4; }
+.overlap-icon  { font-size:1.2rem; flex-shrink:0; line-height:1.4; }
 .overlap-title { font-weight:700; color:var(--danger); font-size:0.85rem; margin-bottom:3px; }
 .overlap-desc  { color:#ff9a9a; font-size:0.82rem; }
 
-.existing-box {
-  display:none;
-  background:rgba(71,255,184,0.04); border:1px solid rgba(71,255,184,0.15);
-  border-radius:var(--radius2); padding:14px 18px; margin-bottom:16px;
-}
+.existing-box { display:none; background:rgba(71,255,184,0.04); border:1px solid rgba(71,255,184,0.15); border-radius:var(--radius2); padding:14px 18px; margin-bottom:16px; }
 .existing-box.visible { display:block; animation:fadeUp 0.2s ease; }
 .existing-title { font-size:0.76rem; color:var(--accent2); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; }
-.existing-row {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.83rem;
-}
+.existing-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.83rem; }
 .existing-row:last-child { border:none; }
 .existing-time { font-family:var(--mono); color:var(--text); }
 .existing-ore  { font-family:var(--mono); color:var(--accent2); font-weight:600; }
@@ -273,72 +147,37 @@ body::before {
 .action-row { display:flex; gap:10px; }
 
 .tbl-wrap { overflow-x:auto; margin:-4px; }
-
 table { width:100%; border-collapse:collapse; font-size:0.875rem; }
-
-th {
-  font-family:var(--mono); font-size:0.7rem; font-weight:500;
-  color:var(--text3); text-transform:uppercase; letter-spacing:0.08em;
-  padding:10px 14px; text-align:left;
-  border-bottom:1px solid var(--border); white-space:nowrap;
-}
-
-td {
-  padding:13px 14px; border-bottom:1px solid rgba(255,255,255,0.04);
-  color:var(--text2); vertical-align:middle;
-}
-
+th { font-family:var(--mono); font-size:0.7rem; font-weight:500; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; padding:10px 14px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; }
+td { padding:13px 14px; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text2); vertical-align:middle; }
 tr:hover td { background:rgba(255,255,255,0.02); }
 tr:last-child td { border:none; }
-
 .td-date { font-family:var(--mono); color:var(--text); font-size:0.82rem; }
 .td-name { color:var(--text); font-weight:500; }
 .td-time { font-family:var(--mono); font-size:0.83rem; }
 .td-ore  { font-family:var(--mono); font-weight:600; color:var(--accent); }
 
-.badge {
-  display:inline-flex; padding:3px 9px; border-radius:50px;
-  font-size:0.72rem; font-weight:600;
-  text-transform:uppercase; letter-spacing:0.04em;
-}
+.badge { display:inline-flex; padding:3px 9px; border-radius:50px; font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
 .badge-work          { background:rgba(232,255,71,0.1);  color:var(--accent); }
 .badge-straordinario { background:rgba(71,255,184,0.1);  color:var(--accent2); }
 .badge-ferie         { background:rgba(71,100,255,0.1);  color:#7b9fff; }
 .badge-malattia      { background:rgba(255,170,71,0.1);  color:var(--warning); }
 
-.icon-btn {
-  width:30px; height:30px; border:none; border-radius:8px;
-  cursor:pointer; display:inline-flex; align-items:center;
-  justify-content:center; font-size:13px; transition:all 0.2s;
-}
+.icon-btn { width:30px; height:30px; border:none; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; transition:all 0.2s; }
 .icon-edit { background:rgba(232,255,71,0.08); color:var(--accent); }
 .icon-edit:hover { background:rgba(232,255,71,0.18); }
 .icon-del  { background:rgba(255,71,71,0.08);  color:var(--danger); }
 .icon-del:hover  { background:rgba(255,71,71,0.18); }
 
 .sidebar { position:sticky; top:96px; }
-
-.stat-widget {
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:20px; padding:22px; margin-bottom:16px;
-}
-
-.sw-label {
-  font-size:0.72rem; font-weight:600; color:var(--text3);
-  text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;
-}
-
+.stat-widget { background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:22px; margin-bottom:16px; }
+.sw-label { font-size:0.72rem; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px; }
 .sw-val { font-family:var(--mono); font-size:2.2rem; font-weight:500; color:var(--accent); line-height:1; }
 .sw-val.green { color:var(--accent2); }
 .sw-val.white { color:var(--text); font-size:1.8rem; }
 .sw-sub { font-size:0.78rem; color:var(--text3); margin-top:4px; }
-
 .divider { height:1px; background:var(--border); margin:8px 0 16px; }
-
-.dip-row {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.04);
-}
+.dip-row { display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
 .dip-row:last-child { border:none; }
 .dip-name { font-size:0.85rem; color:var(--text); font-weight:500; }
 .dip-ore  { font-family:var(--mono); font-size:0.85rem; color:var(--accent); }
@@ -348,23 +187,12 @@ tr:last-child td { border:none; }
 .filters .field { margin:0; flex:1; min-width:140px; }
 
 .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
-
 .big-stat { background:var(--bg2); border:1px solid var(--border); border-radius:18px; padding:22px; }
 .bs-val   { font-family:var(--mono); font-size:2rem; font-weight:500; color:var(--accent); }
 .bs-label { font-size:0.8rem; color:var(--text3); margin-top:6px; }
 
-#toastWrap {
-  position:fixed; bottom:28px; right:28px;
-  z-index:9999; display:flex; flex-direction:column; gap:10px;
-}
-
-.toast {
-  display:flex; align-items:center; gap:12px;
-  background:var(--bg2); border:1px solid var(--border2);
-  border-radius:14px; padding:14px 18px;
-  box-shadow:var(--shadow); animation:toastIn 0.3s ease;
-  max-width:360px; min-width:260px;
-}
+#toastWrap { position:fixed; bottom:28px; right:28px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
+.toast { display:flex; align-items:center; gap:12px; background:var(--bg2); border:1px solid var(--border2); border-radius:14px; padding:14px 18px; box-shadow:var(--shadow); animation:toastIn 0.3s ease; max-width:360px; min-width:260px; }
 .toast.success { border-left:3px solid var(--accent2); }
 .toast.error   { border-left:3px solid var(--danger); }
 .toast.warning { border-left:3px solid var(--warning); }
@@ -372,19 +200,11 @@ tr:last-child td { border:none; }
 .toast-msg  { flex:1; font-size:0.875rem; color:var(--text); }
 
 @keyframes toastIn  { from { transform:translateX(120%); opacity:0; } to { transform:translateX(0); opacity:1; } }
-@keyframes toastOut { from { transform:translateX(0); opacity:1; max-height:60px; } to { transform:translateX(120%); opacity:0; max-height:0; } }
+@keyframes toastOut { from { transform:translateX(0); opacity:1; } to { transform:translateX(120%); opacity:0; } }
 
-.modal-overlay {
-  display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
-  z-index:200; align-items:center; justify-content:center;
-}
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:200; align-items:center; justify-content:center; }
 .modal-overlay.open { display:flex; }
-.modal {
-  background:var(--bg2); border:1px solid var(--border2);
-  border-radius:20px; padding:32px;
-  max-width:400px; width:90%; animation:fadeUp 0.25s ease;
-}
+.modal { background:var(--bg2); border:1px solid var(--border2); border-radius:20px; padding:32px; max-width:400px; width:90%; animation:fadeUp 0.25s ease; }
 .modal-title   { font-family:var(--head); font-size:1.1rem; font-weight:700; margin-bottom:10px; }
 .modal-body    { color:var(--text2); font-size:0.9rem; line-height:1.6; margin-bottom:24px; }
 .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
@@ -396,34 +216,18 @@ tr:last-child td { border:none; }
 .spin { width:18px; height:18px; border-radius:50%; border:2px solid rgba(10,10,15,0.3); border-top-color:#0a0a0f; animation:rot 0.8s linear infinite; display:inline-block; }
 .spin-light { border-color:rgba(255,255,255,0.1); border-top-color:rgba(255,255,255,0.6); }
 
-@keyframes rot     { to { transform:rotate(360deg); } }
-@keyframes fadeUp  { from { transform:translateY(16px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+@keyframes rot    { to { transform:rotate(360deg); } }
+@keyframes fadeUp { from { transform:translateY(16px); opacity:0; } to { transform:translateY(0); opacity:1; } }
 
 .tab-content { display:none; animation:fadeUp 0.3s ease; }
 .tab-content.active { display:block; }
 
-.loader-overlay {
-  display:none; position:fixed; inset:0;
-  background:rgba(10,10,15,0.9); z-index:300;
-  align-items:center; justify-content:center;
-  flex-direction:column; gap:16px;
-}
+.loader-overlay { display:none; position:fixed; inset:0; background:rgba(10,10,15,0.9); z-index:300; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
 .loader-overlay.active { display:flex; }
 .loader-text { font-family:var(--mono); font-size:0.85rem; color:var(--text2); }
 
-@media(max-width:1024px) {
-  .main-wrap { grid-template-columns:1fr; }
-  .sidebar { position:static; }
-  .stats-grid { grid-template-columns:1fr 1fr; }
-}
-@media(max-width:640px) {
-  .main-wrap { padding:16px; }
-  .topbar { padding:0 16px; }
-  .topbar-center { display:none; }
-  .form-grid { grid-template-columns:1fr; }
-  .stats-grid { grid-template-columns:1fr; }
-  .card { padding:20px; }
-}
+@media(max-width:1024px) { .main-wrap { grid-template-columns:1fr; } .sidebar { position:static; } .stats-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:640px)  { .main-wrap { padding:16px; } .topbar { padding:0 16px; } .topbar-center { display:none; } .form-grid { grid-template-columns:1fr; } .stats-grid { grid-template-columns:1fr; } .card { padding:20px; } }
 
 ::-webkit-scrollbar { width:6px; height:6px; }
 ::-webkit-scrollbar-track { background:transparent; }
@@ -456,14 +260,8 @@ tr:last-child td { border:none; }
     <div class="login-title">Accedi</div>
     <div class="login-sub">Gestione presenze dipendenti</div>
     <form id="loginForm" autocomplete="off">
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="loginEmail" placeholder="nome@azienda.com" autocomplete="username" required>
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" id="loginPwd" placeholder="••••••••" autocomplete="current-password" required>
-      </div>
+      <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="nome@azienda.com" autocomplete="username" required></div>
+      <div class="field"><label>Password</label><input type="password" id="loginPwd" placeholder="••••••••" autocomplete="current-password" required></div>
       <button type="submit" class="btn btn-accent btn-full" id="loginBtn" style="margin-top:8px;">Entra</button>
     </form>
   </div>
@@ -480,6 +278,7 @@ tr:last-child td { border:none; }
       <div class="user-chip">
         <div class="user-avatar" id="userAvatar">??</div>
         <span class="user-name" id="userName">—</span>
+        <span class="role-badge" id="roleBadge">—</span>
       </div>
       <button class="btn btn-ghost" id="logoutBtn" style="padding:7px 14px;font-size:0.82rem;">Esci</button>
     </div>
@@ -487,7 +286,6 @@ tr:last-child td { border:none; }
 
   <div class="main-wrap">
     <div>
-
       <div id="tabTimbrature" class="tab-content active">
         <div class="card">
           <div class="card-header">
@@ -496,28 +294,15 @@ tr:last-child td { border:none; }
           </div>
           <form id="timbraturaForm" autocomplete="off">
             <div class="form-grid">
-              <div class="field">
-                <label>Data *</label>
-                <input type="date" id="f_data" required>
-              </div>
-              <div class="field">
+              <div class="field"><label>Data *</label><input type="date" id="f_data" required></div>
+              <!-- select dipendente: visibile solo admin -->
+              <div class="field" id="fieldDip">
                 <label>Dipendente *</label>
-                <select id="f_dip" required>
-                  <option value="">Seleziona dipendente...</option>
-                </select>
+                <select id="f_dip" required><option value="">Seleziona...</option></select>
               </div>
-              <div class="field">
-                <label>Ora inizio *</label>
-                <input type="time" id="f_inizio" required>
-              </div>
-              <div class="field">
-                <label>Ora fine *</label>
-                <input type="time" id="f_fine" required>
-              </div>
-              <div class="field">
-                <label>Pausa (ore)</label>
-                <input type="number" id="f_pausa" value="0" min="0" max="8" step="0.5">
-              </div>
+              <div class="field"><label>Ora inizio *</label><input type="time" id="f_inizio" required></div>
+              <div class="field"><label>Ora fine *</label><input type="time" id="f_fine" required></div>
+              <div class="field"><label>Pausa (ore)</label><input type="number" id="f_pausa" value="0" min="0" max="8" step="0.5"></div>
               <div class="field">
                 <label>Tipo *</label>
                 <select id="f_tipo" required>
@@ -528,16 +313,8 @@ tr:last-child td { border:none; }
                 </select>
               </div>
             </div>
-            <div class="field form-grid col1">
-              <div class="field" style="margin-bottom:0;">
-                <label>Note</label>
-                <input type="text" id="f_note" placeholder="Opzionale…">
-              </div>
-            </div>
-            <div class="ore-preview" id="orePreview">
-              <span class="ore-label">Ore nette</span>
-              <span class="ore-value" id="oreVal">—</span>
-            </div>
+            <div class="field"><label>Note</label><input type="text" id="f_note" placeholder="Opzionale…"></div>
+            <div class="ore-preview" id="orePreview"><span class="ore-label">Ore nette</span><span class="ore-value" id="oreVal">—</span></div>
             <div class="existing-box" id="existingBox">
               <div class="existing-title">Registrazioni esistenti questo giorno</div>
               <div id="existingList"></div>
@@ -556,10 +333,14 @@ tr:last-child td { border:none; }
           </form>
         </div>
 
+        <!-- Filtri: dipendente visibile solo admin -->
         <div class="card" style="padding:20px 28px;">
           <div class="filters">
             <div class="field"><label>Filtra data</label><input type="date" id="fl_data"></div>
-            <div class="field"><label>Filtra dipendente</label><select id="fl_dip"><option value="">Tutti</option></select></div>
+            <div class="field admin-only" id="filterDipField">
+              <label>Filtra dipendente</label>
+              <select id="fl_dip"><option value="">Tutti</option></select>
+            </div>
             <div class="field">
               <label>Filtra tipo</label>
               <select id="fl_tipo">
@@ -580,17 +361,12 @@ tr:last-child td { border:none; }
             <span class="card-title">Storico Timbrature</span>
             <div style="display:flex;gap:8px;">
               <button class="btn btn-ghost" onclick="exportExcel()" style="font-size:0.8rem;padding:7px 14px;">Excel ↓</button>
-              <button class="btn btn-ghost" onclick="exportPDF()" style="font-size:0.8rem;padding:7px 14px;">Stampa</button>
+              <button class="btn btn-ghost" onclick="exportPDF()"   style="font-size:0.8rem;padding:7px 14px;">Stampa</button>
             </div>
           </div>
           <div class="tbl-wrap">
             <table>
-              <thead>
-                <tr>
-                  <th>Data</th><th>Dipendente</th><th>Orario</th>
-                  <th>Ore</th><th>Tipo</th><th>Note</th><th></th>
-                </tr>
-              </thead>
+              <thead><tr><th>Data</th><th>Dipendente</th><th>Orario</th><th>Ore</th><th>Tipo</th><th>Note</th><th></th></tr></thead>
               <tbody id="tabellaBody">
                 <tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><div class="empty-msg">Caricamento...</div></div></td></tr>
               </tbody>
@@ -610,7 +386,6 @@ tr:last-child td { border:none; }
           <div id="statsMonthly"></div>
         </div>
       </div>
-
     </div>
 
     <div class="sidebar">
@@ -629,7 +404,8 @@ tr:last-child td { border:none; }
         <div class="sw-val white" id="sw_tot">0</div>
         <div class="sw-sub">In archivio</div>
       </div>
-      <div class="stat-widget">
+      <!-- Ore per dipendente: solo admin -->
+      <div class="stat-widget admin-only" id="swDipWidget">
         <div class="sw-label">Dipendenti — Ore Totali</div>
         <div class="divider"></div>
         <div id="sw_dip"><div class="empty" style="padding:16px 0;"><div class="empty-msg">Nessun dato</div></div></div>
@@ -646,6 +422,26 @@ let dipendenti  = [];
 let currentUser = null;
 let editingId   = null;
 let blockSave   = false;
+
+// ── helpers ruolo ──────────────────────────────────────────
+function isAdmin() { return currentUser?.ruolo === 'admin'; }
+
+// Applica restrizioni UI in base al ruolo
+function applyRoleUI() {
+  const admin = isAdmin();
+
+  // Badge ruolo in topbar
+  const rb = document.getElementById('roleBadge');
+  rb.textContent = admin ? 'Admin' : 'Dipendente';
+  rb.className   = 'role-badge ' + (admin ? 'role-admin' : 'role-dip');
+
+  // Select dipendente nel form: admin → visibile, dipendente → nascosta
+  document.getElementById('fieldDip').style.display      = admin ? '' : 'none';
+  // Filtro dipendente: admin → visibile, dipendente → nascosto
+  document.getElementById('filterDipField').style.display = admin ? '' : 'none';
+  // Widget ore dipendenti in sidebar: solo admin
+  document.getElementById('swDipWidget').style.display   = admin ? '' : 'none';
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   setupFormListeners();
@@ -664,11 +460,9 @@ function setupAuthListeners() {
     const email = document.getElementById('loginEmail').value.trim();
     const pwd   = document.getElementById('loginPwd').value;
     const btn   = document.getElementById('loginBtn');
-    btn.innerHTML = '<span class="spin"></span>';
-    btn.disabled  = true;
+    btn.innerHTML = '<span class="spin"></span>'; btn.disabled = true;
     const res = await api('login', { email, password: pwd });
-    btn.innerHTML = 'Entra';
-    btn.disabled  = false;
+    btn.innerHTML = 'Entra'; btn.disabled = false;
     if (res.success) {
       currentUser = res.user;
       localStorage.setItem('tt_user', JSON.stringify(currentUser));
@@ -690,6 +484,7 @@ function showApp() {
     document.getElementById('userAvatar').textContent = currentUser.nome.charAt(0).toUpperCase();
     document.getElementById('userName').textContent   = currentUser.nome.split(' ')[0];
   }
+  applyRoleUI();
 }
 
 function showLogin() {
@@ -714,14 +509,28 @@ async function loadData() {
   try {
     const [usersRes, entriesRes] = await Promise.all([api('get_users'), api('get')]);
     if (usersRes.success)   { dipendenti = usersRes.users || []; populateSelects(); }
-    if (entriesRes.success) { timbrature = entriesRes.data || []; renderTabella(); renderSidebar(); renderStats(); checkExisting(); }
+    if (entriesRes.success) {
+      // Dipendente vede solo le proprie timbrature
+      const all = entriesRes.data || [];
+      timbrature = isAdmin() ? all : all.filter(t => t.userId === currentUser.id);
+      renderTabella(); renderSidebar(); renderStats(); checkExisting();
+    }
   } finally { hideLoader(); }
 }
 
 function populateSelects() {
-  const opts = dipendenti.map(d => `<option value="${d.id}">${d.nome.trim()}</option>`).join('');
-  document.getElementById('f_dip').innerHTML  = '<option value="">Seleziona dipendente...</option>' + opts;
-  document.getElementById('fl_dip').innerHTML = '<option value="">Tutti</option>' + opts;
+  if (isAdmin()) {
+    // Admin: vede tutti i dipendenti
+    const opts = dipendenti.map(d => `<option value="${d.id}">${d.nome.trim()}</option>`).join('');
+    document.getElementById('f_dip').innerHTML  = '<option value="">Seleziona...</option>' + opts;
+    document.getElementById('fl_dip').innerHTML = '<option value="">Tutti</option>' + opts;
+  } else {
+    // Dipendente: select pre-impostata su se stesso, non modificabile
+    const me = dipendenti.find(d => d.id === currentUser.id);
+    if (me) {
+      document.getElementById('f_dip').innerHTML = `<option value="${me.id}" selected>${me.nome.trim()}</option>`;
+    }
+  }
 }
 
 function setupFormListeners() {
@@ -755,7 +564,7 @@ function updateOrePreview() {
 
 function checkExisting() {
   const data   = document.getElementById('f_data').value;
-  const userId = document.getElementById('f_dip').value;
+  const userId = isAdmin() ? document.getElementById('f_dip').value : currentUser.id;
   const box    = document.getElementById('existingBox');
   const list   = document.getElementById('existingList');
   if (!data || !userId) { box.classList.remove('visible'); return; }
@@ -770,7 +579,7 @@ function checkOverlap() {
   const data   = document.getElementById('f_data').value;
   const inizio = document.getElementById('f_inizio').value;
   const fine   = document.getElementById('f_fine').value;
-  const userId = document.getElementById('f_dip').value;
+  const userId = isAdmin() ? document.getElementById('f_dip').value : currentUser.id;
   const tipo   = document.getElementById('f_tipo').value;
   const alert_el = document.getElementById('overlapAlert');
   const desc_el  = document.getElementById('overlapDesc');
@@ -782,19 +591,15 @@ function checkOverlap() {
   }
 
   if (!data || !inizio || !fine || !userId) { clearBlock(); return; }
-
   const iMin = timeToMinutes(inizio);
   const fMin = timeToMinutes(fine);
-
   if (fMin <= iMin) {
     blockSave = true;
     desc_el.textContent = `L'ora di fine (${fine}) deve essere successiva all'ora di inizio (${inizio}).`;
     alert_el.classList.add('visible'); btnSalva.disabled = true; btnSalva.innerHTML = '⛔ Orario non valido'; btnSalva.className = 'btn btn-ghost';
     return;
   }
-
   if (tipo !== 'work') { clearBlock(); return; }
-
   const collisione = trovaSovrapposizione(userId, data, inizio, fine, editingId);
   if (collisione) {
     blockSave = true;
@@ -821,7 +626,7 @@ function trovaSovrapposizione(userId, data, inizio, fine, excludeId) {
 async function salva() {
   if (blockSave) return;
   const data   = document.getElementById('f_data').value;
-  const userId = document.getElementById('f_dip').value;
+  const userId = isAdmin() ? document.getElementById('f_dip').value : currentUser.id;
   const inizio = document.getElementById('f_inizio').value;
   const fine   = document.getElementById('f_fine').value;
   const tipo   = document.getElementById('f_tipo').value;
@@ -858,9 +663,11 @@ async function salva() {
 function modificaEntry(id) {
   const t = timbrature.find(x => x.id === id);
   if (!t) return;
+  // Dipendente può modificare solo le proprie
+  if (!isAdmin() && t.userId !== currentUser.id) { toast('Non puoi modificare timbrature altrui', 'error'); return; }
   editingId = id; blockSave = false;
   document.getElementById('f_data').value   = t.data;
-  document.getElementById('f_dip').value    = t.userId;
+  if (isAdmin()) document.getElementById('f_dip').value = t.userId;
   document.getElementById('f_inizio').value = t.inizio;
   document.getElementById('f_fine').value   = t.fine;
   document.getElementById('f_tipo').value   = t.tipo || 'work';
@@ -880,17 +687,15 @@ function modificaEntry(id) {
 function eliminaEntry(id) {
   const t = timbrature.find(x => x.id === id);
   if (!t) return;
+  // Dipendente può eliminare solo le proprie
+  if (!isAdmin() && t.userId !== currentUser.id) { toast('Non puoi eliminare timbrature altrui', 'error'); return; }
   const dip = dipendenti.find(d => d.id === t.userId);
   document.getElementById('modalBody').textContent = `Eliminare la timbratura di ${dip?.nome || '—'} del ${fmtDate(t.data)} (${t.inizio}–${t.fine})?`;
   document.getElementById('modalConfirmBtn').onclick = async () => {
     closeModal();
     const res = await api('delete', { id });
     if (res.success) { toast('Timbratura eliminata', 'success'); await loadData(); }
-    else {
-      timbrature = timbrature.filter(x => x.id !== id);
-      renderTabella(); renderSidebar();
-      toast('Eliminata', 'success');
-    }
+    else { timbrature = timbrature.filter(x => x.id !== id); renderTabella(); renderSidebar(); toast('Eliminata', 'success'); }
   };
   document.getElementById('modalOverlay').classList.add('open');
 }
@@ -900,6 +705,11 @@ function closeModal() { document.getElementById('modalOverlay').classList.remove
 function resetForm() {
   document.getElementById('timbraturaForm').reset();
   document.getElementById('f_data').valueAsDate = new Date();
+  // Re-imposta select dipendente per non-admin
+  if (!isAdmin()) {
+    const me = dipendenti.find(d => d.id === currentUser.id);
+    if (me) document.getElementById('f_dip').value = me.id;
+  }
   editingId = null; blockSave = false;
   document.getElementById('formTitle').textContent    = 'Nuova Timbratura';
   document.getElementById('formBadge').textContent    = 'INSERIMENTO';
@@ -915,11 +725,11 @@ function resetForm() {
 
 function renderTabella() {
   const fl_data = document.getElementById('fl_data').value;
-  const fl_dip  = document.getElementById('fl_dip').value;
+  const fl_dip  = isAdmin() ? document.getElementById('fl_dip').value : currentUser.id;
   const fl_tipo = document.getElementById('fl_tipo').value;
   let rows = [...timbrature].sort((a,b) => { if (a.data !== b.data) return b.data.localeCompare(a.data); return (a.inizio||'').localeCompare(b.inizio||''); });
   if (fl_data) rows = rows.filter(t => t.data === fl_data);
-  if (fl_dip)  rows = rows.filter(t => t.userId === fl_dip);
+  if (fl_dip && isAdmin()) rows = rows.filter(t => t.userId === fl_dip);
   if (fl_tipo) rows = rows.filter(t => t.tipo === fl_tipo);
   const tbody = document.getElementById('tabellaBody');
   if (rows.length === 0) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-msg">Nessuna timbratura trovata</div></div></td></tr>`; return; }
@@ -927,6 +737,7 @@ function renderTabella() {
   tbody.innerHTML = rows.map(t => {
     const dip  = dipendenti.find(d => d.id === t.userId);
     const nome = dip ? dip.nome.trim() : t.nome || '—';
+    const canEdit = isAdmin() || t.userId === currentUser.id;
     return `<tr>
       <td class="td-date">${fmtDate(t.data)}</td>
       <td class="td-name">${nome}</td>
@@ -935,8 +746,8 @@ function renderTabella() {
       <td><span class="badge badge-${t.tipo||'work'}">${tipoLabel[t.tipo]||t.tipo}</span></td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.note||''}">${t.note||'—'}</td>
       <td><div style="display:flex;gap:6px;">
-        <button class="icon-btn icon-edit" onclick="modificaEntry('${t.id}')" title="Modifica">✏️</button>
-        <button class="icon-btn icon-del"  onclick="eliminaEntry('${t.id}')"  title="Elimina">🗑</button>
+        ${canEdit ? `<button class="icon-btn icon-edit" onclick="modificaEntry('${t.id}')" title="Modifica">✏️</button>
+        <button class="icon-btn icon-del" onclick="eliminaEntry('${t.id}')" title="Elimina">🗑</button>` : ''}
       </div></td>
     </tr>`;
   }).join('');
@@ -944,7 +755,7 @@ function renderTabella() {
 
 function clearFiltri() {
   document.getElementById('fl_data').value = '';
-  document.getElementById('fl_dip').value  = '';
+  if (isAdmin()) document.getElementById('fl_dip').value = '';
   document.getElementById('fl_tipo').value = '';
   renderTabella();
 }
@@ -962,6 +773,7 @@ function renderSidebar() {
   document.getElementById('sw_mese').textContent   = oreMese.toFixed(2) + 'h';
   document.getElementById('sw_mese_n').textContent = meseRows.length + ' registraz.';
   document.getElementById('sw_tot').textContent    = timbrature.length;
+  if (!isAdmin()) return;
   const byDip = {};
   timbrature.forEach(t => {
     if (!byDip[t.userId]) byDip[t.userId] = { ore:0, giorni:new Set() };
@@ -969,9 +781,8 @@ function renderSidebar() {
     byDip[t.userId].giorni.add(t.data);
   });
   const html = Object.entries(byDip).sort((a,b) => b[1].ore - a[1].ore).map(([id, s]) => {
-    const dip  = dipendenti.find(d => d.id === id);
-    const nome = dip ? dip.nome.trim() : '—';
-    return `<div class="dip-row"><span class="dip-name">${nome}</span><span class="dip-ore">${s.ore.toFixed(1)}h</span><span class="dip-gg">${s.giorni.size}gg</span></div>`;
+    const dip = dipendenti.find(d => d.id === id);
+    return `<div class="dip-row"><span class="dip-name">${dip ? dip.nome.trim() : '—'}</span><span class="dip-ore">${s.ore.toFixed(1)}h</span><span class="dip-gg">${s.giorni.size}gg</span></div>`;
   }).join('');
   document.getElementById('sw_dip').innerHTML = html || '<div class="empty" style="padding:12px 0;"><div class="empty-msg">Nessun dato</div></div>';
 }
@@ -1000,9 +811,8 @@ function renderStats() {
     : `<div class="tbl-wrap"><table><thead><tr><th>Dipendente</th><th>Giorni</th><th>Ore Lavoro</th><th>Straordinari</th><th>Ferie</th><th>Malattia</th><th>Totale</th></tr></thead><tbody>
       ${Object.entries(byDip).map(([id,s]) => {
         const dip = dipendenti.find(d => d.id === id);
-        const nome = dip ? dip.nome.trim() : '—';
         const tot = (s.work||0)+(s.extra||0)+(s.ferie||0)+(s.malattia||0);
-        return `<tr><td class="td-name">${nome}</td><td>${s.giorni.size}</td><td class="td-ore">${(s.work||0).toFixed(2)}h</td><td style="color:var(--accent2);font-family:var(--mono);">${(s.extra||0).toFixed(2)}h</td><td style="color:#7b9fff;font-family:var(--mono);">${(s.ferie||0).toFixed(2)}h</td><td style="color:var(--warning);font-family:var(--mono);">${(s.malattia||0).toFixed(2)}h</td><td class="td-ore">${tot.toFixed(2)}h</td></tr>`;
+        return `<tr><td class="td-name">${dip ? dip.nome.trim() : '—'}</td><td>${s.giorni.size}</td><td class="td-ore">${(s.work||0).toFixed(2)}h</td><td style="color:var(--accent2);font-family:var(--mono);">${(s.extra||0).toFixed(2)}h</td><td style="color:#7b9fff;font-family:var(--mono);">${(s.ferie||0).toFixed(2)}h</td><td style="color:var(--warning);font-family:var(--mono);">${(s.malattia||0).toFixed(2)}h</td><td class="td-ore">${tot.toFixed(2)}h</td></tr>`;
       }).join('')}
     </tbody></table></div>`;
   const mesi = [];
@@ -1047,20 +857,15 @@ function exportExcel() {
 
 function exportPDF() { window.print(); }
 
-function timeToMinutes(str) {
-  if (!str || typeof str !== 'string') return 0;
-  const [h, m] = str.split(':').map(Number);
-  return (h || 0) * 60 + (m || 0);
-}
-
+function timeToMinutes(str) { if (!str || typeof str !== 'string') return 0; const [h, m] = str.split(':').map(Number); return (h||0)*60+(m||0); }
 function sum(arr) { return arr.reduce((s, t) => s + (t.ore || 0), 0); }
 function todayISO() { return new Date().toISOString().split('T')[0]; }
 function fmtDate(iso) { if (!iso) return '—'; const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; }
 
 function toast(msg, type = 'success') {
-  const wrap  = document.getElementById('toastWrap');
+  const wrap = document.getElementById('toastWrap');
   const icons = { success:'✅', error:'❌', warning:'⚠️' };
-  const el    = document.createElement('div');
+  const el = document.createElement('div');
   el.className = `toast ${type}`;
   el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span>`;
   wrap.appendChild(el);
@@ -1082,6 +887,5 @@ window.exportExcel   = exportExcel;
 window.exportPDF     = exportPDF;
 window.closeModal    = closeModal;
 </script>
-
 </body>
 </html>
