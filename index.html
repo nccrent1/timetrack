@@ -911,7 +911,8 @@ function exportExcel(){
   if(!timbrature.length){toast('Nessun dato','warning');return;}
   var rows=getTimbratureFiltrate().map(function(t){
     var d=dipendenti.find(function(x){return String(x.id)===String(t.userId);});
-    return{Data:t.data,Dipendente:d?d.nome.trim():'—',Inizio:t.inizio,Fine:t.fine,Ore:Number(Number(t.ore||0).toFixed(4)),Tipo:t.tipo,Note:t.note||''};
+    var oreVal=(t.tipo==='ferie'||t.tipo==='malattia')?0:Number(Number(t.ore||0).toFixed(4));
+    return{Data:t.data,Dipendente:d?d.nome.trim():'—',Inizio:t.inizio||'',Fine:t.fine||'',Ore:oreVal,Tipo:t.tipo,Note:t.note||''};
   });
   var ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Timbrature');
