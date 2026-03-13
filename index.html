@@ -683,7 +683,7 @@ function onTipoChange() {
   var pausa  = document.getElementById('f_pausa');
   if (tipo === 'ferie' || tipo === 'malattia') {
     inizio.value = '00:00';
-    fine.value   = '08:00';
+    fine.value   = '00:00';
     inizio.disabled = true;
     fine.disabled   = true;
     pausa.value = '0';
@@ -698,7 +698,7 @@ function onTipoChange() {
     inizio.style.opacity = '';
     fine.style.opacity   = '';
     pausa.style.opacity  = '';
-    if (inizio.value === '00:00' && fine.value === '08:00') {
+    if (inizio.value === '00:00' && fine.value === '00:00') {
       inizio.value = '';
       fine.value   = '';
     }
@@ -787,8 +787,8 @@ async function salva() {
   if (!data||!userId||!inizio||!fine){toast('Compila tutti i campi obbligatori','warning');return;}
   var ore;
   if (tipo==='ferie'||tipo==='malattia') {
-    ore = 8;
-    inizio = '00:00'; fine = '08:00';
+    ore = 0;
+    inizio = '00:00'; fine = '00:00';
   } else {
     var iMin=t2m(inizio), fMin=t2m(fine);
     if(fMin<iMin) fMin+=1440; // turno notturno
