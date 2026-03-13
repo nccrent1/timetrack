@@ -280,7 +280,7 @@ tr:last-child td{border:none}
             <div class="field"><label>Ora fine *</label><input type="time" id="f_fine" onchange="onFormChange()" oninput="onFormChange()"></div>
             <div class="field"><label>Pausa (ore)</label><input type="number" id="f_pausa" value="0" min="0" max="8" step="0.5" onchange="onFormChange()"></div>
             <div class="field"><label>Tipo *</label>
-              <select id="f_tipo" onchange="onFormChange()">
+              <select id="f_tipo" onchange="onTipoChange()">
                 <option value="work">Lavoro Ordinario</option>
                 <option value="straordinario">Straordinario</option>
                 <option value="ferie">Ferie</option>
@@ -676,6 +676,36 @@ function renderStats() {
 }
 
 // ── FORM ─────────────────────────────────
+function onTipoChange() {
+  var tipo = document.getElementById('f_tipo').value;
+  var inizio = document.getElementById('f_inizio');
+  var fine   = document.getElementById('f_fine');
+  var pausa  = document.getElementById('f_pausa');
+  if (tipo === 'ferie' || tipo === 'malattia') {
+    inizio.value = '00:00';
+    fine.value   = '08:00';
+    inizio.disabled = true;
+    fine.disabled   = true;
+    pausa.value = '0';
+    pausa.disabled  = true;
+    inizio.style.opacity = '0.4';
+    fine.style.opacity   = '0.4';
+    pausa.style.opacity  = '0.4';
+  } else {
+    inizio.disabled = false;
+    fine.disabled   = false;
+    pausa.disabled  = false;
+    inizio.style.opacity = '';
+    fine.style.opacity   = '';
+    pausa.style.opacity  = '';
+    if (inizio.value === '00:00' && fine.value === '08:00') {
+      inizio.value = '';
+      fine.value   = '';
+    }
+  }
+  onFormChange();
+}
+
 function onFormChange() { updateOrePreview(); checkExisting(); checkOverlap(); }
 
 function getFormUserId() {
@@ -755,11 +785,17 @@ async function salva() {
   var pausa  = parseFloat(document.getElementById('f_pausa').value)||0;
   var note   = document.getElementById('f_note').value.trim();
   if (!data||!userId||!inizio||!fine){toast('Compila tutti i campi obbligatori','warning');return;}
-  var iMin=t2m(inizio), fMin=t2m(fine);
-  if(fMin<iMin) fMin+=1440; // turno notturno
-  var totMin = fMin-iMin;
-  if (totMin<=0){toast('Orario non valido','error');return;}
-  var ore    = Math.max(0,totMin/60-pausa);
+  var ore;
+  if (tipo==='ferie'||tipo==='malattia') {
+    ore = 8;
+    inizio = '00:00'; fine = '08:00';
+  } else {
+    var iMin=t2m(inizio), fMin=t2m(fine);
+    if(fMin<iMin) fMin+=1440; // turno notturno
+    var totMin = fMin-iMin;
+    if (totMin<=0){toast('Orario non valido','error');return;}
+    ore = Math.max(0,totMin/60-pausa);
+  }
   var dip    = dipendenti.find(function(d){return String(d.id)===String(userId);});
   var nome   = dip?dip.nome.trim():'';
   var params = {userId:userId,nome:nome,data:data,tipo:tipo,inizio:inizio,fine:fine,ore:ore.toFixed(4)};
@@ -820,6 +856,10 @@ function resetForm(){
   document.getElementById('f_inizio').value='';
   document.getElementById('f_fine').value='';
   document.getElementById('f_tipo').value='work';
+  ['f_inizio','f_fine','f_pausa'].forEach(function(id){
+    var el=document.getElementById(id);
+    el.disabled=false; el.style.opacity='';
+  });
   document.getElementById('f_pausa').value='0';
   document.getElementById('f_note').value='';
   editingId=null;blockSave=false;
