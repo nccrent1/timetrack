@@ -935,11 +935,12 @@ function resetForm() {
 // ════════════════════════════════════════
 function renderTabella() {
   const fd  = document.getElementById('fl_data').value;
-  const fdi = isAdmin() ? document.getElementById('fl_dip').value : '';
+  const fdi = isAdmin() ? document.getElementById('fl_dip').value.trim() : String(currentUser.id);
   const ft  = document.getElementById('fl_tipo').value;
   let rows  = [...timbrature].sort((a,b)=>{ if(a.data!==b.data) return b.data.localeCompare(a.data); return (a.inizio||'').localeCompare(b.inizio||''); });
   if (fd)  rows = rows.filter(t=>t.data===fd);
-  if (fdi) rows = rows.filter(t=>t.userId===fdi);
+  if (fdi && isAdmin()) rows = rows.filter(t=>String(t.userId)===String(fdi));
+  else if (!isAdmin())  rows = rows.filter(t=>String(t.userId)===String(currentUser.id));
   if (ft)  rows = rows.filter(t=>t.tipo===ft);
   const tbody = document.getElementById('tabellaBody');
   if (!rows.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-msg">Nessuna timbratura trovata</div></div></td></tr>`; return; }
@@ -963,6 +964,7 @@ function renderTabella() {
 }
 
 function applicaFiltri() {
+  if (!currentUser) return;
   renderTabella();
   renderSidebar();
   renderStats();
@@ -979,9 +981,10 @@ function clearFiltri() {
 // SIDEBAR
 // ════════════════════════════════════════
 function getFiltroDip() {
-  if (!isAdmin()) return currentUser.id;
+  if (!currentUser) return '';
+  if (!isAdmin()) return String(currentUser.id);
   const el = document.getElementById('fl_dip');
-  return el ? el.value : '';
+  return el ? el.value.trim() : '';
 }
 
 function renderSidebar() {
@@ -1002,7 +1005,7 @@ function renderSidebar() {
   document.getElementById('sw_dip').innerHTML = Object.entries(byD).sort((a,b)=>b[1].ore-a[1].ore).map(([id,s])=>{
     const d=dipendenti.find(x=>x.id===id);
     return `<div class="dip-row"><span class="dip-name">${d?d.nome.trim():'—'}</span><span class="dip-ore">${s.ore.toFixed(1)}h</span><span class="dip-gg">${s.gg.size}gg</span></div>`;
-  }).join('')||\`<div class="empty" style="padding:10px 0;"><div class="empty-msg">Nessun dato</div></div>\`;
+  }).join("")||'<div class="empty" style="padding:10px 0;"><div class="empty-msg">Nessun dato</div></div>';
 }
 
 // ════════════════════════════════════════
@@ -1012,7 +1015,7 @@ function renderStats() {
   const mese=new Date().getMonth(), anno=new Date().getFullYear();
   const meseTxt=new Date().toLocaleString('it-IT',{month:'long',year:'numeric'});
   const filtroDip = getFiltroDip();
-  const tFiltrate = filtroDip ? timbrature.filter(t=>t.userId===filtroDip) : timbrature;
+  const tFiltrate = (filtroDip && isAdmin()) ? timbrature.filter(t=>String(t.userId)===String(filtroDip)) : (!isAdmin() ? timbrature.filter(t=>String(t.userId)===String(currentUser.id)) : timbrature);
   const mR=tFiltrate.filter(t=>{ const d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
   const ow=sum(mR.filter(t=>t.tipo==='work')), oe=sum(mR.filter(t=>t.tipo==='straordinario'));
   const gg=new Set(mR.map(t=>t.data)).size;
