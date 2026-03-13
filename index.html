@@ -626,6 +626,7 @@ async function doLogin() {
   btn.innerHTML = 'Entra'; btn.disabled = false;
   if (res.success) {
     currentUser = res.user;
+    currentUser.ruolo = (currentUser.ruolo || "dipendente").toString().toLowerCase().trim();
     localStorage.setItem('tt_user', JSON.stringify(currentUser));
     toast('Benvenuto ' + currentUser.nome, 'success');
     showApp(); loadData();
@@ -687,7 +688,10 @@ function showApp() {
   document.getElementById('f_data').valueAsDate = new Date();
 }
 
-function isAdmin() { return currentUser?.ruolo === 'admin'; }
+function isAdmin() {
+  const r = (currentUser?.ruolo || '').toString().toLowerCase().trim();
+  return r === 'admin';
+}
 
 // ════════════════════════════════════════
 // CARICAMENTO DATI
