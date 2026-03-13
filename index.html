@@ -713,11 +713,13 @@ function getFormUserId() {
 }
 
 function updateOrePreview() {
+  var tipo   = document.getElementById('f_tipo').value;
   var inizio = document.getElementById('f_inizio').value;
   var fine   = document.getElementById('f_fine').value;
   var pausa  = parseFloat(document.getElementById('f_pausa').value)||0;
   var prev   = document.getElementById('orePreview');
   var val    = document.getElementById('oreVal');
+  if (tipo==='ferie'||tipo==='malattia'){val.textContent='0.00h';prev.className='ore-preview ok';return;}
   if (!inizio||!fine){val.textContent='—';prev.className='ore-preview';return;}
   var iMin2=t2m(inizio), fMin2=t2m(fine);
   if(fMin2<iMin2) fMin2+=1440; // turno notturno
@@ -752,9 +754,10 @@ function checkOverlap() {
   var desc   = document.getElementById('overlapDesc');
   var btn    = document.getElementById('btnSalva');
   function clear(){blockSave=false;al.classList.remove('visible');btn.disabled=false;btn.innerHTML=editingId?'Aggiorna':'Salva';btn.className='btn btn-accent';}
-  if (!data||!inizio||!fine||!userId){clear();return;}
+  if (!data||!userId){clear();return;}
+  if (tipo==='ferie'||tipo==='malattia'){clear();return;}
+  if (!inizio||!fine){clear();return;}
   var iM=t2m(inizio),fM=t2m(fine);
-  var notturno=(fM<iM); // fine < inizio = turno notturno, non errore
   if (fM===iM){blockSave=true;desc.textContent='Inizio e fine coincidono.';al.classList.add('visible');btn.disabled=true;btn.innerHTML='⛔ Orario non valido';btn.className='btn btn-ghost';return;}
   if (tipo!=='work'){clear();return;}
   var hit=findOverlap(userId,data,inizio,fine,editingId);
