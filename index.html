@@ -452,14 +452,14 @@ tr:last-child td { border:none; }
         <!-- FILTRI -->
         <div class="card" style="padding:18px 24px;">
           <div class="filters">
-            <div class="field"><label>Data</label><input type="date" id="fl_data"></div>
+            <div class="field"><label>Data</label><input type="date" id="fl_data" onchange="applicaFiltri()"></div>
             <div class="field" id="fl_dip_wrap">
               <label>Dipendente</label>
-              <select id="fl_dip"><option value="">Tutti</option></select>
+              <select id="fl_dip" onchange="applicaFiltri()"><option value="">Tutti</option></select>
             </div>
             <div class="field">
               <label>Tipo</label>
-              <select id="fl_tipo">
+              <select id="fl_tipo" onchange="applicaFiltri()">
                 <option value="">Tutti</option>
                 <option value="work">Lavoro</option>
                 <option value="straordinario">Straordinario</option>
@@ -467,7 +467,7 @@ tr:last-child td { border:none; }
                 <option value="malattia">Malattia</option>
               </select>
             </div>
-            <button class="btn btn-ghost" onclick="renderTabella()" style="align-self:flex-end;">Applica</button>
+            <button class="btn btn-ghost" onclick="applicaFiltri()" style="align-self:flex-end;">Applica</button>
             <button class="btn btn-ghost" onclick="clearFiltri()" style="align-self:flex-end;">Reset</button>
           </div>
         </div>
@@ -962,32 +962,47 @@ function renderTabella() {
   }).join('');
 }
 
+function applicaFiltri() {
+  renderTabella();
+  renderSidebar();
+  renderStats();
+}
+
 function clearFiltri() {
   document.getElementById('fl_data').value='';
   if (isAdmin()) document.getElementById('fl_dip').value='';
   document.getElementById('fl_tipo').value='';
-  renderTabella();
+  applicaFiltri();
 }
 
 // ════════════════════════════════════════
 // SIDEBAR
 // ════════════════════════════════════════
+function getFiltroDip() {
+  if (!isAdmin()) return currentUser.id;
+  const el = document.getElementById('fl_dip');
+  return el ? el.value : '';
+}
+
 function renderSidebar() {
   const oggi=todayISO(), mese=new Date().getMonth(), anno=new Date().getFullYear();
-  const oR=timbrature.filter(t=>t.data===oggi);
-  const mR=timbrature.filter(t=>{ const d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
+  const filtroDip = getFiltroDip();
+  const tFiltrate = filtroDip ? timbrature.filter(t=>t.userId===filtroDip) : timbrature;
+
+  const oR=tFiltrate.filter(t=>t.data===oggi);
+  const mR=tFiltrate.filter(t=>{ const d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
   document.getElementById('sw_oggi').textContent   = sum(oR).toFixed(2)+'h';
   document.getElementById('sw_oggi_n').textContent = oR.length+' registraz.';
   document.getElementById('sw_mese').textContent   = sum(mR).toFixed(2)+'h';
   document.getElementById('sw_mese_n').textContent = mR.length+' registraz.';
-  document.getElementById('sw_tot').textContent    = timbrature.length;
+  document.getElementById('sw_tot').textContent    = tFiltrate.length;
   if (!isAdmin()) return;
   const byD={};
-  timbrature.forEach(t=>{ if(!byD[t.userId]) byD[t.userId]={ore:0,gg:new Set()}; byD[t.userId].ore+=t.ore||0; byD[t.userId].gg.add(t.data); });
+  tFiltrate.forEach(t=>{ if(!byD[t.userId]) byD[t.userId]={ore:0,gg:new Set()}; byD[t.userId].ore+=t.ore||0; byD[t.userId].gg.add(t.data); });
   document.getElementById('sw_dip').innerHTML = Object.entries(byD).sort((a,b)=>b[1].ore-a[1].ore).map(([id,s])=>{
     const d=dipendenti.find(x=>x.id===id);
     return `<div class="dip-row"><span class="dip-name">${d?d.nome.trim():'—'}</span><span class="dip-ore">${s.ore.toFixed(1)}h</span><span class="dip-gg">${s.gg.size}gg</span></div>`;
-  }).join('')||'<div class="empty" style="padding:10px 0;"><div class="empty-msg">Nessun dato</div></div>';
+  }).join('')||\`<div class="empty" style="padding:10px 0;"><div class="empty-msg">Nessun dato</div></div>\`;
 }
 
 // ════════════════════════════════════════
@@ -996,7 +1011,9 @@ function renderSidebar() {
 function renderStats() {
   const mese=new Date().getMonth(), anno=new Date().getFullYear();
   const meseTxt=new Date().toLocaleString('it-IT',{month:'long',year:'numeric'});
-  const mR=timbrature.filter(t=>{ const d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
+  const filtroDip = getFiltroDip();
+  const tFiltrate = filtroDip ? timbrature.filter(t=>t.userId===filtroDip) : timbrature;
+  const mR=tFiltrate.filter(t=>{ const d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
   const ow=sum(mR.filter(t=>t.tipo==='work')), oe=sum(mR.filter(t=>t.tipo==='straordinario'));
   const gg=new Set(mR.map(t=>t.data)).size;
   document.getElementById('statsGrid').innerHTML=`
@@ -1029,7 +1046,7 @@ function renderStats() {
   for(let i=0;i<6;i++){ const d=new Date(anno,mese-i,1); mesi.push({m:d.getMonth(),y:d.getFullYear(),label:d.toLocaleString('it-IT',{month:'long',year:'numeric'})}); }
   document.getElementById('statsMonthly').innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Mese</th><th>Registrazioni</th><th>Ore Lavoro</th><th>Straord.</th><th>Totale</th></tr></thead><tbody>
     ${mesi.map(({m,y,label})=>{
-      const rows=timbrature.filter(t=>{const d=new Date(t.data);return d.getMonth()===m&&d.getFullYear()===y;});
+      const rows=tFiltrate.filter(t=>{const d=new Date(t.data);return d.getMonth()===m&&d.getFullYear()===y;});
       const rw=sum(rows.filter(t=>t.tipo==='work')), re=sum(rows.filter(t=>t.tipo==='straordinario'));
       return `<tr><td class="td-name">${label}</td><td>${rows.length}</td><td class="td-ore">${rw.toFixed(2)}h</td><td style="color:var(--accent2);font-family:var(--mono);">${re.toFixed(2)}h</td><td class="td-ore">${(rw+re).toFixed(2)}h</td></tr>`;
     }).join('')}
@@ -1183,6 +1200,7 @@ function stampaReport() {
   window.print();
 }
 window.stampaReport = stampaReport;
+window.applicaFiltri = applicaFiltri;
 </script>
 </body>
 </html>
