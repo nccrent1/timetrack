@@ -715,11 +715,18 @@ function populateSelects() {
     const opts = dipendenti.map(d => `<option value="${d.id}">${d.nome.trim()}</option>`).join('');
     document.getElementById('f_dip').innerHTML  = '<option value="">Seleziona...</option>' + opts;
     document.getElementById('fl_dip').innerHTML = '<option value="">Tutti</option>' + opts;
+    // Listener su select form dipendente — sincronizza filtro e aggiorna tutto
+    const selDip = document.getElementById('f_dip');
+    selDip.onchange = function() {
+      const fl = document.getElementById('fl_dip');
+      if (fl) fl.value = this.value;
+      applicaFiltri();
+      onFormChange();
+    };
   } else {
-    // Dipendente: select nascosta, valore fisso
     const me = dipendenti.find(d => d.id === currentUser.id);
     if (me) {
-      document.getElementById('f_dip').innerHTML = `<option value="${me.id}" selected>${me.nome.trim()}</option>`;
+      document.getElementById('f_dip').innerHTML = '<option value="'+me.id+'" selected>'+me.nome.trim()+'</option>';
     }
   }
 }
@@ -728,7 +735,7 @@ function populateSelects() {
 // FORM LISTENERS
 // ════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  ['f_data','f_dip','f_inizio','f_fine','f_pausa','f_tipo'].forEach(id => {
+  ['f_data','f_inizio','f_fine','f_pausa','f_tipo'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.addEventListener('change', onFormChange); el.addEventListener('input', onFormChange); }
   });
