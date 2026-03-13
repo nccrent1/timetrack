@@ -1099,11 +1099,10 @@ window.salva=salva;
   #printArea {
     display: block !important;
     position: fixed; inset: 0;
-    background: white;
-    color: black;
-    font-family: 'Arial', sans-serif;
-    font-size: 11px;
-    padding: 20mm 15mm;
+    background: white; color: black;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    padding: 8mm 10mm;
     z-index: 99999;
   }
 }
@@ -1116,7 +1115,6 @@ window.salva=salva;
 function stampaReport() {
   if (!timbrature.length) { toast('Nessun dato da stampare', 'warning'); return; }
 
-  // Raggruppa per data
   const byData = {};
   const sorted = [...timbrature].sort((a,b) => a.data.localeCompare(b.data));
   sorted.forEach(t => {
@@ -1124,7 +1122,7 @@ function stampaReport() {
     byData[t.data].push(t);
   });
 
-  const tipoLabel = { work:'Lavoro', straordinario:'Straord.', ferie:'Ferie', malattia:'Malattia' };
+  const tipoLabel = { work:'Lav.', straordinario:'Str.', ferie:'Fer.', malattia:'Mal.' };
   const mese = new Date().toLocaleString('it-IT', { month: 'long', year: 'numeric' });
   const nomeUtente = currentUser ? currentUser.nome : '';
   const totMese = timbrature.reduce((s,t) => s + (t.ore||0), 0);
@@ -1133,67 +1131,58 @@ function stampaReport() {
   Object.entries(byData).forEach(([data, entries]) => {
     const totGiorno = entries.reduce((s,t) => s + (t.ore||0), 0);
     const [y,m,d] = data.split('-');
-    const dataFmt = `${d}/${m}/${y}`;
-
+    const dataFmt = `${d}/${m}`;
     entries.sort((a,b) => (a.inizio||'').localeCompare(b.inizio||''));
-
     entries.forEach((t, idx) => {
       const dip = dipendenti.find(x => x.id === t.userId);
       const nome = dip ? dip.nome.trim() : t.nome || '—';
-      righe += `
-        <tr class="${idx === 0 ? 'first-of-day' : ''}">
-          <td style="width:80px;${idx===0?'font-weight:600;color:#000;':''}">${idx===0 ? dataFmt : ''}</td>
-          <td style="width:130px">${nome}</td>
-          <td style="width:70px;text-align:center">${t.inizio||'—'}</td>
-          <td style="width:70px;text-align:center">${t.fine||'—'}</td>
-          <td style="width:60px;text-align:center">${(t.ore||0).toFixed(2)}h</td>
-          <td style="width:80px;text-align:center">${tipoLabel[t.tipo]||t.tipo}</td>
-          <td>${t.note||''}</td>
-          <td style="width:70px;text-align:right;font-weight:600;color:#000">${idx===entries.length-1 ? totGiorno.toFixed(2)+'h' : ''}</td>
-        </tr>`;
+      const isLast = idx === entries.length - 1;
+      const isFirst = idx === 0;
+      righe += `<tr style="border-bottom:1px solid #e0e0e0;">
+        <td style="padding:2px 4px;white-space:nowrap;font-weight:${isFirst?'700':'400'};color:#000;">${isFirst ? dataFmt : ''}</td>
+        <td style="padding:2px 4px;">${nome}</td>
+        <td style="padding:2px 4px;text-align:center;">${t.inizio||'—'}</td>
+        <td style="padding:2px 4px;text-align:center;">${t.fine||'—'}</td>
+        <td style="padding:2px 4px;text-align:center;">${(t.ore||0).toFixed(2)}</td>
+        <td style="padding:2px 4px;text-align:center;">${tipoLabel[t.tipo]||t.tipo}</td>
+        <td style="padding:2px 4px;max-width:80px;overflow:hidden;white-space:nowrap;">${t.note||''}</td>
+        <td style="padding:2px 4px;text-align:right;font-weight:700;">${isLast ? totGiorno.toFixed(2)+'h' : ''}</td>
+      </tr>`;
     });
-
-    // Riga separatrice tra giorni
-    righe += `<tr><td colspan="8" style="height:10px;border:none;"></td></tr>`;
   });
 
+  const p = 'padding:2px 5px;';
   const html = `
-    <div style="margin-bottom:16px; border-bottom:2px solid #000; padding-bottom:10px;">
-      <div style="font-size:18px;font-weight:700;letter-spacing:1px;">TIMETRACK PRO — REGISTRO PRESENZE</div>
-      <div style="font-size:12px;color:#444;margin-top:4px;">
-        ${isAdmin() ? 'Tutti i dipendenti' : nomeUtente} &nbsp;|&nbsp; 
-        Periodo: ${mese} &nbsp;|&nbsp; 
-        Stampato il: ${new Date().toLocaleDateString('it-IT')}
-      </div>
+    <div style="margin-bottom:6px;border-bottom:1.5px solid #000;padding-bottom:4px;display:flex;justify-content:space-between;align-items:flex-end;">
+      <div style="font-size:13px;font-weight:700;letter-spacing:.5px;">REGISTRO PRESENZE</div>
+      <div style="font-size:9px;color:#444;">${isAdmin()?'Tutti i dipendenti':nomeUtente} &nbsp;|&nbsp; ${mese} &nbsp;|&nbsp; ${new Date().toLocaleDateString('it-IT')}</div>
     </div>
-
-    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+    <table style="width:100%;border-collapse:collapse;font-size:9px;">
       <thead>
-        <tr style="background:#f0f0f0;border-bottom:2px solid #000;">
-          <th style="padding:6px 8px;text-align:left;font-weight:700;">Data</th>
-          <th style="padding:6px 8px;text-align:left;font-weight:700;">Dipendente</th>
-          <th style="padding:6px 8px;text-align:center;font-weight:700;">Inizio</th>
-          <th style="padding:6px 8px;text-align:center;font-weight:700;">Fine</th>
-          <th style="padding:6px 8px;text-align:center;font-weight:700;">Ore</th>
-          <th style="padding:6px 8px;text-align:center;font-weight:700;">Tipo</th>
-          <th style="padding:6px 8px;text-align:left;font-weight:700;">Note</th>
-          <th style="padding:6px 8px;text-align:right;font-weight:700;">Tot. Giorno</th>
+        <tr style="background:#efefef;border-bottom:1.5px solid #000;font-size:8px;text-transform:uppercase;letter-spacing:.3px;">
+          <th style="${p}text-align:left;">Data</th>
+          <th style="${p}text-align:left;">Dipendente</th>
+          <th style="${p}text-align:center;">Inizio</th>
+          <th style="${p}text-align:center;">Fine</th>
+          <th style="${p}text-align:center;">Ore</th>
+          <th style="${p}text-align:center;">Tipo</th>
+          <th style="${p}text-align:left;">Note</th>
+          <th style="${p}text-align:right;">Tot.</th>
         </tr>
       </thead>
-      <tbody>
-        ${righe}
-      </tbody>
+      <tbody>${righe}</tbody>
       <tfoot>
-        <tr style="border-top:2px solid #000;background:#f0f0f0;">
-          <td colspan="7" style="padding:8px;font-weight:700;font-size:12px;">TOTALE MESE</td>
-          <td style="padding:8px;text-align:right;font-weight:700;font-size:14px;">${totMese.toFixed(2)}h</td>
+        <tr style="border-top:1.5px solid #000;background:#efefef;">
+          <td colspan="7" style="padding:3px 5px;font-weight:700;font-size:9px;">TOTALE MESE</td>
+          <td style="padding:3px 5px;text-align:right;font-weight:700;font-size:11px;">${totMese.toFixed(2)}h</td>
         </tr>
       </tfoot>
     </table>`;
 
-  const area = document.getElementById('printArea');
-  area.innerHTML = html;
+  document.getElementById('printArea').innerHTML = html;
   window.print();
 }
 window.stampaReport = stampaReport;
 </script>
+</body>
+</html>
