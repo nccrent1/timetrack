@@ -78,7 +78,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .role-pill.admin{background:rgba(232,255,71,.15);color:var(--accent)}
 .role-pill.dip{background:rgba(71,255,184,.12);color:var(--accent2)}
 
-.main-wrap{max-width:1300px;margin:0 auto;padding:28px;display:grid;grid-template-columns:1fr 290px;gap:24px;align-items:start}
+.main-wrap{max-width:1300px;margin:0 auto;padding:28px;display:grid;grid-template-columns:1fr 290px;gap:24px;align-items:start;padding-bottom:80px}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:18px}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .card-title{font-family:var(--head);font-size:.95rem;font-weight:700;color:var(--text)}
@@ -188,8 +188,72 @@ tr:last-child td{border:none}
 @keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes toastOut{from{transform:translateX(0);opacity:1}to{transform:translateX(110%);opacity:0}}
 
-@media(max-width:1024px){.main-wrap{grid-template-columns:1fr}.sidebar{position:static}.stats-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.main-wrap{padding:12px}.topbar{padding:0 12px}.topbar-center{display:none}.form-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr}.card{padding:16px}.auth-box{padding:28px 18px}}
+@media(max-width:1024px){
+  .main-wrap{grid-template-columns:1fr}
+  .sidebar{position:static}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .main-wrap{padding:12px;gap:12px}
+  .topbar{padding:0 14px;height:54px}
+  .topbar-center{display:none}
+  .topbar-brand{font-size:.85rem}
+  .user-name{display:none}
+  .form-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .card{padding:14px;border-radius:14px;margin-bottom:12px}
+  .auth-box{padding:28px 18px;border-radius:18px}
+  .auth-title{font-size:1.5rem}
+  .filters{flex-direction:column;gap:8px}
+  .filters .field{min-width:unset;width:100%}
+  .filters button{width:100%}
+  table{font-size:.78rem}
+  th{padding:7px 8px;font-size:.6rem}
+  td{padding:8px}
+  .td-time{font-size:.72rem}
+  .sw-val{font-size:1.6rem}
+  .big-stat{padding:14px}
+  .bs-val{font-size:1.4rem}
+}
+@media(max-width:480px){
+  .main-wrap{padding:8px;gap:8px}
+  .topbar{padding:0 10px;height:50px}
+  .topbar-brand{font-size:.8rem}
+  .role-pill{display:none}
+  .user-chip{padding:3px 8px 3px 5px}
+  .user-av{width:22px;height:22px;font-size:.62rem}
+  .card{padding:12px;border-radius:12px;margin-bottom:8px}
+  .card-title{font-size:.85rem}
+  .auth-box{padding:22px 14px;border-radius:16px;margin:0}
+  .auth-title{font-size:1.3rem}
+  .auth-sub{font-size:.8rem}
+  .auth-tab{font-size:.78rem;padding:8px}
+  .field label{font-size:.68rem}
+  .field input,.field select{padding:10px 12px;font-size:.88rem}
+  .btn{padding:11px 16px;font-size:.85rem}
+  .btn-full{font-size:.9rem;padding:13px}
+  .filters{gap:6px}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .big-stat{padding:12px;border-radius:10px}
+  .bs-val{font-size:1.2rem}
+  .bs-label{font-size:.68rem}
+  .stat-widget{padding:14px;border-radius:14px;margin-bottom:8px}
+  .sw-val{font-size:1.4rem}
+  .sw-label{font-size:.62rem}
+  .sw-sub{font-size:.68rem}
+  table{font-size:.75rem}
+  th{padding:6px 6px;font-size:.58rem}
+  td{padding:7px 6px}
+  .icon-btn{width:30px;height:30px;font-size:13px}
+  .badge{font-size:.62rem;padding:2px 6px}
+  .ore-preview{padding:11px 12px}
+  .ore-value{font-size:1.3rem}
+  .ore-label{font-size:.74rem}
+  .existing-box{padding:10px 12px}
+  .overlap-alert{padding:10px 12px}
+  .action-row{gap:8px}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
 
 @media print{
@@ -260,7 +324,7 @@ tr:last-child td{border:none}
         <span class="user-name" id="userName">—</span>
         <span class="role-pill" id="rolePill">—</span>
       </div>
-      <button class="btn btn-ghost" onclick="doLogout()" style="padding:5px 12px;font-size:.8rem">Esci</button>
+      <button class="btn btn-ghost" onclick="doLogout()" style="padding:5px 10px;font-size:.78rem">Esci</button>
     </div>
   </div>
 
@@ -367,6 +431,14 @@ tr:last-child td{border:none}
 </div>
 
 <div id="printArea"></div>
+<div id="mobileNav" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--bg2);border-top:1px solid var(--border);padding:8px 0 calc(8px + env(safe-area-inset-bottom));justify-content:space-around">
+  <button onclick="switchTab('tabTimbrature')" id="mnTab1" style="flex:1;border:none;background:transparent;color:var(--accent);font-family:var(--body);font-size:.72rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;cursor:pointer">
+    <span style="font-size:18px">🕐</span>Timbrature
+  </button>
+  <button onclick="switchTab('tabStatistiche')" id="mnTab2" style="flex:1;border:none;background:transparent;color:var(--text2);font-family:var(--body);font-size:.72rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;cursor:pointer">
+    <span style="font-size:18px">📊</span>Statistiche
+  </button>
+</div>
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwIIkFY1b-PuU9895oAbzhKBc-0zKg3dDOZMH8GAcxK8QWcQKUSSStuNsXRWr6BnbnX/exec';
@@ -378,6 +450,11 @@ let editingId   = null;
 let blockSave   = false;
 
 // ── INIT ─────────────────────────────────
+window.addEventListener('resize', function(){
+  var nav=document.getElementById('mobileNav');
+  if(nav&&currentUser) nav.style.display=window.innerWidth<=768?'flex':'none';
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   // Unregistra service worker se presente
   if ('serviceWorker' in navigator) {
@@ -476,11 +553,13 @@ function doLogout() {
 function showAuth() {
   document.getElementById('authScreen').style.display = 'flex';
   document.getElementById('appScreen').style.display  = 'none';
+  document.getElementById('mobileNav').style.display  = 'none';
 }
 
 function showApp() {
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('appScreen').style.display  = 'block';
+  document.getElementById('mobileNav').style.display  = window.innerWidth<=768 ? 'flex' : 'none';
   var admin = isAdmin();
   var av = document.getElementById('userAv');
   av.textContent = currentUser.nome.charAt(0).toUpperCase();
@@ -904,6 +983,12 @@ function switchTab(id){
   document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active');});
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.textContent.trim()===(id==='tabTimbrature'?'Timbrature':'Statistiche'));});
+  var mn1=document.getElementById('mnTab1'),mn2=document.getElementById('mnTab2');
+  if(mn1&&mn2){
+    mn1.style.color=id==='tabTimbrature'?'var(--accent)':'var(--text2)';
+    mn2.style.color=id==='tabStatistiche'?'var(--accent)':'var(--text2)';
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ── EXPORT ───────────────────────────────
