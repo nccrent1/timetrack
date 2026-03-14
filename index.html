@@ -1036,7 +1036,16 @@ function stampaReport(){
     byData[t.data].push(t);
   });
   var TL={work:'Lav.',straordinario:'Str.',ferie:'Fer.',malattia:'Mal.',riposo:'Rip.'};
-  var mese=new Date().toLocaleString('it-IT',{month:'long',year:'numeric'});
+  // Header mese: usa filtro selezionato o mese corrente
+  var meseHeader;
+  if (fm) {
+    var parts = fm.split('-');
+    var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
+    var label = d.toLocaleString('it-IT',{month:'long',year:'numeric'});
+    meseHeader = label.toUpperCase();
+  } else {
+    meseHeader = new Date().toLocaleString('it-IT',{month:'long',year:'numeric'}).toUpperCase();
+  }
   var totMese=tf.reduce(function(s,t){return s+Number(t.ore||0);},0);
   var righe='';
   Object.keys(byData).forEach(function(data){
