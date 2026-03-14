@@ -1072,8 +1072,8 @@ function stampaReport(){
   });
   var p='padding:2px 5px';
   var html='<div style="margin-bottom:6px;border-bottom:1.5px solid #000;padding-bottom:4px;display:flex;justify-content:space-between;align-items:flex-end">'
-    +'<div style="font-size:13px;font-weight:700;letter-spacing:.5px">REGISTRO PRESENZE</div>'
-    +'<div style="font-size:9px;color:#444">'+(isAdmin()?'Tutti i dipendenti':currentUser.nome)+' | '+mese+' | '+new Date().toLocaleDateString('it-IT')+'</div>'
+    +'<div style="font-size:15px;font-weight:700;letter-spacing:.5px">REGISTRO PRESENZE — '+meseHeader+'</div>'
+    +'<div style="font-size:9px;color:#444">'+(isAdmin()?'Tutti i dipendenti':currentUser.nome)+' | Stampato il: '+new Date().toLocaleDateString('it-IT')+'</div>'
     +'</div>'
     +'<table style="width:100%;border-collapse:collapse;font-size:9px">'
     +'<thead><tr style="background:#efefef;border-bottom:1.5px solid #000;font-size:8px;text-transform:uppercase;letter-spacing:.3px">'
