@@ -683,18 +683,45 @@ function renderTabella() {
 }
 
 // ── RENDER SIDEBAR ───────────────────────
+function getFiltraMese() {
+  var el = document.getElementById('fl_mese');
+  return el ? el.value.trim() : '';
+}
+
 function renderSidebar() {
   var oggi  = todayISO();
-  var mese  = new Date().getMonth();
-  var anno  = new Date().getFullYear();
   var tf    = getTimbratureFiltrate();
-  var oR    = tf.filter(function(t){ return t.data===oggi; });
-  var mR    = tf.filter(function(t){ var d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
+  var fm    = getFiltraMese();
+
+  // Ore oggi: mostra solo se il mese selezionato è il mese corrente (o nessun filtro)
+  var meseCorr = oggi.substring(0,7);
+  var oR = [];
+  if (!fm || fm === meseCorr) {
+    oR = tf.filter(function(t){ return t.data===oggi; });
+  }
+
+  // Ore mese: filtra per il mese selezionato o mese corrente
+  var mR;
+  if (fm) {
+    mR = tf.filter(function(t){ return t.data && t.data.substring(0,7)===fm; });
+    // Aggiorna label widget
+    var parts = fm.split('-');
+    var dLabel = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
+    var label = dLabel.toLocaleString('it-IT',{month:'long',year:'numeric'});
+    document.getElementById('sw_mese').parentElement.querySelector('.sw-label').textContent =
+      'Ore '+label.charAt(0).toUpperCase()+label.slice(1);
+  } else {
+    var mese = new Date().getMonth();
+    var anno = new Date().getFullYear();
+    mR = tf.filter(function(t){ var d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
+    document.getElementById('sw_mese').parentElement.querySelector('.sw-label').textContent = 'Ore Questo Mese';
+  }
+
   document.getElementById('sw_oggi').textContent   = sum(oR).toFixed(2)+'h';
   document.getElementById('sw_oggi_n').textContent = oR.length+' registrazioni';
   document.getElementById('sw_mese').textContent   = sum(mR).toFixed(2)+'h';
   document.getElementById('sw_mese_n').textContent = mR.length+' registrazioni';
-  document.getElementById('sw_tot').textContent    = tf.length;
+  document.getElementById('sw_tot').textContent    = mR.length;
   if (!isAdmin()) return;
   var byD = {};
   tf.forEach(function(t){
@@ -716,11 +743,22 @@ function renderSidebar() {
 
 // ── RENDER STATS ─────────────────────────
 function renderStats() {
-  var mese    = new Date().getMonth();
-  var anno    = new Date().getFullYear();
-  var meseTxt = new Date().toLocaleString('it-IT',{month:'long',year:'numeric'});
   var tf      = getTimbratureFiltrate();
-  var mR      = tf.filter(function(t){ var d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
+  var fm      = getFiltraMese();
+  var mese, anno, meseTxt, mR;
+  if (fm) {
+    var parts = fm.split('-');
+    mese = parseInt(parts[1])-1;
+    anno = parseInt(parts[0]);
+    var dl = new Date(anno, mese, 1);
+    meseTxt = dl.toLocaleString('it-IT',{month:'long',year:'numeric'});
+    mR = tf.filter(function(t){ return t.data && t.data.substring(0,7)===fm; });
+  } else {
+    mese = new Date().getMonth();
+    anno = new Date().getFullYear();
+    meseTxt = new Date().toLocaleString('it-IT',{month:'long',year:'numeric'});
+    mR = tf.filter(function(t){ var d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
+  }
   var ow=sum(mR.filter(function(t){return t.tipo==='work';}));
   var oe=sum(mR.filter(function(t){return t.tipo==='straordinario';}));
   var gg=Object.keys(mR.reduce(function(acc,t){acc[t.data]=1;return acc;},{})).length;
