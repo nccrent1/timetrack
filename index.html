@@ -116,6 +116,7 @@ tr:last-child td{border:none}
 .badge-straordinario{background:rgba(71,255,184,.1);color:var(--accent2)}
 .badge-ferie{background:rgba(71,100,255,.1);color:#7b9fff}
 .badge-malattia{background:rgba(255,170,71,.1);color:var(--warning)}
+.badge-riposo{background:rgba(136,136,160,.1);color:var(--text2)}
 .icon-btn{width:30px;height:30px;border:none;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
 .icon-edit{background:rgba(232,255,71,.08)}
 .icon-del{background:rgba(255,71,71,.08)}
@@ -294,6 +295,7 @@ tr:last-child td{border:none}
                 <option value="straordinario">Straordinario</option>
                 <option value="ferie">Ferie</option>
                 <option value="malattia">Malattia</option>
+                <option value="riposo">Riposo</option>
               </select>
             </div>
           </div>
@@ -313,6 +315,11 @@ tr:last-child td{border:none}
         <!-- FILTRI -->
         <div class="card" style="padding:16px 22px">
           <div class="filters">
+            <div class="field"><label>Mese</label>
+              <select id="fl_mese" onchange="aggiornaTutto()">
+                <option value="">Tutti i mesi</option>
+              </select>
+            </div>
             <div class="field"><label>Data</label><input type="date" id="fl_data" onchange="aggiornaTutto()"></div>
             <div class="field" id="fl_dip_wrap">
               <label>Dipendente</label>
@@ -325,6 +332,7 @@ tr:last-child td{border:none}
                 <option value="straordinario">Straordinario</option>
                 <option value="ferie">Ferie</option>
                 <option value="malattia">Malattia</option>
+                <option value="riposo">Riposo</option>
               </select>
             </div>
             <div class="filters-row">
@@ -549,10 +557,43 @@ async function loadData() {
     if (eRes.success) {
       var all = eRes.data||[];
       timbrature = isAdmin() ? all : all.filter(function(t){ return String(t.userId)===String(currentUser.id); });
+      populateMesi();
       aggiornaTutto();
       onFormChange();
     }
   } finally { hideLoader(); }
+}
+
+function populateMesi() {
+  var sel = document.getElementById('fl_mese');
+  if (!sel) return;
+  var mesiPresenti = {};
+  timbrature.forEach(function(t){
+    if (t.data) {
+      var parts = t.data.split('-');
+      var key = parts[0]+'-'+parts[1];
+      mesiPresenti[key] = 1;
+    }
+  });
+  var keys = Object.keys(mesiPresenti).sort();
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">Tutti i mesi</option>';
+  keys.forEach(function(k){
+    var parts = k.split('-');
+    var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
+    var label = d.toLocaleString('it-IT', {month:'long', year:'numeric'});
+    var opt = document.createElement('option');
+    opt.value = k;
+    opt.textContent = label.charAt(0).toUpperCase()+label.slice(1);
+    sel.appendChild(opt);
+  });
+  if (cur) sel.value = cur;
+  // Imposta mese corrente di default
+  if (!cur) {
+    var now = new Date();
+    var nowKey = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'));
+    if (mesiPresenti[nowKey]) sel.value = nowKey;
+  }
 }
 
 function populateSelects() {
@@ -601,6 +642,10 @@ function clearFiltri() {
   document.getElementById('fl_data').value = '';
   if (isAdmin()) document.getElementById('fl_dip').value = '';
   document.getElementById('fl_tipo').value = '';
+  var now = new Date();
+  var nowKey = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'));
+  var selM = document.getElementById('fl_mese');
+  if (selM) selM.value = nowKey;
   aggiornaTutto();
 }
 
@@ -608,15 +653,17 @@ function clearFiltri() {
 function renderTabella() {
   var fd  = document.getElementById('fl_data').value;
   var ft  = document.getElementById('fl_tipo').value;
+  var fm  = document.getElementById('fl_mese') ? document.getElementById('fl_mese').value : '';
   var rows = getTimbratureFiltrate().slice().sort(function(a,b){
-    if (a.data!==b.data) return b.data.localeCompare(a.data);
+    if (a.data!==b.data) return a.data.localeCompare(b.data);
     return (a.inizio||'').localeCompare(b.inizio||'');
   });
+  if (fm) rows = rows.filter(function(t){ return t.data && t.data.substring(0,7)===fm; });
   if (fd) rows = rows.filter(function(t){ return t.data===fd; });
   if (ft) rows = rows.filter(function(t){ return t.tipo===ft; });
   var tbody = document.getElementById('tabellaBody');
   if (!rows.length) { tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-msg">Nessuna timbratura trovata</div></div></td></tr>'; return; }
-  var TL={work:'Lavoro',straordinario:'Straord.',ferie:'Ferie',malattia:'Malattia'};
+  var TL={work:'Lavoro',straordinario:'Straord.',ferie:'Ferie',malattia:'Malattia',riposo:'Riposo'};
   tbody.innerHTML = rows.map(function(t){
     var dip  = dipendenti.find(function(d){ return String(d.id)===String(t.userId); });
     var nome = dip ? dip.nome.trim() : (t.nome||'—');
@@ -725,7 +772,7 @@ function onTipoChange() {
   var inizio = document.getElementById('f_inizio');
   var fine   = document.getElementById('f_fine');
   var pausa  = document.getElementById('f_pausa');
-  if (tipo === 'ferie' || tipo === 'malattia') {
+  if (tipo === 'ferie' || tipo === 'malattia' || tipo === 'riposo') {
     inizio.value = '00:00';
     fine.value   = '00:00';
     inizio.disabled = true;
@@ -763,7 +810,7 @@ function updateOrePreview() {
   var pausa  = parseFloat(document.getElementById('f_pausa').value)||0;
   var prev   = document.getElementById('orePreview');
   var val    = document.getElementById('oreVal');
-  if (tipo==='ferie'||tipo==='malattia'){val.textContent='0.00h';prev.className='ore-preview ok';return;}
+  if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo'){val.textContent='0.00h';prev.className='ore-preview ok';return;}
   if (!inizio||!fine){val.textContent='—';prev.className='ore-preview';return;}
   var iMin2=t2m(inizio), fMin2=t2m(fine);
   if(fMin2<iMin2) fMin2+=1440; // turno notturno
@@ -799,7 +846,7 @@ function checkOverlap() {
   var btn    = document.getElementById('btnSalva');
   function clear(){blockSave=false;al.classList.remove('visible');btn.disabled=false;btn.innerHTML=editingId?'Aggiorna':'Salva';btn.className='btn btn-accent';}
   if (!data||!userId){clear();return;}
-  if (tipo==='ferie'||tipo==='malattia'){clear();return;}
+  if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo'){clear();return;}
   if (!inizio||!fine){clear();return;}
   var iM=t2m(inizio),fM=t2m(fine);
   if (fM===iM){blockSave=true;desc.textContent='Inizio e fine coincidono.';al.classList.add('visible');btn.disabled=true;btn.innerHTML='⛔ Orario non valido';btn.className='btn btn-ghost';return;}
@@ -833,7 +880,7 @@ async function salva() {
   var note   = document.getElementById('f_note').value.trim();
   if (!data||!userId||!inizio||!fine){toast('Compila tutti i campi obbligatori','warning');return;}
   var ore;
-  if (tipo==='ferie'||tipo==='malattia') {
+  if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo') {
     ore = 0;
     inizio = '00:00'; fine = '00:00';
   } else {
@@ -843,6 +890,28 @@ async function salva() {
     if (totMin<=0){toast('Orario non valido','error');return;}
     ore = Math.max(0,totMin/60-pausa);
   }
+  // Blocca ferie/malattia/riposo se esistono già ore di lavoro quel giorno
+  if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo') {
+    var oreEsistenti = timbrature.filter(function(t){
+      return t.data===data && String(t.userId)===String(userId) && t.tipo==='work' && t.id!==editingId;
+    });
+    if (oreEsistenti.length) {
+      toast('Impossibile inserire '+tipo+': esistono già ore di lavoro in questa data','error');
+      return;
+    }
+  }
+  // Blocca lavoro se esiste già ferie/malattia/riposo quel giorno
+  if (tipo==='work'||tipo==='straordinario') {
+    var giornataSpec = timbrature.filter(function(t){
+      return t.data===data && String(t.userId)===String(userId) &&
+             (t.tipo==='ferie'||t.tipo==='malattia'||t.tipo==='riposo') && t.id!==editingId;
+    });
+    if (giornataSpec.length) {
+      toast('Impossibile inserire ore di lavoro: questa data ha già '+giornataSpec[0].tipo,'error');
+      return;
+    }
+  }
+
   var dip    = dipendenti.find(function(d){return String(d.id)===String(userId);});
   var nome   = dip?dip.nome.trim():'';
   var params = {userId:userId,nome:nome,data:data,tipo:tipo,inizio:inizio,fine:fine,ore:ore.toFixed(4)};
@@ -940,7 +1009,7 @@ function exportExcel(){
   if(!timbrature.length){toast('Nessun dato','warning');return;}
   var rows=getTimbratureFiltrate().map(function(t){
     var d=dipendenti.find(function(x){return String(x.id)===String(t.userId);});
-    var oreVal=(t.tipo==='ferie'||t.tipo==='malattia')?0:Number(Number(t.ore||0).toFixed(4));
+    var oreVal=(t.tipo==='ferie'||t.tipo==='malattia'||t.tipo==='riposo')?0:Number(Number(t.ore||0).toFixed(4));
     return{Data:t.data,Dipendente:d?d.nome.trim():'—',Inizio:t.inizio||'',Fine:t.fine||'',Ore:oreVal,Tipo:t.tipo,Note:t.note||''};
   });
   var ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();
@@ -951,14 +1020,22 @@ function exportExcel(){
 
 // ── STAMPA ───────────────────────────────
 function stampaReport(){
-  var tf=getTimbratureFiltrate();
+  var fm = document.getElementById('fl_mese') ? document.getElementById('fl_mese').value : '';
+  var ft = document.getElementById('fl_tipo') ? document.getElementById('fl_tipo').value : '';
+  var fd = document.getElementById('fl_data') ? document.getElementById('fl_data').value : '';
+  var tf = getTimbratureFiltrate();
+  if (fm) tf = tf.filter(function(t){ return t.data && t.data.substring(0,7)===fm; });
+  if (fd) tf = tf.filter(function(t){ return t.data===fd; });
+  if (ft) tf = tf.filter(function(t){ return t.tipo===ft; });
+  tf = tf.slice().sort(function(a,b){ return a.data.localeCompare(b.data)||(a.inizio||'').localeCompare(b.inizio||''); });
+  // override tf locale per il resto della funzione
   if(!tf.length){toast('Nessun dato da stampare','warning');return;}
   var byData={};
   tf.slice().sort(function(a,b){return a.data.localeCompare(b.data);}).forEach(function(t){
     if(!byData[t.data])byData[t.data]=[];
     byData[t.data].push(t);
   });
-  var TL={work:'Lav.',straordinario:'Str.',ferie:'Fer.',malattia:'Mal.'};
+  var TL={work:'Lav.',straordinario:'Str.',ferie:'Fer.',malattia:'Mal.',riposo:'Rip.'};
   var mese=new Date().toLocaleString('it-IT',{month:'long',year:'numeric'});
   var totMese=tf.reduce(function(s,t){return s+Number(t.ore||0);},0);
   var righe='';
