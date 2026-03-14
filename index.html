@@ -260,10 +260,7 @@ tr:last-child td{border:none}
 <div id="appScreen">
   <div class="topbar">
     <div class="topbar-brand">⏱ TT</div>
-    <div class="topbar-center">
-      <button class="tab-btn active" onclick="switchTab('tabTimbrature')">Timbrature</button>
-      <button class="tab-btn" onclick="switchTab('tabStatistiche')">Statistiche</button>
-    </div>
+
     <div class="topbar-right">
       <div class="user-chip">
         <div class="user-av" id="userAv">?</div>
@@ -492,15 +489,44 @@ async function doRegister() {
 }
 
 function doLogout() {
-  if (confirm('Esci da TimeTrack Pro?')) {
+  // Modal logout personalizzato
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#111118;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:28px 24px;max-width:320px;width:100%;text-align:center';
+  var title = document.createElement('div');
+  title.style.cssText = 'font-size:1.1rem;font-weight:700;color:#f0f0f5;margin-bottom:8px';
+  title.textContent = 'Esci da TimeTrack Pro?';
+  var sub = document.createElement('div');
+  sub.style.cssText = 'font-size:.83rem;color:#8888a0;margin-bottom:22px';
+  sub.textContent = 'Verrai reindirizzato alla schermata di login.';
+  var row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:10px';
+  var btnCancel = document.createElement('button');
+  btnCancel.id = 'logoutCancel';
+  btnCancel.style.cssText = 'flex:1;padding:11px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:transparent;color:#8888a0;font-size:.88rem;font-weight:600;cursor:pointer';
+  btnCancel.textContent = 'Annulla';
+  var btnConfirm = document.createElement('button');
+  btnConfirm.id = 'logoutConfirm';
+  btnConfirm.style.cssText = 'flex:1;padding:11px;border:none;border-radius:10px;background:#ff4747;color:#fff;font-size:.88rem;font-weight:600;cursor:pointer';
+  btnConfirm.textContent = 'Esci';
+  row.appendChild(btnCancel);
+  row.appendChild(btnConfirm);
+  box.appendChild(title);
+  box.appendChild(sub);
+  box.appendChild(row);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  document.getElementById('logoutCancel').onclick = function(){ document.body.removeChild(overlay); };
+  document.getElementById('logoutConfirm').onclick = function(){
+    document.body.removeChild(overlay);
     localStorage.clear();
     sessionStorage.clear();
     currentUser=null;
     timbrature=[];
     dipendenti=[];
-    // Forza reload pulito senza cache
     window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now();
-  }
+  };
 }
 
 function showAuth() {
