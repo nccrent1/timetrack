@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>TimeTrack Pro</title>
@@ -267,7 +270,7 @@ tr:last-child td{border:none}
         <span class="user-name" id="userName">—</span>
         <span class="role-pill" id="rolePill">—</span>
       </div>
-      <button class="btn btn-ghost" onclick="doLogout()" id="btnLogoutTop" style="padding:5px 10px;font-size:.78rem">Esci</button>
+      <button onclick="doLogout()" id="btnLogoutTop" style="padding:5px 12px;font-size:.78rem;border:1px solid rgba(255,71,71,.4);border-radius:8px;background:transparent;color:var(--danger);font-family:var(--body);font-weight:600;cursor:pointer;display:block !important;visibility:visible !important;opacity:1 !important">Esci</button>
     </div>
   </div>
 
@@ -402,7 +405,8 @@ let blockSave   = false;
 // ── INIT ─────────────────────────────────
 window.addEventListener('resize', function(){
   var nav=document.getElementById('mobileNav');
-  if(nav&&currentUser) nav.style.display=window.innerWidth<=768?'flex':'none';
+  var isMob = window.innerWidth<=768 || window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  if(nav&&currentUser) nav.style.display=isMob?'flex':'none';
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -509,7 +513,11 @@ function showAuth() {
 function showApp() {
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('appScreen').style.display  = 'block';
-  document.getElementById('mobileNav').style.display  = window.innerWidth<=768 ? 'flex' : 'none';
+  var isMobile = window.innerWidth<=768 || window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  document.getElementById('mobileNav').style.display  = isMobile ? 'flex' : 'none';
+  // Forza logout visibile sempre
+  var btnTop = document.getElementById('btnLogoutTop');
+  if (btnTop) btnTop.style.display = 'block';
   var admin = isAdmin();
   var av = document.getElementById('userAv');
   av.textContent = currentUser.nome.charAt(0).toUpperCase();
