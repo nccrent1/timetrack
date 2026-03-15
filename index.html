@@ -752,20 +752,21 @@ function renderSidebar() {
     var parts = fm.split('-');
     var dLabel = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
     var label = dLabel.toLocaleString('it-IT',{month:'long',year:'numeric'});
-    document.getElementById('sw_mese').parentElement.querySelector('.sw-label').textContent =
-      'Ore '+label.charAt(0).toUpperCase()+label.slice(1);
+    var swMeseEl=document.getElementById('sw_mese');
+    if(swMeseEl&&swMeseEl.parentElement) { var lbl=swMeseEl.parentElement.querySelector('.sw-label'); if(lbl) lbl.textContent='Ore '+label.charAt(0).toUpperCase()+label.slice(1); }
   } else {
     var mese = new Date().getMonth();
     var anno = new Date().getFullYear();
     mR = tf.filter(function(t){ var d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
-    document.getElementById('sw_mese').parentElement.querySelector('.sw-label').textContent = 'Ore Questo Mese';
+    var swMeseEl2=document.getElementById('sw_mese');
+    if(swMeseEl2&&swMeseEl2.parentElement) { var lbl2=swMeseEl2.parentElement.querySelector('.sw-label'); if(lbl2) lbl2.textContent='Ore Questo Mese'; }
   }
 
-  document.getElementById('sw_oggi').textContent   = sum(oR).toFixed(2)+'h';
-  document.getElementById('sw_oggi_n').textContent = oR.length+' registrazioni';
-  document.getElementById('sw_mese').textContent   = sum(mR).toFixed(2)+'h';
-  document.getElementById('sw_mese_n').textContent = mR.length+' registrazioni';
-  document.getElementById('sw_tot').textContent    = mR.length;
+  var elOggi=document.getElementById('sw_oggi'); if(elOggi) elOggi.textContent=sum(oR).toFixed(2)+'h';
+  var elOggiN=document.getElementById('sw_oggi_n'); if(elOggiN) elOggiN.textContent=oR.length+' registrazioni';
+  var elMese=document.getElementById('sw_mese'); if(elMese) elMese.textContent=sum(mR).toFixed(2)+'h';
+  var elMeseN=document.getElementById('sw_mese_n'); if(elMeseN) elMeseN.textContent=mR.length+' registrazioni';
+  var elTot=document.getElementById('sw_tot'); if(elTot) elTot.textContent=mR.length;
   if (!isAdmin()) return;
   var byD = {};
   tf.forEach(function(t){
