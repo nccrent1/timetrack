@@ -3,50 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="mobile-web-app-capable" content="yes">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>TimeTrack Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#18181f;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--accent:#e8ff47;--accent2:#47ffb8;--danger:#ff4747;--warning:#ffaa47;--text:#f0f0f5;--text2:#8888a0;--text3:#55556a;--r:10px}
 html{font-size:16px;overflow-x:hidden}
-body{font-family:'DM Sans',sans-serif;background:#0a0a0f;color:#f0f0f5;min-height:100vh;overflow-x:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 40% at 80% 10%,rgba(232,255,71,.04) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 10% 90%,rgba(71,255,184,.03) 0%,transparent 60%)}
-:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#18181f;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--accent:#e8ff47;--accent2:#47ffb8;--danger:#ff4747;--warning:#ffaa47;--text:#f0f0f5;--text2:#8888a0;--text3:#55556a;--r:10px;--mono:'DM Mono',monospace;--head:'Syne',sans-serif;--body:'DM Sans',sans-serif}
 
 /* AUTH */
 .auth-wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:100;overflow-y:auto}
-.auth-box{width:100%;max-width:440px;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:32px 24px;position:relative}
+.auth-box{width:100%;max-width:440px;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:36px 28px;position:relative}
 .auth-box::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:180px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
-.auth-logo{font-family:var(--head);font-size:.9rem;font-weight:800;letter-spacing:.1em;color:var(--accent);text-transform:uppercase;text-align:center;margin-bottom:6px}
-.auth-title{font-family:var(--head);font-size:1.6rem;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px}
+.auth-logo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;letter-spacing:.1em;color:var(--accent);text-transform:uppercase;text-align:center;margin-bottom:6px}
+.auth-title{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px}
 .auth-sub{color:var(--text2);font-size:.82rem;text-align:center;margin-bottom:24px}
 .auth-tabs{display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:20px}
-.auth-tab{flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:var(--text2);font-family:var(--body);font-size:.85rem;font-weight:600;cursor:pointer}
+.auth-tab{flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:var(--text2);font-size:.85rem;font-weight:600;cursor:pointer}
 .auth-tab.active{background:var(--bg);color:var(--text)}
 .role-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
 .role-card{border:2px solid var(--border2);border-radius:var(--r);padding:14px 10px;cursor:pointer;background:var(--bg3);text-align:center}
 .role-card.selected{border-color:var(--accent);background:rgba(232,255,71,.06)}
 .role-card.sel-dip{border-color:var(--accent2);background:rgba(71,255,184,.06)}
 .role-icon{font-size:1.4rem;margin-bottom:4px}
-.role-name{font-family:var(--head);font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:2px}
+.role-name{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:2px}
 .role-desc{font-size:.68rem;color:var(--text3)}
 
 /* FIELDS */
 .field{margin-bottom:14px;width:100%}
 .field label{display:block;font-size:.7rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
-.field input,.field select{display:block;width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:16px;font-family:var(--body);-webkit-appearance:none;appearance:none}
+.field input,.field select{display:block;width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;-webkit-appearance:none;appearance:none}
 .field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
 .field input::placeholder{color:var(--text3)}
 .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2388889a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
 
 /* BUTTONS */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border:none;border-radius:var(--r);font-family:var(--body);font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border:none;border-radius:var(--r);font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .btn-accent{background:var(--accent);color:#0a0a0f}
 .btn-danger{background:var(--danger);color:#fff}
@@ -55,29 +51,28 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
 /* TOPBAR */
 #appScreen{display:none;min-height:100vh;position:relative;z-index:1}
-.topbar{position:sticky;top:0;z-index:50;background:rgba(10,10,15,.95);border-bottom:1px solid var(--border);padding:0 14px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:8px;overflow:hidden}
-.topbar-brand{font-family:var(--head);font-size:.88rem;font-weight:800;letter-spacing:.04em;color:var(--accent);text-transform:uppercase;flex-shrink:0;white-space:nowrap;overflow:visible}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,10,15,.95);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.topbar-brand{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;letter-spacing:.06em;color:var(--accent);text-transform:uppercase;flex-shrink:0;white-space:nowrap}
 .topbar-center{display:none;gap:4px;background:var(--bg3);border:1px solid var(--border);padding:3px;border-radius:10px}
-.tab-btn{padding:5px 14px;border:none;border-radius:7px;background:transparent;color:var(--text2);font-family:var(--body);font-size:.8rem;font-weight:600;cursor:pointer}
+.tab-btn{padding:5px 14px;border:none;border-radius:7px;background:transparent;color:var(--text2);font-size:.8rem;font-weight:600;cursor:pointer}
 .tab-btn.active{background:var(--bg);color:var(--text)}
-.topbar-right{display:flex;align-items:center;gap:6px;flex-shrink:0;min-width:0}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .user-chip{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);padding:3px 8px 3px 5px;border-radius:50px}
-.user-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.62rem;font-weight:600;flex-shrink:0}
+.user-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:600;flex-shrink:0}
 .user-av.admin{background:var(--accent);color:#0a0a0f}
 .user-av.dip{background:var(--accent2);color:#0a0a0f}
 .user-name{font-size:.78rem;font-weight:500;color:var(--text2)}
-.role-pill{font-family:var(--mono);font-size:.58rem;font-weight:600;padding:2px 6px;border-radius:50px;text-transform:uppercase}
+.role-pill{font-size:.58rem;font-weight:600;padding:2px 6px;border-radius:50px;text-transform:uppercase}
 .role-pill.admin{background:rgba(232,255,71,.15);color:var(--accent)}
 .role-pill.dip{background:rgba(71,255,184,.12);color:var(--accent2)}
+.btn-logout{padding:5px 12px;font-size:.75rem;border:1px solid rgba(255,71,71,.5);border-radius:8px;background:transparent;color:var(--danger);font-weight:600;cursor:pointer;white-space:nowrap}
 
-/* LAYOUT — mobile first, colonna singola */
-.main-wrap{width:100%;padding:12px 12px 80px;display:flex;flex-direction:column;gap:0}
-.sidebar{display:flex;flex-direction:column;gap:0}
-
+/* LAYOUT mobile-first */
+.main-wrap{width:100%;padding:12px 12px 90px;display:flex;flex-direction:column;gap:0}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;width:100%}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.card-title{font-family:var(--head);font-size:.9rem;font-weight:700;color:var(--text)}
-.card-badge{font-family:var(--mono);font-size:.65rem;color:var(--text3);background:var(--bg3);padding:3px 8px;border-radius:50px}
+.card-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--text)}
+.card-badge{font-size:.65rem;color:var(--text3);background:var(--bg3);padding:3px 8px;border-radius:50px}
 .form-grid{display:flex;flex-direction:column;gap:0;width:100%}
 
 /* ORE PREVIEW */
@@ -86,7 +81,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .ore-preview.warn{border-color:rgba(255,170,71,.3)}
 .ore-preview.error{border-color:rgba(255,71,71,.3)}
 .ore-label{font-size:.76rem;color:var(--text2);font-weight:500}
-.ore-value{font-family:var(--mono);font-size:1.4rem;font-weight:500;color:var(--accent)}
+.ore-value{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:500;color:var(--accent)}
 .ore-preview.warn .ore-value{color:var(--warning)}
 .ore-preview.error .ore-value{color:var(--danger)}
 
@@ -100,20 +95,20 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .existing-title{font-size:.7rem;color:var(--accent2);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
 .existing-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.78rem}
 .existing-row:last-child{border:none}
-.existing-time{font-family:var(--mono);color:var(--text)}
-.existing-ore{font-family:var(--mono);color:var(--accent2);font-weight:600}
+.existing-time{font-family:'DM Mono',monospace;color:var(--text)}
+.existing-ore{font-family:'DM Mono',monospace;color:var(--accent2);font-weight:600}
 .action-row{display:flex;gap:8px}
 
 /* TABLE */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%}
 table{width:100%;border-collapse:collapse;font-size:.78rem}
-th{font-family:var(--mono);font-size:.6rem;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:8px 8px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th{font-family:'DM Mono',monospace;font-size:.6rem;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:8px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
 td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text2);vertical-align:middle}
 tr:last-child td{border:none}
-.td-date{font-family:var(--mono);color:var(--text);font-size:.76rem}
+.td-date{font-family:'DM Mono',monospace;color:var(--text);font-size:.76rem}
 .td-name{color:var(--text);font-weight:500}
-.td-time{font-family:var(--mono);font-size:.74rem}
-.td-ore{font-family:var(--mono);font-weight:600;color:var(--accent)}
+.td-time{font-family:'DM Mono',monospace;font-size:.74rem}
+.td-ore{font-family:'DM Mono',monospace;font-weight:600;color:var(--accent)}
 .badge{display:inline-flex;padding:2px 6px;border-radius:50px;font-size:.64rem;font-weight:600;text-transform:uppercase}
 .badge-work{background:rgba(232,255,71,.1);color:var(--accent)}
 .badge-straordinario{background:rgba(71,255,184,.1);color:var(--accent2)}
@@ -130,10 +125,11 @@ tr:last-child td{border:none}
 .filters-row{display:flex;gap:8px;width:100%}
 .filters-row .btn{flex:1}
 
-/* SIDEBAR WIDGETS */
+/* SIDEBAR */
+.sidebar{display:flex;flex-direction:column;gap:0}
 .stat-widget{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px}
 .sw-label{font-size:.65rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-.sw-val{font-family:var(--mono);font-size:1.7rem;font-weight:500;color:var(--accent);line-height:1}
+.sw-val{font-family:'DM Mono',monospace;font-size:1.7rem;font-weight:500;color:var(--accent);line-height:1}
 .sw-val.green{color:var(--accent2)}
 .sw-val.white{color:var(--text);font-size:1.4rem}
 .sw-sub{font-size:.7rem;color:var(--text3);margin-top:3px}
@@ -141,13 +137,13 @@ tr:last-child td{border:none}
 .dip-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 .dip-row:last-child{border:none}
 .dip-name{font-size:.78rem;color:var(--text);font-weight:500}
-.dip-ore{font-family:var(--mono);font-size:.78rem;color:var(--accent)}
+.dip-ore{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--accent)}
 .dip-gg{font-size:.65rem;color:var(--text3);background:var(--bg3);padding:2px 5px;border-radius:50px}
 
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .big-stat{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px}
-.bs-val{font-family:var(--mono);font-size:1.4rem;font-weight:500;color:var(--accent)}
+.bs-val{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:500;color:var(--accent)}
 .bs-label{font-size:.7rem;color:var(--text3);margin-top:3px}
 
 /* TOAST */
@@ -162,7 +158,7 @@ tr:last-child td{border:none}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.open{display:flex}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:22px;width:100%;max-width:380px}
-.modal-title{font-family:var(--head);font-size:.95rem;font-weight:700;margin-bottom:8px}
+.modal-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:8px}
 .modal-body{color:var(--text2);font-size:.83rem;line-height:1.6;margin-bottom:18px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end}
 
@@ -173,7 +169,7 @@ tr:last-child td{border:none}
 .spin-w{border-color:rgba(255,255,255,.1);border-top-color:rgba(255,255,255,.7)}
 .loader-ov{display:none;position:fixed;inset:0;background:rgba(10,10,15,.92);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:12px}
 .loader-ov.on{display:flex}
-.loader-txt{font-family:var(--mono);font-size:.8rem;color:var(--text2)}
+.loader-txt{font-size:.8rem;color:var(--text2)}
 .tab-content{display:none}
 .tab-content.active{display:block}
 
@@ -185,7 +181,7 @@ tr:last-child td{border:none}
 @keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes toastOut{from{transform:translateX(0);opacity:1}to{transform:translateX(110%);opacity:0}}
 
-/* DESKTOP — layout a due colonne solo su schermi grandi */
+/* DESKTOP */
 @media(min-width:1024px){
   .main-wrap{max-width:1300px;margin:0 auto;padding:28px 28px 40px;display:grid;grid-template-columns:1fr 290px;gap:24px;align-items:start;flex-direction:unset}
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -247,8 +243,8 @@ tr:last-child td{border:none}
       <div class="field"><label>Password</label><input type="password" id="r_pwd" placeholder="Minimo 6 caratteri"></div>
       <div class="field" style="margin-bottom:8px"><label>Ruolo</label></div>
       <div class="role-selector">
-        <div class="role-card selected" id="rcAdmin" onclick="selectRole('admin')"><div class="role-icon">👑</div><div class="role-name">Admin</div><div class="role-desc">Vede tutti i dipendenti</div></div>
-        <div class="role-card" id="rcDip" onclick="selectRole('dipendente')"><div class="role-icon">👤</div><div class="role-name">Dipendente</div><div class="role-desc">Vede solo se stesso</div></div>
+        <div class="role-card selected" id="rcAdmin" onclick="selectRole('admin')"><div class="role-icon">👑</div><div class="role-name">Admin</div><div class="role-desc">Vede tutti</div></div>
+        <div class="role-card" id="rcDip" onclick="selectRole('dipendente')"><div class="role-icon">👤</div><div class="role-name">Dipendente</div><div class="role-desc">Solo se stesso</div></div>
       </div>
       <input type="hidden" id="r_ruolo" value="admin">
       <button class="btn btn-accent btn-full" id="regBtn" onclick="doRegister()" style="margin-top:6px">Crea account</button>
@@ -260,13 +256,17 @@ tr:last-child td{border:none}
 <div id="appScreen">
   <div class="topbar">
     <div class="topbar-brand">⏱ TimeTrack</div>
-
+    <div class="topbar-center">
+      <button class="tab-btn active" onclick="switchTab('tabTimbrature')">Timbrature</button>
+      <button class="tab-btn" onclick="switchTab('tabStatistiche')">Statistiche</button>
+    </div>
     <div class="topbar-right">
       <div class="user-chip">
         <div class="user-av" id="userAv">?</div>
         <span class="user-name" id="userName">—</span>
+        <span class="role-pill" id="rolePill">—</span>
       </div>
-      <button onclick="doLogout()" id="btnLogoutTop" style="flex-shrink:0;padding:5px 10px;font-size:.75rem;border:1px solid rgba(255,71,71,.5);border-radius:8px;background:transparent;color:var(--danger);font-family:var(--body);font-weight:600;cursor:pointer">🚪 Esci</button>
+      <button class="btn-logout" onclick="doLogout()">🚪 Esci</button>
     </div>
   </div>
 
@@ -311,12 +311,10 @@ tr:last-child td{border:none}
         </div>
 
         <!-- FILTRI -->
-        <div class="card" style="padding:16px 22px">
+        <div class="card" style="padding:14px">
           <div class="filters">
             <div class="field"><label>Mese</label>
-              <select id="fl_mese" onchange="aggiornaTutto()">
-                <option value="">Tutti i mesi</option>
-              </select>
+              <select id="fl_mese" onchange="aggiornaTutto()"><option value="">Tutti i mesi</option></select>
             </div>
             <div class="field"><label>Data</label><input type="date" id="fl_data" onchange="aggiornaTutto()"></div>
             <div class="field" id="fl_dip_wrap">
@@ -367,9 +365,9 @@ tr:last-child td{border:none}
 
     <!-- SIDEBAR -->
     <div class="sidebar">
-      <div class="stat-widget"><div class="sw-label">Ore Oggi</div><div class="sw-val" id="sw_oggi">0.00h</div><div class="sw-sub" id="sw_oggi_n">0 registrazioni</div></div>
-      <div class="stat-widget"><div class="sw-label">Ore Questo Mese</div><div class="sw-val green" id="sw_mese">0.00h</div><div class="sw-sub" id="sw_mese_n">—</div></div>
-      <div class="stat-widget"><div class="sw-label">Totale Timbrature</div><div class="sw-val white" id="sw_tot">0</div><div class="sw-sub">In archivio</div></div>
+      <div class="stat-widget"><div class="sw-label" id="lblOggi">Ore Oggi</div><div class="sw-val" id="sw_oggi">0.00h</div><div class="sw-sub" id="sw_oggi_n">0 registrazioni</div></div>
+      <div class="stat-widget"><div class="sw-label" id="lblMese">Ore Questo Mese</div><div class="sw-val green" id="sw_mese">0.00h</div><div class="sw-sub" id="sw_mese_n">—</div></div>
+      <div class="stat-widget"><div class="sw-label">Totale Timbrature</div><div class="sw-val white" id="sw_tot">0</div><div class="sw-sub">Nel periodo</div></div>
       <div class="stat-widget" id="swDipWidget" style="display:none">
         <div class="sw-label">Dipendenti — Ore Totali</div>
         <div class="divider"></div>
@@ -379,48 +377,35 @@ tr:last-child td{border:none}
   </div>
 </div>
 
-<div id="printArea"></div>
-<div id="mobileNav" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--bg2);border-top:1px solid var(--border);padding:8px 0 calc(8px + env(safe-area-inset-bottom));justify-content:space-around">
-  <button onclick="switchTab('tabTimbrature')" id="mnTab1" style="flex:1;border:none;background:transparent;color:var(--accent);font-family:var(--body);font-size:.72rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;cursor:pointer">
-    <span style="font-size:18px">🕐</span>Timbrature
-  </button>
-  <button onclick="switchTab('tabStatistiche')" id="mnTab2" style="flex:1;border:none;background:transparent;color:var(--text2);font-family:var(--body);font-size:.72rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;cursor:pointer">
-    <span style="font-size:18px">📊</span>Statistiche
-  </button>
+<!-- MOBILE NAV -->
+<div id="mobileNav">
+  <button onclick="switchTab('tabTimbrature')" id="mnTab1" style="flex:1;border:none;background:transparent;color:var(--accent);font-size:.72rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;cursor:pointer"><span style="font-size:18px">🕐</span>Timbrature</button>
+  <button onclick="switchTab('tabStatistiche')" id="mnTab2" style="flex:1;border:none;background:transparent;color:var(--text2);font-size:.72rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;cursor:pointer"><span style="font-size:18px">📊</span>Statistiche</button>
+  <button onclick="doLogout()" style="flex:1;border:none;background:transparent;color:var(--danger);font-size:.72rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;cursor:pointer"><span style="font-size:18px">🚪</span>Esci</button>
 </div>
 
-<script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwIIkFY1b-PuU9895oAbzhKBc-0zKg3dDOZMH8GAcxK8QWcQKUSSStuNsXRWr6BnbnX/exec';
+<div id="printArea"></div>
 
-let timbrature  = [];
-let dipendenti  = [];
-let currentUser = null;
-let editingId   = null;
-let blockSave   = false;
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbwIIkFY1b-PuU9895oAbzhKBc-0zKg3dDOZMH8GAcxK8QWcQKUSSStuNsXRWr6BnbnX/exec';
+var timbrature = [];
+var dipendenti = [];
+var currentUser = null;
+var editingId = null;
+var blockSave = false;
 
 // ── INIT ─────────────────────────────────
 window.addEventListener('resize', function(){
-  var nav=document.getElementById('mobileNav');
-  var isMob = window.innerWidth<=768 || window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-  if(nav&&currentUser) nav.style.display=isMob?'flex':'none';
+  if (!currentUser) return;
+  var nav = document.getElementById('mobileNav');
+  var isMob = window.innerWidth < 1024 || window.navigator.standalone || window.matchMedia('(display-mode:standalone)').matches;
+  nav.style.display = isMob ? 'flex' : 'none';
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Unregistra service worker se presente
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(regs) {
-      regs.forEach(function(r){ r.unregister(); });
-    });
-  }
-  // Pulisce cache browser
-  if ('caches' in window) {
-    caches.keys().then(function(names){
-      names.forEach(function(name){ caches.delete(name); });
-    });
-  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(r){ r.forEach(function(s){ s.unregister(); }); });
   document.getElementById('l_email').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
-  document.getElementById('l_pwd').addEventListener('keydown',   function(e){ if(e.key==='Enter') doLogin(); });
-
+  document.getElementById('l_pwd').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
   var saved = localStorage.getItem('tt_user');
   if (saved) {
     try {
@@ -437,10 +422,10 @@ function showAuthTab(tab) {
   var isLogin = tab === 'login';
   document.getElementById('tabLogin').classList.toggle('active', isLogin);
   document.getElementById('tabReg').classList.toggle('active', !isLogin);
-  document.getElementById('loginForm').style.display    = isLogin ? '' : 'none';
+  document.getElementById('loginForm').style.display = isLogin ? '' : 'none';
   document.getElementById('registerForm').style.display = isLogin ? 'none' : '';
   document.getElementById('authTitle').textContent = isLogin ? 'Accedi' : 'Crea account';
-  document.getElementById('authSub').textContent   = isLogin ? 'Bentornato' : 'Registra il tuo profilo';
+  document.getElementById('authSub').textContent = isLogin ? 'Bentornato' : 'Registra il tuo profilo';
 }
 
 function selectRole(role) {
@@ -453,43 +438,43 @@ function selectRole(role) {
 
 async function doLogin() {
   var email = document.getElementById('l_email').value.trim();
-  var pwd   = document.getElementById('l_pwd').value;
+  var pwd = document.getElementById('l_pwd').value;
   if (!email||!pwd) { toast('Inserisci email e password','warning'); return; }
   var btn = document.getElementById('loginBtn');
   btn.innerHTML = '<span class="spin"></span>'; btn.disabled = true;
-  var res = await api('login',{email:email,password:pwd});
+  var res = await api('login', {email:email, password:pwd});
   btn.innerHTML = 'Entra'; btn.disabled = false;
   if (res.success) {
     currentUser = res.user;
     currentUser.ruolo = (currentUser.ruolo||'dipendente').toLowerCase().trim();
     localStorage.setItem('tt_user', JSON.stringify(currentUser));
-    toast('Benvenuto '+currentUser.nome,'success');
-    showApp(); loadData();
-  } else { toast(res.error||'Credenziali errate','error'); }
+    toast('Benvenuto '+currentUser.nome, 'success');
+    showApp();
+    loadData();
+  } else { toast(res.error||'Credenziali errate', 'error'); }
 }
 
 async function doRegister() {
-  var nome  = document.getElementById('r_nome').value.trim();
+  var nome = document.getElementById('r_nome').value.trim();
   var email = document.getElementById('r_email').value.trim();
-  var pwd   = document.getElementById('r_pwd').value;
+  var pwd = document.getElementById('r_pwd').value;
   var ruolo = document.getElementById('r_ruolo').value;
-  if (!nome)          { toast('Inserisci il nome','warning'); return; }
-  if (!email)         { toast('Inserisci la email','warning'); return; }
+  if (!nome) { toast('Inserisci il nome','warning'); return; }
+  if (!email) { toast('Inserisci la email','warning'); return; }
   if (pwd.length < 6) { toast('Password minimo 6 caratteri','warning'); return; }
   var btn = document.getElementById('regBtn');
   btn.innerHTML = '<span class="spin"></span>'; btn.disabled = true;
-  var res = await api('add_user',{nome:nome,email:email,password:pwd,ruolo:ruolo});
+  var res = await api('add_user', {nome:nome, email:email, password:pwd, ruolo:ruolo});
   btn.innerHTML = 'Crea account'; btn.disabled = false;
   if (res.success) {
-    toast('Account creato! Ora accedi.','success');
+    toast('Account creato! Ora accedi.', 'success');
     document.getElementById('l_email').value = email;
-    document.getElementById('l_pwd').value   = pwd;
+    document.getElementById('l_pwd').value = pwd;
     showAuthTab('login');
-  } else { toast(res.error||'Errore registrazione','error'); }
+  } else { toast(res.error||'Errore registrazione', 'error'); }
 }
 
 function doLogout() {
-  // Modal logout personalizzato
   var overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
   var box = document.createElement('div');
@@ -502,77 +487,66 @@ function doLogout() {
   sub.textContent = 'Verrai reindirizzato alla schermata di login.';
   var row = document.createElement('div');
   row.style.cssText = 'display:flex;gap:10px';
-  var btnCancel = document.createElement('button');
-  btnCancel.id = 'logoutCancel';
-  btnCancel.style.cssText = 'flex:1;padding:11px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:transparent;color:#8888a0;font-size:.88rem;font-weight:600;cursor:pointer';
-  btnCancel.textContent = 'Annulla';
-  var btnConfirm = document.createElement('button');
-  btnConfirm.id = 'logoutConfirm';
-  btnConfirm.style.cssText = 'flex:1;padding:11px;border:none;border-radius:10px;background:#ff4747;color:#fff;font-size:.88rem;font-weight:600;cursor:pointer';
-  btnConfirm.textContent = 'Esci';
-  row.appendChild(btnCancel);
-  row.appendChild(btnConfirm);
-  box.appendChild(title);
-  box.appendChild(sub);
-  box.appendChild(row);
+  var btnC = document.createElement('button');
+  btnC.style.cssText = 'flex:1;padding:11px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:transparent;color:#8888a0;font-size:.88rem;font-weight:600;cursor:pointer';
+  btnC.textContent = 'Annulla';
+  var btnO = document.createElement('button');
+  btnO.style.cssText = 'flex:1;padding:11px;border:none;border-radius:10px;background:#ff4747;color:#fff;font-size:.88rem;font-weight:600;cursor:pointer';
+  btnO.textContent = 'Esci';
+  row.appendChild(btnC); row.appendChild(btnO);
+  box.appendChild(title); box.appendChild(sub); box.appendChild(row);
   overlay.appendChild(box);
   document.body.appendChild(overlay);
-  document.getElementById('logoutCancel').onclick = function(){ document.body.removeChild(overlay); };
-  document.getElementById('logoutConfirm').onclick = function(){
+  btnC.onclick = function(){ document.body.removeChild(overlay); };
+  btnO.onclick = function(){
     document.body.removeChild(overlay);
-    localStorage.clear();
-    sessionStorage.clear();
-    currentUser=null;
-    timbrature=[];
-    dipendenti=[];
+    localStorage.clear(); sessionStorage.clear();
+    currentUser = null; timbrature = []; dipendenti = [];
     window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now();
   };
 }
 
 function showAuth() {
   document.getElementById('authScreen').style.display = 'flex';
-  document.getElementById('appScreen').style.display  = 'none';
-  document.getElementById('mobileNav').style.display  = 'none';
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('mobileNav').style.display = 'none';
 }
 
 function showApp() {
   document.getElementById('authScreen').style.display = 'none';
-  document.getElementById('appScreen').style.display  = 'block';
-  var isMobile = window.innerWidth<=768 || window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-  document.getElementById('mobileNav').style.display  = isMobile ? 'flex' : 'none';
-  // Forza logout visibile sempre
-  var btnTop = document.getElementById('btnLogoutTop');
-  if (btnTop) btnTop.style.display = 'block';
+  document.getElementById('appScreen').style.display = 'block';
+  var isMob = window.innerWidth < 1024 || window.navigator.standalone || window.matchMedia('(display-mode:standalone)').matches;
+  document.getElementById('mobileNav').style.display = isMob ? 'flex' : 'none';
   var admin = isAdmin();
   var av = document.getElementById('userAv');
   av.textContent = currentUser.nome.charAt(0).toUpperCase();
-  av.className   = 'user-av '+(admin?'admin':'dip');
+  av.className = 'user-av '+(admin?'admin':'dip');
   document.getElementById('userName').textContent = currentUser.nome.split(' ')[0];
   var rp = document.getElementById('rolePill');
   rp.textContent = admin ? 'Admin' : 'Dipendente';
-  rp.className   = 'role-pill '+(admin?'admin':'dip');
+  rp.className = 'role-pill '+(admin?'admin':'dip');
   document.getElementById('swDipWidget').style.display = admin ? '' : 'none';
   document.getElementById('fl_dip_wrap').style.display = admin ? '' : 'none';
-  document.getElementById('f_dip_wrap').style.display  = admin ? '' : 'none';
+  document.getElementById('f_dip_wrap').style.display = admin ? '' : 'none';
   document.getElementById('f_data').valueAsDate = new Date();
 }
 
 function isAdmin() {
-  return (currentUser && (currentUser.ruolo||'').toLowerCase().trim() === 'admin');
+  return !!(currentUser && (currentUser.ruolo||'').toLowerCase().trim() === 'admin');
 }
 
 // ── API ──────────────────────────────────
 async function api(action, params) {
-  params = params||{};
+  params = params || {};
   try {
     var url = new URL(API_URL);
     url.searchParams.set('action', action);
-    for (var k in params) {
-      if (params[k]!==undefined && params[k]!==null) url.searchParams.set(k, String(params[k]));
-    }
+    Object.keys(params).forEach(function(k){
+      if (params[k] !== undefined && params[k] !== null) url.searchParams.set(k, String(params[k]));
+    });
     var resp = await fetch(url.toString());
     return await resp.json();
-  } catch(err) { return {success:false,error:'Errore connessione: '+err.message}; }
+  } catch(err) { return {success:false, error:'Errore connessione: '+err.message}; }
 }
 
 // ── LOAD DATA ────────────────────────────
@@ -582,29 +556,37 @@ async function loadData() {
     var results = await Promise.all([api('get_users'), api('get')]);
     var uRes = results[0], eRes = results[1];
     if (uRes.success) {
-      dipendenti = uRes.users||[];
-      try { populateSelects(); } catch(e) { console.error('populateSelects error:', e); }
+      dipendenti = uRes.users || [];
+      populateSelects();
     } else {
-      toast('Errore caricamento utenti: '+(uRes.error||''), 'error');
+      toast('Errore utenti: '+(uRes.error||'?'), 'error');
     }
     if (eRes.success) {
-      var all = eRes.data||[];
+      var all = eRes.data || [];
       timbrature = isAdmin() ? all : all.filter(function(t){ return String(t.userId)===String(currentUser.id); });
-      try { populateMesi(); } catch(e) { console.error('populateMesi error:', e); }
-      try { aggiornaTutto(); } catch(e) { console.error('aggiornaTutto error:', e); }
-      try { onFormChange(); } catch(e) { console.error('onFormChange error:', e); }
+      populateMesi();
+      aggiornaTutto();
+      onFormChange();
     } else {
-      toast('Errore caricamento dati: '+(eRes.error||''), 'error');
-      // Forza tabella vuota invece di "Caricamento..."
-      var tbody = document.getElementById('tabellaBody');
-      if (tbody) tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><div class="empty-msg">Nessuna timbratura trovata</div></div></td></tr>';
+      toast('Errore dati: '+(eRes.error||'?'), 'error');
     }
   } catch(err) {
-    toast('Errore di rete: '+err.message, 'error');
-    var tbody = document.getElementById('tabellaBody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">⚠️</div><div class="empty-msg">Errore connessione</div></div></td></tr>';
+    toast('Errore: '+err.message, 'error');
   } finally {
     hideLoader();
+  }
+}
+
+function populateSelects() {
+  if (isAdmin()) {
+    var opts = dipendenti.map(function(d){ return '<option value="'+d.id+'">'+d.nome.trim()+'</option>'; }).join('');
+    document.getElementById('f_dip').innerHTML = '<option value="">Seleziona...</option>'+opts;
+    document.getElementById('fl_dip').innerHTML = '<option value="">Tutti</option>'+opts;
+    // Listener su f_dip per sincronizzare con fl_dip
+    document.getElementById('f_dip').onchange = function(){ onDipChange(); };
+  } else {
+    var me = dipendenti.find(function(d){ return String(d.id)===String(currentUser.id); });
+    if (me) document.getElementById('f_dip').innerHTML = '<option value="'+me.id+'" selected>'+me.nome.trim()+'</option>';
   }
 }
 
@@ -613,69 +595,53 @@ function populateMesi() {
   if (!sel) return;
   var mesiPresenti = {};
   timbrature.forEach(function(t){
-    if (t.data) {
-      var parts = t.data.split('-');
-      var key = parts[0]+'-'+parts[1];
-      mesiPresenti[key] = 1;
-    }
+    if (t.data) { var k = t.data.substring(0,7); mesiPresenti[k] = 1; }
   });
   var keys = Object.keys(mesiPresenti).sort();
   var cur = sel.value;
   sel.innerHTML = '<option value="">Tutti i mesi</option>';
   keys.forEach(function(k){
-    var parts = k.split('-');
-    var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
+    var p = k.split('-');
+    var d = new Date(parseInt(p[0]), parseInt(p[1])-1, 1);
     var label = d.toLocaleString('it-IT', {month:'long', year:'numeric'});
     var opt = document.createElement('option');
     opt.value = k;
     opt.textContent = label.charAt(0).toUpperCase()+label.slice(1);
     sel.appendChild(opt);
   });
-  if (cur) sel.value = cur;
-  // Imposta mese corrente di default
-  if (!cur) {
+  if (cur) { sel.value = cur; }
+  else {
     var now = new Date();
     var nowKey = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'));
     if (mesiPresenti[nowKey]) sel.value = nowKey;
   }
 }
 
-function populateSelects() {
-  if (isAdmin()) {
-    var opts = dipendenti.map(function(d){ return '<option value="'+d.id+'">'+d.nome.trim()+'</option>'; }).join('');
-    document.getElementById('f_dip').innerHTML  = '<option value="">Seleziona...</option>'+opts;
-    document.getElementById('fl_dip').innerHTML = '<option value="">Tutti</option>'+opts;
-  } else {
-    var me = dipendenti.find(function(d){ return String(d.id)===String(currentUser.id); });
-    if (me) document.getElementById('f_dip').innerHTML = '<option value="'+me.id+'" selected>'+me.nome.trim()+'</option>';
-  }
-}
-
 // ── FILTRO DIPENDENTE ────────────────────
-// Restituisce le timbrature filtrate in base al select fl_dip
 function getTimbratureFiltrate() {
-  if (!isAdmin()) {
-    // dipendente vede solo le sue
-    return timbrature.filter(function(t){ return String(t.userId)===String(currentUser.id); });
-  }
-  var el = document.getElementById('fl_dip');
-  var val = el ? el.value.trim() : '';
-  if (!val) return timbrature; // tutti
+  if (!isAdmin()) return timbrature.filter(function(t){ return String(t.userId)===String(currentUser.id); });
+  var fl = document.getElementById('fl_dip');
+  var val = fl ? fl.value.trim() : '';
+  if (!val) return timbrature;
   return timbrature.filter(function(t){ return String(t.userId)===val; });
 }
 
-// ── AGGIORNA TUTTO ───────────────────────
+function getFiltraMese() {
+  var el = document.getElementById('fl_mese');
+  return el ? el.value.trim() : '';
+}
+
 function aggiornaTutto() {
+  if (!currentUser) return;
   renderTabella();
   renderSidebar();
   renderStats();
 }
 
-// Quando l'admin cambia dipendente nel FORM, sincronizza anche il filtro
 function onDipChange() {
   if (isAdmin()) {
     var val = document.getElementById('f_dip').value;
-    var fl  = document.getElementById('fl_dip');
+    var fl = document.getElementById('fl_dip');
     if (fl) fl.value = val;
     aggiornaTutto();
   }
@@ -695,9 +661,9 @@ function clearFiltri() {
 
 // ── RENDER TABELLA ───────────────────────
 function renderTabella() {
-  var fd  = document.getElementById('fl_data').value;
-  var ft  = document.getElementById('fl_tipo').value;
-  var fm  = document.getElementById('fl_mese') ? document.getElementById('fl_mese').value : '';
+  var fd = document.getElementById('fl_data').value;
+  var ft = document.getElementById('fl_tipo').value;
+  var fm = getFiltraMese();
   var rows = getTimbratureFiltrate().slice().sort(function(a,b){
     if (a.data!==b.data) return a.data.localeCompare(b.data);
     return (a.inizio||'').localeCompare(b.inizio||'');
@@ -709,7 +675,7 @@ function renderTabella() {
   if (!rows.length) { tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-msg">Nessuna timbratura trovata</div></div></td></tr>'; return; }
   var TL={work:'Lavoro',straordinario:'Straord.',ferie:'Ferie',malattia:'Malattia',riposo:'Riposo'};
   tbody.innerHTML = rows.map(function(t){
-    var dip  = dipendenti.find(function(d){ return String(d.id)===String(t.userId); });
+    var dip = dipendenti.find(function(d){ return String(d.id)===String(t.userId); });
     var nome = dip ? dip.nome.trim() : (t.nome||'—');
     var canEdit = isAdmin() || String(t.userId)===String(currentUser.id);
     return '<tr>'
@@ -718,91 +684,80 @@ function renderTabella() {
       +'<td class="td-time">'+(t.inizio||'—')+' → '+(t.fine||'—')+'</td>'
       +'<td class="td-ore">'+Number(t.ore||0).toFixed(2)+'h</td>'
       +'<td><span class="badge badge-'+(t.tipo||'work')+'">'+(TL[t.tipo]||t.tipo)+'</span></td>'
-      +'<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(t.note||'')+'">'+(t.note||'—')+'</td>'
+      +'<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(t.note||'—')+'</td>'
       +'<td><div style="display:flex;gap:4px">'
-      +(canEdit?'<button class="icon-btn icon-edit" onclick="modificaEntry(\''+t.id+'\')">✏️</button>'
-               +'<button class="icon-btn icon-del" onclick="eliminaEntry(\''+t.id+'\')">🗑</button>':'')
+      +(canEdit?'<button class="icon-btn icon-edit" onclick="modificaEntry(\''+t.id+'\')">✏️</button><button class="icon-btn icon-del" onclick="eliminaEntry(\''+t.id+'\')">🗑</button>':'')
       +'</div></td></tr>';
   }).join('');
 }
 
 // ── RENDER SIDEBAR ───────────────────────
-function getFiltraMese() {
-  var el = document.getElementById('fl_mese');
-  return el ? el.value.trim() : '';
-}
-
 function renderSidebar() {
-  var oggi  = todayISO();
-  var tf    = getTimbratureFiltrate();
-  var fm    = getFiltraMese();
-
-  // Ore oggi: mostra solo se il mese selezionato è il mese corrente (o nessun filtro)
+  var oggi = todayISO();
+  var tf = getTimbratureFiltrate();
+  var fm = getFiltraMese();
   var meseCorr = oggi.substring(0,7);
-  var oR = [];
-  if (!fm || fm === meseCorr) {
-    oR = tf.filter(function(t){ return t.data===oggi; });
-  }
 
-  // Ore mese: filtra per il mese selezionato o mese corrente
+  // Ore oggi: solo se il mese sel è il corrente o nessun filtro
+  var oR = (!fm || fm===meseCorr) ? tf.filter(function(t){ return t.data===oggi; }) : [];
+  var sw_oggi = document.getElementById('sw_oggi');
+  var sw_oggi_n = document.getElementById('sw_oggi_n');
+  if (sw_oggi) sw_oggi.textContent = sum(oR).toFixed(2)+'h';
+  if (sw_oggi_n) sw_oggi_n.textContent = oR.length+' registrazioni';
+
+  // Ore mese: filtra per mese selezionato
   var mR;
+  var lblMese = document.getElementById('lblMese');
   if (fm) {
     mR = tf.filter(function(t){ return t.data && t.data.substring(0,7)===fm; });
-    // Aggiorna label widget
-    var parts = fm.split('-');
-    var dLabel = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
-    var label = dLabel.toLocaleString('it-IT',{month:'long',year:'numeric'});
-    var swMeseEl=document.getElementById('sw_mese');
-    if(swMeseEl&&swMeseEl.parentElement) { var lbl=swMeseEl.parentElement.querySelector('.sw-label'); if(lbl) lbl.textContent='Ore '+label.charAt(0).toUpperCase()+label.slice(1); }
+    var p = fm.split('-');
+    var dl = new Date(parseInt(p[0]), parseInt(p[1])-1, 1);
+    var lbl = dl.toLocaleString('it-IT',{month:'long',year:'numeric'});
+    if (lblMese) lblMese.textContent = 'Ore '+lbl.charAt(0).toUpperCase()+lbl.slice(1);
   } else {
-    var mese = new Date().getMonth();
-    var anno = new Date().getFullYear();
+    var mese = new Date().getMonth(), anno = new Date().getFullYear();
     mR = tf.filter(function(t){ var d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
-    var swMeseEl2=document.getElementById('sw_mese');
-    if(swMeseEl2&&swMeseEl2.parentElement) { var lbl2=swMeseEl2.parentElement.querySelector('.sw-label'); if(lbl2) lbl2.textContent='Ore Questo Mese'; }
+    if (lblMese) lblMese.textContent = 'Ore Questo Mese';
   }
+  var sw_mese = document.getElementById('sw_mese');
+  var sw_mese_n = document.getElementById('sw_mese_n');
+  var sw_tot = document.getElementById('sw_tot');
+  if (sw_mese) sw_mese.textContent = sum(mR).toFixed(2)+'h';
+  if (sw_mese_n) sw_mese_n.textContent = mR.length+' registrazioni';
+  if (sw_tot) sw_tot.textContent = mR.length;
 
-  var elOggi=document.getElementById('sw_oggi'); if(elOggi) elOggi.textContent=sum(oR).toFixed(2)+'h';
-  var elOggiN=document.getElementById('sw_oggi_n'); if(elOggiN) elOggiN.textContent=oR.length+' registrazioni';
-  var elMese=document.getElementById('sw_mese'); if(elMese) elMese.textContent=sum(mR).toFixed(2)+'h';
-  var elMeseN=document.getElementById('sw_mese_n'); if(elMeseN) elMeseN.textContent=mR.length+' registrazioni';
-  var elTot=document.getElementById('sw_tot'); if(elTot) elTot.textContent=mR.length;
   if (!isAdmin()) return;
   var byD = {};
-  tf.forEach(function(t){
+  mR.forEach(function(t){
     if (!byD[t.userId]) byD[t.userId]={ore:0,gg:{}};
     byD[t.userId].ore += Number(t.ore)||0;
     byD[t.userId].gg[t.data] = 1;
   });
   var keys = Object.keys(byD).sort(function(a,b){ return byD[b].ore-byD[a].ore; });
-  document.getElementById('sw_dip').innerHTML = keys.length
+  var sw_dip = document.getElementById('sw_dip');
+  if (sw_dip) sw_dip.innerHTML = keys.length
     ? keys.map(function(id){
-        var d   = dipendenti.find(function(x){ return String(x.id)===String(id); });
-        var gg  = Object.keys(byD[id].gg).length;
-        return '<div class="dip-row"><span class="dip-name">'+(d?d.nome.trim():'—')+'</span>'
-              +'<span class="dip-ore">'+byD[id].ore.toFixed(1)+'h</span>'
-              +'<span class="dip-gg">'+gg+'gg</span></div>';
+        var d = dipendenti.find(function(x){ return String(x.id)===String(id); });
+        var gg = Object.keys(byD[id].gg).length;
+        return '<div class="dip-row"><span class="dip-name">'+(d?d.nome.trim():'—')+'</span><span class="dip-ore">'+byD[id].ore.toFixed(1)+'h</span><span class="dip-gg">'+gg+'gg</span></div>';
       }).join('')
     : '<div class="empty" style="padding:10px 0"><div class="empty-msg">Nessun dato</div></div>';
 }
 
 // ── RENDER STATS ─────────────────────────
 function renderStats() {
-  var tf      = getTimbratureFiltrate();
-  var fm      = getFiltraMese();
+  var tf = getTimbratureFiltrate();
+  var fm = getFiltraMese();
   var mese, anno, meseTxt, mR;
   if (fm) {
-    var parts = fm.split('-');
-    mese = parseInt(parts[1])-1;
-    anno = parseInt(parts[0]);
-    var dl = new Date(anno, mese, 1);
+    var p = fm.split('-'); mese=parseInt(p[1])-1; anno=parseInt(p[0]);
+    var dl = new Date(anno,mese,1);
     meseTxt = dl.toLocaleString('it-IT',{month:'long',year:'numeric'});
     mR = tf.filter(function(t){ return t.data && t.data.substring(0,7)===fm; });
   } else {
-    mese = new Date().getMonth();
-    anno = new Date().getFullYear();
-    meseTxt = new Date().toLocaleString('it-IT',{month:'long',year:'numeric'});
-    mR = tf.filter(function(t){ var d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
+    mese=new Date().getMonth(); anno=new Date().getFullYear();
+    meseTxt=new Date().toLocaleString('it-IT',{month:'long',year:'numeric'});
+    mR=tf.filter(function(t){ var d=new Date(t.data); return d.getMonth()===mese&&d.getFullYear()===anno; });
   }
   var ow=sum(mR.filter(function(t){return t.tipo==='work';}));
   var oe=sum(mR.filter(function(t){return t.tipo==='straordinario';}));
@@ -811,263 +766,232 @@ function renderStats() {
     '<div class="big-stat"><div class="bs-val">'+ow.toFixed(1)+'h</div><div class="bs-label">Ore lavoro — '+meseTxt+'</div></div>'
    +'<div class="big-stat"><div class="bs-val" style="color:var(--accent2)">'+oe.toFixed(1)+'h</div><div class="bs-label">Straordinari — '+meseTxt+'</div></div>'
    +'<div class="big-stat"><div class="bs-val" style="color:var(--text)">'+gg+'</div><div class="bs-label">Giorni con presenze</div></div>';
-  document.getElementById('statsTableTitle').textContent = isAdmin() ? 'Ore per Dipendente — Mese Corrente' : 'Le mie ore — Mese Corrente';
+  document.getElementById('statsTableTitle').textContent = isAdmin() ? 'Ore per Dipendente — '+meseTxt : 'Le mie ore — '+meseTxt;
   var byD={};
   mR.forEach(function(t){
-    if(!byD[t.userId]) byD[t.userId]={work:0,extra:0,ferie:0,mal:0,gg:{}};
-    var k=t.tipo==='straordinario'?'extra':(t.tipo||'work');
+    if(!byD[t.userId]) byD[t.userId]={work:0,extra:0,ferie:0,mal:0,riposo:0,gg:{}};
+    var k=t.tipo==='straordinario'?'extra':(t.tipo==='malattia'?'mal':(t.tipo||'work'));
     byD[t.userId][k]=(byD[t.userId][k]||0)+Number(t.ore||0);
     byD[t.userId].gg[t.data]=1;
   });
   var keys2=Object.keys(byD);
   document.getElementById('statsTable').innerHTML = !keys2.length
-    ? '<div class="empty"><div class="empty-msg">Nessun dato per il mese</div></div>'
-    : '<div class="tbl-wrap"><table><thead><tr><th>Dipendente</th><th>Giorni</th><th>Lavoro</th><th>Straord.</th><th>Ferie</th><th>Malattia</th><th>Totale</th></tr></thead><tbody>'
+    ? '<div class="empty"><div class="empty-msg">Nessun dato</div></div>'
+    : '<div class="tbl-wrap"><table><thead><tr><th>Dipendente</th><th>Giorni</th><th>Lavoro</th><th>Ferie</th><th>Malattia</th><th>Riposo</th><th>Totale</th></tr></thead><tbody>'
       +keys2.map(function(id){
         var d=dipendenti.find(function(x){return String(x.id)===String(id);});
-        var s=byD[id]; var tot=(s.work||0)+(s.extra||0)+(s.ferie||0)+(s.mal||0);
-        var ggN=Object.keys(s.gg).length;
-        return '<tr><td class="td-name">'+(d?d.nome.trim():'—')+'</td><td>'+ggN+'</td>'
+        var s=byD[id]; var tot=(s.work||0)+(s.extra||0);
+        return '<tr><td class="td-name">'+(d?d.nome.trim():'—')+'</td><td>'+Object.keys(s.gg).length+'</td>'
           +'<td class="td-ore">'+s.work.toFixed(2)+'h</td>'
-          +'<td style="color:var(--accent2);font-family:var(--mono)">'+s.extra.toFixed(2)+'h</td>'
-          +'<td style="color:#7b9fff;font-family:var(--mono)">'+s.ferie.toFixed(2)+'h</td>'
-          +'<td style="color:var(--warning);font-family:var(--mono)">'+s.mal.toFixed(2)+'h</td>'
+          +'<td style="color:#7b9fff;font-family:\'DM Mono\'">'+s.ferie.toFixed(2)+'h</td>'
+          +'<td style="color:var(--warning);font-family:\'DM Mono\'">'+s.mal.toFixed(2)+'h</td>'
+          +'<td style="color:var(--text2);font-family:\'DM Mono\'">'+s.riposo.toFixed(2)+'h</td>'
           +'<td class="td-ore">'+tot.toFixed(2)+'h</td></tr>';
       }).join('')+'</tbody></table></div>';
   var mesi=[];
   for(var i=0;i<6;i++){var dd=new Date(anno,mese-i,1);mesi.push({m:dd.getMonth(),y:dd.getFullYear(),label:dd.toLocaleString('it-IT',{month:'long',year:'numeric'})});}
   document.getElementById('statsMonthly').innerHTML =
-    '<div class="tbl-wrap"><table><thead><tr><th>Mese</th><th>Registrazioni</th><th>Ore Lavoro</th><th>Straord.</th><th>Totale</th></tr></thead><tbody>'
+    '<div class="tbl-wrap"><table><thead><tr><th>Mese</th><th>Registrazioni</th><th>Ore Lavoro</th><th>Totale</th></tr></thead><tbody>'
     +mesi.map(function(item){
       var rows=tf.filter(function(t){var d=new Date(t.data);return d.getMonth()===item.m&&d.getFullYear()===item.y;});
       var rw=sum(rows.filter(function(t){return t.tipo==='work';}));
-      var re=sum(rows.filter(function(t){return t.tipo==='straordinario';}));
-      return '<tr><td class="td-name">'+item.label+'</td><td>'+rows.length+'</td>'
-        +'<td class="td-ore">'+rw.toFixed(2)+'h</td>'
-        +'<td style="color:var(--accent2);font-family:var(--mono)">'+re.toFixed(2)+'h</td>'
-        +'<td class="td-ore">'+(rw+re).toFixed(2)+'h</td></tr>';
+      return '<tr><td class="td-name">'+item.label+'</td><td>'+rows.length+'</td><td class="td-ore">'+rw.toFixed(2)+'h</td><td class="td-ore">'+rw.toFixed(2)+'h</td></tr>';
     }).join('')+'</tbody></table></div>';
 }
 
 // ── FORM ─────────────────────────────────
+function onFormChange() { updateOrePreview(); checkExisting(); checkOverlap(); }
+
 function onTipoChange() {
   var tipo = document.getElementById('f_tipo').value;
   var inizio = document.getElementById('f_inizio');
-  var fine   = document.getElementById('f_fine');
-  var pausa  = document.getElementById('f_pausa');
-  if (tipo === 'ferie' || tipo === 'malattia' || tipo === 'riposo') {
-    inizio.value = '00:00';
-    fine.value   = '00:00';
-    inizio.disabled = true;
-    fine.disabled   = true;
-    pausa.value = '0';
-    pausa.disabled  = true;
-    inizio.style.opacity = '0.4';
-    fine.style.opacity   = '0.4';
-    pausa.style.opacity  = '0.4';
+  var fine = document.getElementById('f_fine');
+  var pausa = document.getElementById('f_pausa');
+  if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo') {
+    inizio.value='00:00'; fine.value='00:00';
+    inizio.disabled=true; fine.disabled=true; pausa.disabled=true;
+    inizio.style.opacity='0.4'; fine.style.opacity='0.4'; pausa.style.opacity='0.4';
   } else {
-    inizio.disabled = false;
-    fine.disabled   = false;
-    pausa.disabled  = false;
-    inizio.style.opacity = '';
-    fine.style.opacity   = '';
-    pausa.style.opacity  = '';
-    if (inizio.value === '00:00' && fine.value === '00:00') {
-      inizio.value = '';
-      fine.value   = '';
-    }
+    inizio.disabled=false; fine.disabled=false; pausa.disabled=false;
+    inizio.style.opacity=''; fine.style.opacity=''; pausa.style.opacity='';
+    if (inizio.value==='00:00'&&fine.value==='00:00') { inizio.value=''; fine.value=''; }
   }
   onFormChange();
 }
-
-function onFormChange() { updateOrePreview(); checkExisting(); checkOverlap(); }
 
 function getFormUserId() {
   return isAdmin() ? document.getElementById('f_dip').value : String(currentUser.id);
 }
 
 function updateOrePreview() {
-  var tipo   = document.getElementById('f_tipo').value;
+  var tipo = document.getElementById('f_tipo').value;
+  var prev = document.getElementById('orePreview');
+  var val = document.getElementById('oreVal');
+  if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo') { val.textContent='0.00h'; prev.className='ore-preview ok'; return; }
   var inizio = document.getElementById('f_inizio').value;
-  var fine   = document.getElementById('f_fine').value;
-  var pausa  = parseFloat(document.getElementById('f_pausa').value)||0;
-  var prev   = document.getElementById('orePreview');
-  var val    = document.getElementById('oreVal');
-  if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo'){val.textContent='0.00h';prev.className='ore-preview ok';return;}
-  if (!inizio||!fine){val.textContent='—';prev.className='ore-preview';return;}
-  var iMin2=t2m(inizio), fMin2=t2m(fine);
-  if(fMin2<iMin2) fMin2+=1440; // turno notturno
-  var tot   = fMin2-iMin2;
-  var nette = Math.max(0,tot/60-pausa);
-  if (tot<=0){val.textContent='Orario non valido';prev.className='ore-preview error';return;}
+  var fine = document.getElementById('f_fine').value;
+  var pausa = parseFloat(document.getElementById('f_pausa').value)||0;
+  if (!inizio||!fine) { val.textContent='—'; prev.className='ore-preview'; return; }
+  var iMin=t2m(inizio), fMin=t2m(fine);
+  if (fMin<iMin) fMin+=1440;
+  var tot=fMin-iMin;
+  var nette=Math.max(0,tot/60-pausa);
+  if (tot<=0) { val.textContent='Orario non valido'; prev.className='ore-preview error'; return; }
   val.textContent=nette.toFixed(2)+'h';
   prev.className=pausa>0?'ore-preview warn':'ore-preview ok';
 }
 
 function checkExisting() {
-  var data   = document.getElementById('f_data').value;
+  var data = document.getElementById('f_data').value;
   var userId = getFormUserId();
-  var box    = document.getElementById('existingBox');
-  if (!data||!userId){box.classList.remove('visible');return;}
-  var list   = timbrature.filter(function(t){return t.data===data&&String(t.userId)===String(userId)&&t.tipo==='work'&&t.id!==editingId;});
-  if (!list.length){box.classList.remove('visible');return;}
+  var box = document.getElementById('existingBox');
+  if (!data||!userId) { box.classList.remove('visible'); return; }
+  var list = timbrature.filter(function(t){ return t.data===data&&String(t.userId)===String(userId)&&t.tipo==='work'&&t.id!==editingId; });
+  if (!list.length) { box.classList.remove('visible'); return; }
   box.classList.add('visible');
   document.getElementById('existingList').innerHTML = list
-    .sort(function(a,b){return (a.inizio||'').localeCompare(b.inizio||'');})
-    .map(function(t){return '<div class="existing-row"><span class="existing-time">'+(t.inizio||'—')+' → '+(t.fine||'—')+'</span><span class="existing-ore">'+Number(t.ore||0).toFixed(2)+'h</span></div>';})
+    .sort(function(a,b){ return (a.inizio||'').localeCompare(b.inizio||''); })
+    .map(function(t){ return '<div class="existing-row"><span class="existing-time">'+(t.inizio||'—')+' → '+(t.fine||'—')+'</span><span class="existing-ore">'+Number(t.ore||0).toFixed(2)+'h</span></div>'; })
     .join('');
 }
 
 function checkOverlap() {
-  var data   = document.getElementById('f_data').value;
-  var inizio = document.getElementById('f_inizio').value;
-  var fine   = document.getElementById('f_fine').value;
-  var userId = getFormUserId();
-  var tipo   = document.getElementById('f_tipo').value;
-  var al     = document.getElementById('overlapAlert');
-  var desc   = document.getElementById('overlapDesc');
-  var btn    = document.getElementById('btnSalva');
-  function clear(){blockSave=false;al.classList.remove('visible');btn.disabled=false;btn.innerHTML=editingId?'Aggiorna':'Salva';btn.className='btn btn-accent';}
-  if (!data||!userId){clear();return;}
-  if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo'){clear();return;}
-  if (!inizio||!fine){clear();return;}
-  var iM=t2m(inizio),fM=t2m(fine);
-  if (fM===iM){blockSave=true;desc.textContent='Inizio e fine coincidono.';al.classList.add('visible');btn.disabled=true;btn.innerHTML='⛔ Orario non valido';btn.className='btn btn-ghost';return;}
-  if (tipo!=='work'){clear();return;}
+  var data=document.getElementById('f_data').value;
+  var inizio=document.getElementById('f_inizio').value;
+  var fine=document.getElementById('f_fine').value;
+  var userId=getFormUserId();
+  var tipo=document.getElementById('f_tipo').value;
+  var al=document.getElementById('overlapAlert');
+  var desc=document.getElementById('overlapDesc');
+  var btn=document.getElementById('btnSalva');
+  function clear(){ blockSave=false; al.classList.remove('visible'); btn.disabled=false; btn.innerHTML=editingId?'Aggiorna':'Salva'; btn.className='btn btn-accent'; }
+  if (!data||!userId) { clear(); return; }
+  if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo') { clear(); return; }
+  if (!inizio||!fine) { clear(); return; }
+  var iM=t2m(inizio), fM=t2m(fine);
+  if (fM===iM) { blockSave=true; desc.textContent='Inizio e fine coincidono.'; al.classList.add('visible'); btn.disabled=true; btn.innerHTML='⛔ Orario non valido'; btn.className='btn btn-ghost'; return; }
+  if (tipo!=='work') { clear(); return; }
   var hit=findOverlap(userId,data,inizio,fine,editingId);
-  if (hit){blockSave=true;desc.textContent=inizio+'–'+fine+' si sovrappone con '+hit.inizio+'–'+hit.fine+'.';al.classList.add('visible');btn.disabled=true;btn.innerHTML='⛔ Sovrapposizione!';btn.className='btn btn-ghost';}
+  if (hit) { blockSave=true; desc.textContent=inizio+'–'+fine+' si sovrappone con '+hit.inizio+'–'+hit.fine+'.'; al.classList.add('visible'); btn.disabled=true; btn.innerHTML='⛔ Sovrapposizione!'; btn.className='btn btn-ghost'; }
   else clear();
 }
 
-function findOverlap(userId,data,inizio,fine,excludeId){
-  var cands=timbrature.filter(function(t){return t.data===data&&String(t.userId)===String(userId)&&t.tipo==='work'&&t.id!==excludeId;});
+function findOverlap(userId,data,inizio,fine,excludeId) {
+  var cands=timbrature.filter(function(t){ return t.data===data&&String(t.userId)===String(userId)&&t.tipo==='work'&&t.id!==excludeId; });
   if (!cands.length) return null;
-  var nI=t2m(inizio),nF=t2m(fine);
-  if(nF<nI)nF+=1440; // turno notturno
-  for(var i=0;i<cands.length;i++){
-    var eI=t2m(cands[i].inizio),eF=t2m(cands[i].fine);
-    if(eF<=eI)eF+=1440;
-    if(nI<eF&&eI<nF)return cands[i];
+  var nI=t2m(inizio), nF=t2m(fine);
+  if (nF<nI) nF+=1440;
+  for (var i=0;i<cands.length;i++) {
+    var eI=t2m(cands[i].inizio), eF=t2m(cands[i].fine);
+    if (eF<=eI) eF+=1440;
+    if (nI<eF&&eI<nF) return cands[i];
   }
   return null;
 }
 
 async function salva() {
-  if (blockSave){toast('Correggi prima di salvare','warning');return;}
-  var data   = document.getElementById('f_data').value;
-  var userId = getFormUserId();
-  var inizio = document.getElementById('f_inizio').value;
-  var fine   = document.getElementById('f_fine').value;
-  var tipo   = document.getElementById('f_tipo').value;
-  var pausa  = parseFloat(document.getElementById('f_pausa').value)||0;
-  var note   = document.getElementById('f_note').value.trim();
-  if (!data||!userId||!inizio||!fine){toast('Compila tutti i campi obbligatori','warning');return;}
+  if (blockSave) { toast('Correggi prima di salvare','warning'); return; }
+  var data=document.getElementById('f_data').value;
+  var userId=getFormUserId();
+  var inizio=document.getElementById('f_inizio').value;
+  var fine=document.getElementById('f_fine').value;
+  var tipo=document.getElementById('f_tipo').value;
+  var pausa=parseFloat(document.getElementById('f_pausa').value)||0;
+  var note=document.getElementById('f_note').value.trim();
+  if (!data||!userId) { toast('Compila tutti i campi obbligatori','warning'); return; }
   var ore;
   if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo') {
-    ore = 0;
-    inizio = '00:00'; fine = '00:00';
+    ore=0; inizio='00:00'; fine='00:00';
   } else {
+    if (!inizio||!fine) { toast('Inserisci orario inizio e fine','warning'); return; }
     var iMin=t2m(inizio), fMin=t2m(fine);
-    if(fMin<iMin) fMin+=1440; // turno notturno
-    var totMin = fMin-iMin;
-    if (totMin<=0){toast('Orario non valido','error');return;}
-    ore = Math.max(0,totMin/60-pausa);
+    if (fMin<iMin) fMin+=1440;
+    var totMin=fMin-iMin;
+    if (totMin<=0) { toast('Orario non valido','error'); return; }
+    ore=Math.max(0,totMin/60-pausa);
   }
-  // Blocca ferie/malattia/riposo se esistono già ore di lavoro quel giorno
+  // Blocco ferie/malattia/riposo se ci sono ore quel giorno
   if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo') {
-    var oreEsistenti = timbrature.filter(function(t){
-      return t.data===data && String(t.userId)===String(userId) && t.tipo==='work' && t.id!==editingId;
-    });
-    if (oreEsistenti.length) {
-      toast('Impossibile inserire '+tipo+': esistono già ore di lavoro in questa data','error');
-      return;
-    }
+    var oreEs=timbrature.filter(function(t){ return t.data===data&&String(t.userId)===String(userId)&&t.tipo==='work'&&t.id!==editingId; });
+    if (oreEs.length) { toast('Impossibile: esistono già ore di lavoro in questa data','error'); return; }
   }
-  // Blocca lavoro se esiste già ferie/malattia/riposo quel giorno
-  if (tipo==='work'||tipo==='straordinario') {
-    var giornataSpec = timbrature.filter(function(t){
-      return t.data===data && String(t.userId)===String(userId) &&
-             (t.tipo==='ferie'||t.tipo==='malattia'||t.tipo==='riposo') && t.id!==editingId;
-    });
-    if (giornataSpec.length) {
-      toast('Impossibile inserire ore di lavoro: questa data ha già '+giornataSpec[0].tipo,'error');
-      return;
-    }
+  if (tipo==='work') {
+    var giSpec=timbrature.filter(function(t){ return t.data===data&&String(t.userId)===String(userId)&&(t.tipo==='ferie'||t.tipo==='malattia'||t.tipo==='riposo')&&t.id!==editingId; });
+    if (giSpec.length) { toast('Impossibile: questa data ha già '+giSpec[0].tipo,'error'); return; }
   }
-
-  var dip    = dipendenti.find(function(d){return String(d.id)===String(userId);});
-  var nome   = dip?dip.nome.trim():'';
-  var params = {userId:userId,nome:nome,data:data,tipo:tipo,inizio:inizio,fine:fine,ore:ore.toFixed(4)};
+  var dip=dipendenti.find(function(d){ return String(d.id)===String(userId); });
+  var nome=dip?dip.nome.trim():'';
+  var params={userId:userId,nome:nome,data:data,tipo:tipo,inizio:inizio,fine:fine,ore:ore.toFixed(4)};
   if (note) params.note=note;
   var btn=document.getElementById('btnSalva');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
-  var res=editingId?await api('update',Object.assign({id:editingId},params)):await api('save',params);
-  btn.disabled=false;btn.innerHTML=editingId?'Aggiorna':'Salva';
-  if (res.success){toast(editingId?'Aggiornata ✓':'Salvata ✓','success');resetForm();await loadData();}
-  else{
-    if(res.code==='OVERLAP_BLOCKED'){blockSave=true;document.getElementById('overlapDesc').textContent=res.error;document.getElementById('overlapAlert').classList.add('visible');btn.disabled=true;btn.innerHTML='⛔ Sovrapposizione!';btn.className='btn btn-ghost';}
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+  var res=editingId ? await api('update',Object.assign({id:editingId},params)) : await api('save',params);
+  btn.disabled=false; btn.innerHTML=editingId?'Aggiorna':'Salva';
+  if (res.success) { toast(editingId?'Aggiornata ✓':'Salvata ✓','success'); resetForm(); await loadData(); }
+  else {
+    if (res.code==='OVERLAP_BLOCKED') { blockSave=true; document.getElementById('overlapDesc').textContent=res.error; document.getElementById('overlapAlert').classList.add('visible'); btn.disabled=true; btn.innerHTML='⛔ Sovrapposizione!'; btn.className='btn btn-ghost'; }
     toast(res.error||'Errore salvataggio','error');
   }
 }
 
-function modificaEntry(id){
-  var t=timbrature.find(function(x){return x.id===id;});
-  if(!t)return;
-  if(!isAdmin()&&String(t.userId)!==String(currentUser.id)){toast('Non puoi modificare timbrature altrui','error');return;}
-  editingId=id;blockSave=false;
-  document.getElementById('f_data').value   = t.data;
-  if (isAdmin()) document.getElementById('f_dip').value = t.userId;
-  document.getElementById('f_inizio').value = t.inizio;
-  document.getElementById('f_fine').value   = t.fine;
-  document.getElementById('f_tipo').value   = t.tipo||'work';
-  document.getElementById('f_note').value   = t.note||'';
-  var pausa=Math.max(0,(t2m(t.fine)-t2m(t.inizio))/60-(Number(t.ore)||0));
-  document.getElementById('f_pausa').value  = pausa.toFixed(1);
-  document.getElementById('formTitle').textContent    = 'Modifica Timbratura';
-  document.getElementById('formBadge').textContent    = 'MODIFICA';
-  document.getElementById('btnSalva').innerHTML       = 'Aggiorna';
-  document.getElementById('btnAnnulla').style.display = 'inline-flex';
+function modificaEntry(id) {
+  var t=timbrature.find(function(x){ return x.id===id; });
+  if (!t) return;
+  if (!isAdmin()&&String(t.userId)!==String(currentUser.id)) { toast('Non puoi modificare timbrature altrui','error'); return; }
+  editingId=id; blockSave=false;
+  document.getElementById('f_data').value=t.data;
+  if (isAdmin()) document.getElementById('f_dip').value=t.userId;
+  document.getElementById('f_tipo').value=t.tipo||'work';
+  onTipoChange();
+  if (t.tipo==='work'||t.tipo==='straordinario') {
+    document.getElementById('f_inizio').value=t.inizio;
+    document.getElementById('f_fine').value=t.fine;
+    var pausa=Math.max(0,(t2m(t.fine)-t2m(t.inizio))/60-Number(t.ore||0));
+    document.getElementById('f_pausa').value=pausa.toFixed(1);
+  }
+  document.getElementById('f_note').value=t.note||'';
+  document.getElementById('formTitle').textContent='Modifica Timbratura';
+  document.getElementById('formBadge').textContent='MODIFICA';
+  document.getElementById('btnSalva').innerHTML='Aggiorna';
+  document.getElementById('btnAnnulla').style.display='inline-flex';
   onFormChange();
   switchTab('tabTimbrature');
   document.getElementById('f_data').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function eliminaEntry(id){
-  var t=timbrature.find(function(x){return x.id===id;});
-  if(!t)return;
-  if(!isAdmin()&&String(t.userId)!==String(currentUser.id)){toast('Non puoi eliminare timbrature altrui','error');return;}
-  var dip=dipendenti.find(function(d){return String(d.id)===String(t.userId);});
+function eliminaEntry(id) {
+  var t=timbrature.find(function(x){ return x.id===id; });
+  if (!t) return;
+  if (!isAdmin()&&String(t.userId)!==String(currentUser.id)) { toast('Non puoi eliminare','error'); return; }
+  var dip=dipendenti.find(function(d){ return String(d.id)===String(t.userId); });
   document.getElementById('modalBody').textContent='Eliminare la timbratura di '+(dip?dip.nome:'—')+' del '+fmtD(t.data)+' ('+t.inizio+'–'+t.fine+')?';
   document.getElementById('modalConfirm').onclick=async function(){
     closeModal();
     var res=await api('delete',{id:id});
-    if(res.success){toast('Eliminata','success');await loadData();}
-    else{timbrature=timbrature.filter(function(x){return x.id!==id;});aggiornaTutto();toast('Eliminata','success');}
+    if (res.success) { toast('Eliminata','success'); await loadData(); }
+    else { timbrature=timbrature.filter(function(x){ return x.id!==id; }); aggiornaTutto(); toast('Eliminata','success'); }
   };
   document.getElementById('modalOv').classList.add('open');
 }
 
-function closeModal(){document.getElementById('modalOv').classList.remove('open');}
+function closeModal() { document.getElementById('modalOv').classList.remove('open'); }
 
-function resetForm(){
+function resetForm() {
   document.getElementById('f_data').valueAsDate=new Date();
-  if(isAdmin()){document.getElementById('f_dip').value='';}
+  if (isAdmin()) document.getElementById('f_dip').value='';
   document.getElementById('f_inizio').value='';
   document.getElementById('f_fine').value='';
   document.getElementById('f_tipo').value='work';
-  ['f_inizio','f_fine','f_pausa'].forEach(function(id){
-    var el=document.getElementById(id);
-    el.disabled=false; el.style.opacity='';
-  });
   document.getElementById('f_pausa').value='0';
   document.getElementById('f_note').value='';
-  editingId=null;blockSave=false;
-  document.getElementById('formTitle').textContent    = 'Nuova Timbratura';
-  document.getElementById('formBadge').textContent    = 'INSERIMENTO';
-  document.getElementById('btnSalva').innerHTML       = 'Salva';
-  document.getElementById('btnSalva').disabled        = false;
-  document.getElementById('btnSalva').className       = 'btn btn-accent';
-  document.getElementById('btnAnnulla').style.display = 'none';
+  ['f_inizio','f_fine','f_pausa'].forEach(function(id){ var el=document.getElementById(id); el.disabled=false; el.style.opacity=''; });
+  editingId=null; blockSave=false;
+  document.getElementById('formTitle').textContent='Nuova Timbratura';
+  document.getElementById('formBadge').textContent='INSERIMENTO';
+  document.getElementById('btnSalva').innerHTML='Salva';
+  document.getElementById('btnSalva').disabled=false;
+  document.getElementById('btnSalva').className='btn btn-accent';
+  document.getElementById('btnAnnulla').style.display='none';
   document.getElementById('overlapAlert').classList.remove('visible');
   document.getElementById('existingBox').classList.remove('visible');
   document.getElementById('orePreview').className='ore-preview';
@@ -1075,70 +999,65 @@ function resetForm(){
 }
 
 // ── TABS ─────────────────────────────────
-function switchTab(id){
-  document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active');});
+function switchTab(id) {
+  document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.textContent.trim()===(id==='tabTimbrature'?'Timbrature':'Statistiche'));});
-  var mn1=document.getElementById('mnTab1'),mn2=document.getElementById('mnTab2');
-  if(mn1&&mn2){
-    mn1.style.color=id==='tabTimbrature'?'var(--accent)':'var(--text2)';
-    mn2.style.color=id==='tabStatistiche'?'var(--accent)':'var(--text2)';
-  }
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active', b.textContent.trim()===(id==='tabTimbrature'?'Timbrature':'Statistiche')); });
+  var mn1=document.getElementById('mnTab1'), mn2=document.getElementById('mnTab2');
+  if (mn1) mn1.style.color=id==='tabTimbrature'?'var(--accent)':'var(--text2)';
+  if (mn2) mn2.style.color=id==='tabStatistiche'?'var(--accent)':'var(--text2)';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ── EXPORT ───────────────────────────────
-function exportExcel(){
-  if(!timbrature.length){toast('Nessun dato','warning');return;}
-  var rows=getTimbratureFiltrate().map(function(t){
-    var d=dipendenti.find(function(x){return String(x.id)===String(t.userId);});
+function exportExcel() {
+  if (!timbrature.length) { toast('Nessun dato','warning'); return; }
+  var fm=getFiltraMese(), ft=document.getElementById('fl_tipo').value, fd=document.getElementById('fl_data').value;
+  var tf=getTimbratureFiltrate();
+  if (fm) tf=tf.filter(function(t){ return t.data&&t.data.substring(0,7)===fm; });
+  if (fd) tf=tf.filter(function(t){ return t.data===fd; });
+  if (ft) tf=tf.filter(function(t){ return t.tipo===ft; });
+  var rows=tf.map(function(t){
+    var d=dipendenti.find(function(x){ return String(x.id)===String(t.userId); });
     var oreVal=(t.tipo==='ferie'||t.tipo==='malattia'||t.tipo==='riposo')?0:Number(Number(t.ore||0).toFixed(4));
-    return{Data:t.data,Dipendente:d?d.nome.trim():'—',Inizio:t.inizio||'',Fine:t.fine||'',Ore:oreVal,Tipo:t.tipo,Note:t.note||''};
+    return {Data:t.data,Dipendente:d?d.nome.trim():'—',Inizio:t.inizio||'',Fine:t.fine||'',Ore:oreVal,Tipo:t.tipo,Note:t.note||''};
   });
-  var ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.json_to_sheet(rows), wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Timbrature');
   XLSX.writeFile(wb,'TimeTrack_'+todayISO()+'.xlsx');
   toast('Excel esportato','success');
 }
 
 // ── STAMPA ───────────────────────────────
-function stampaReport(){
-  var fm = document.getElementById('fl_mese') ? document.getElementById('fl_mese').value : '';
-  var ft = document.getElementById('fl_tipo') ? document.getElementById('fl_tipo').value : '';
-  var fd = document.getElementById('fl_data') ? document.getElementById('fl_data').value : '';
-  var tf = getTimbratureFiltrate();
-  if (fm) tf = tf.filter(function(t){ return t.data && t.data.substring(0,7)===fm; });
-  if (fd) tf = tf.filter(function(t){ return t.data===fd; });
-  if (ft) tf = tf.filter(function(t){ return t.tipo===ft; });
-  tf = tf.slice().sort(function(a,b){ return a.data.localeCompare(b.data)||(a.inizio||'').localeCompare(b.inizio||''); });
-  // override tf locale per il resto della funzione
-  if(!tf.length){toast('Nessun dato da stampare','warning');return;}
-  var byData={};
-  tf.slice().sort(function(a,b){return a.data.localeCompare(b.data);}).forEach(function(t){
-    if(!byData[t.data])byData[t.data]=[];
-    byData[t.data].push(t);
-  });
-  var TL={work:'Lav.',straordinario:'Str.',ferie:'Fer.',malattia:'Mal.',riposo:'Rip.'};
-  // Header mese: usa filtro selezionato o mese corrente
+function stampaReport() {
+  var fm=getFiltraMese(), ft=document.getElementById('fl_tipo').value, fd=document.getElementById('fl_data').value;
+  var tf=getTimbratureFiltrate();
+  if (fm) tf=tf.filter(function(t){ return t.data&&t.data.substring(0,7)===fm; });
+  if (fd) tf=tf.filter(function(t){ return t.data===fd; });
+  if (ft) tf=tf.filter(function(t){ return t.tipo===ft; });
+  tf=tf.slice().sort(function(a,b){ return a.data.localeCompare(b.data)||(a.inizio||'').localeCompare(b.inizio||''); });
+  if (!tf.length) { toast('Nessun dato da stampare','warning'); return; }
   var meseHeader;
   if (fm) {
-    var parts = fm.split('-');
-    var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
-    var label = d.toLocaleString('it-IT',{month:'long',year:'numeric'});
-    meseHeader = label.toUpperCase();
+    var p=fm.split('-');
+    var dl=new Date(parseInt(p[0]),parseInt(p[1])-1,1);
+    meseHeader=dl.toLocaleString('it-IT',{month:'long',year:'numeric'}).toUpperCase();
   } else {
-    meseHeader = new Date().toLocaleString('it-IT',{month:'long',year:'numeric'}).toUpperCase();
+    meseHeader=new Date().toLocaleString('it-IT',{month:'long',year:'numeric'}).toUpperCase();
   }
-  var totMese=tf.reduce(function(s,t){return s+Number(t.ore||0);},0);
+  var totMese=tf.reduce(function(s,t){ return s+Number(t.ore||0); },0);
+  var byData={};
+  tf.forEach(function(t){ if(!byData[t.data]) byData[t.data]=[]; byData[t.data].push(t); });
+  var TL={work:'Lav.',straordinario:'Str.',ferie:'Fer.',malattia:'Mal.',riposo:'Rip.'};
   var righe='';
   Object.keys(byData).forEach(function(data){
     var entries=byData[data];
-    var totG=entries.reduce(function(s,t){return s+Number(t.ore||0);},0);
+    var totG=entries.reduce(function(s,t){ return s+Number(t.ore||0); },0);
     var parts=data.split('-');
     var dataFmt=parts[2]+'/'+parts[1];
-    entries.sort(function(a,b){return (a.inizio||'').localeCompare(b.inizio||'');});
+    entries.sort(function(a,b){ return (a.inizio||'').localeCompare(b.inizio||''); });
     entries.forEach(function(t,idx){
-      var dip=dipendenti.find(function(x){return String(x.id)===String(t.userId);});
+      var dip=dipendenti.find(function(x){ return String(x.id)===String(t.userId); });
       var nome=dip?dip.nome.trim():(t.nome||'—');
       var isLast=idx===entries.length-1;
       righe+='<tr style="border-bottom:1px solid #e0e0e0">'
@@ -1174,22 +1093,22 @@ function stampaReport(){
 }
 
 // ── UTILITY ──────────────────────────────
-function t2m(s){if(!s||typeof s!=='string')return 0;var p=s.split(':');return (parseInt(p[0])||0)*60+(parseInt(p[1])||0);}
-function sum(a){return a.reduce(function(s,t){return s+Number(t.ore||0);},0);}
-function todayISO(){return new Date().toISOString().split('T')[0];}
-function fmtD(iso){if(!iso)return '—';var p=iso.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function t2m(s){ if(!s||typeof s!=='string') return 0; var p=s.split(':'); return (parseInt(p[0])||0)*60+(parseInt(p[1])||0); }
+function sum(a){ return a.reduce(function(s,t){ return s+Number(t.ore||0); },0); }
+function todayISO(){ return new Date().toISOString().split('T')[0]; }
+function fmtD(iso){ if(!iso) return '—'; var p=iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
 
-function toast(msg,type){
+function toast(msg,type) {
   type=type||'success';
   var w=document.getElementById('toastWrap');
   var ic={success:'✅',error:'❌',warning:'⚠️'};
-  var el=document.createElement('div');el.className='toast '+type;
+  var el=document.createElement('div'); el.className='toast '+type;
   el.innerHTML='<span>'+ic[type]+'</span><span class="toast-msg">'+msg+'</span>';
   w.appendChild(el);
-  setTimeout(function(){el.style.animation='toastOut .3s ease forwards';setTimeout(function(){el.remove();},320);},3500);
+  setTimeout(function(){ el.style.animation='toastOut .3s ease forwards'; setTimeout(function(){ el.remove(); },320); },3500);
 }
-function showLoader(msg){document.getElementById('loaderTxt').textContent=msg||'Caricamento...';document.getElementById('loaderOv').classList.add('on');}
-function hideLoader(){document.getElementById('loaderOv').classList.remove('on');}
+function showLoader(msg){ document.getElementById('loaderTxt').textContent=msg||'Caricamento...'; document.getElementById('loaderOv').classList.add('on'); }
+function hideLoader(){ document.getElementById('loaderOv').classList.remove('on'); }
 </script>
 </body>
 </html>
