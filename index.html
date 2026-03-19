@@ -1084,15 +1084,15 @@ function stampaReport() {
       var dip=dipendenti.find(function(x){ return String(x.id)===String(t.userId); });
       var nome=dip?dip.nome.trim():(t.nome||'—');
       var isLast=idx===entries.length-1;
-      righe+='<tr style="border-bottom:1px solid #e0e0e0">'
-        +'<td style="padding:2px 4px;font-weight:'+(idx===0?'700':'400')+'">'+(idx===0?dataFmt:'')+'</td>'
-        +'<td style="padding:2px 4px">'+nome+'</td>'
-        +'<td style="padding:2px 4px;text-align:center">'+(t.inizio||'—')+'</td>'
-        +'<td style="padding:2px 4px;text-align:center">'+(t.fine||'—')+'</td>'
-        +'<td style="padding:2px 4px;text-align:center">'+(t.tipo==='ferie'||t.tipo==='malattia'||t.tipo==='riposo'?'—':fmtOre(Number(t.ore||0)))+'</td>'
-        +'<td style="padding:2px 4px;text-align:center">'+(TL[t.tipo]||t.tipo)+'</td>'
-        +'<td style="padding:2px 4px;max-width:80px;overflow:hidden;white-space:nowrap">'+(t.note||'')+'</td>'
-        +'<td style="padding:2px 4px;text-align:right;font-weight:700">'+(isLast?fmtOre(totG):'')+'</td>'
+      righe+='<tr style="border-bottom:1px solid #bbb;color:#000">'
+        +'<td style="padding:3px 5px;font-weight:'+(idx===0?'800':'400')+';color:#000">'+(idx===0?dataFmt:'')+'</td>'
+        +'<td style="padding:3px 5px;font-weight:600;color:#000">'+nome+'</td>'
+        +'<td style="padding:3px 5px;text-align:center;font-weight:600;color:#000">'+(t.inizio||'—')+'</td>'
+        +'<td style="padding:3px 5px;text-align:center;font-weight:600;color:#000">'+(t.fine||'—')+'</td>'
+        +'<td style="padding:3px 5px;text-align:center;font-weight:700;color:#000">'+(t.tipo==='ferie'||t.tipo==='malattia'||t.tipo==='riposo'?'—':fmtOre(Number(t.ore||0)))+'</td>'
+        +'<td style="padding:3px 5px;text-align:center;font-weight:600;color:#000">'+(TL[t.tipo]||t.tipo)+'</td>'
+        +'<td style="padding:3px 5px;max-width:80px;overflow:hidden;white-space:nowrap;color:#000">'+(t.note||'')+'</td>'
+        +'<td style="padding:3px 5px;text-align:right;font-weight:800;color:#000">'+(isLast?fmtOre(totG):'')+'</td>'
         +'</tr>';
     });
   });
