@@ -683,7 +683,7 @@ function renderTabella() {
       +'<td class="td-date">'+fmtD(t.data)+'</td>'
       +'<td class="td-name">'+nome+'</td>'
       +'<td class="td-time">'+(t.inizio||'—')+' → '+(t.fine||'—')+'</td>'
-      +'<td class="td-ore">'+Number(t.ore||0).toFixed(2)+'h</td>'
+      +'<td class="td-ore">'+fmtOre(Number(t.ore||0))+'</td>'
       +'<td><span class="badge badge-'+(t.tipo||'work')+'">'+(TL[t.tipo]||t.tipo)+'</span></td>'
       +'<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(t.note||'—')+'</td>'
       +'<td><div style="display:flex;gap:4px">'
@@ -703,7 +703,7 @@ function renderSidebar() {
   var oR = (!fm || fm===meseCorr) ? tf.filter(function(t){ return t.data===oggi; }) : [];
   var sw_oggi = document.getElementById('sw_oggi');
   var sw_oggi_n = document.getElementById('sw_oggi_n');
-  if (sw_oggi) sw_oggi.textContent = sum(oR).toFixed(2)+'h';
+  if (sw_oggi) sw_oggi.textContent = fmtOre(sum(oR));
   if (sw_oggi_n) sw_oggi_n.textContent = oR.length+' registrazioni';
 
   // Ore mese: filtra per mese selezionato
@@ -723,7 +723,7 @@ function renderSidebar() {
   var sw_mese = document.getElementById('sw_mese');
   var sw_mese_n = document.getElementById('sw_mese_n');
   var sw_tot = document.getElementById('sw_tot');
-  if (sw_mese) sw_mese.textContent = sum(mR).toFixed(2)+'h';
+  if (sw_mese) sw_mese.textContent = fmtOre(sum(mR));
   if (sw_mese_n) sw_mese_n.textContent = mR.length+' registrazioni';
   if (sw_tot) sw_tot.textContent = mR.length;
 
@@ -740,7 +740,7 @@ function renderSidebar() {
     ? keys.map(function(id){
         var d = dipendenti.find(function(x){ return String(x.id)===String(id); });
         var gg = Object.keys(byD[id].gg).length;
-        return '<div class="dip-row"><span class="dip-name">'+(d?d.nome.trim():'—')+'</span><span class="dip-ore">'+byD[id].ore.toFixed(1)+'h</span><span class="dip-gg">'+gg+'gg</span></div>';
+        return '<div class="dip-row"><span class="dip-name">'+(d?d.nome.trim():'—')+'</span><span class="dip-ore">'+fmtOre(byD[id].ore)+'</span><span class="dip-gg">'+gg+'gg</span></div>';
       }).join('')
     : '<div class="empty" style="padding:10px 0"><div class="empty-msg">Nessun dato</div></div>';
 }
@@ -765,14 +765,17 @@ function renderStats() {
   var gg=Object.keys(mR.reduce(function(acc,t){acc[t.data]=1;return acc;},{})).length;
   document.getElementById('statsGrid').innerHTML =
     '<div class="big-stat"><div class="bs-val">'+ow.toFixed(1)+'h</div><div class="bs-label">Ore lavoro — '+meseTxt+'</div></div>'
-   +'<div class="big-stat"><div class="bs-val" style="color:var(--accent2)">'+oe.toFixed(1)+'h</div><div class="bs-label">Straordinari — '+meseTxt+'</div></div>'
+   +'<div class="big-stat"><div class="bs-val" style="color:var(--accent2)">'+fmtOre(oe)+'</div><div class="bs-label">Straordinari — '+meseTxt+'</div></div>'
    +'<div class="big-stat"><div class="bs-val" style="color:var(--text)">'+gg+'</div><div class="bs-label">Giorni con presenze</div></div>';
   document.getElementById('statsTableTitle').textContent = isAdmin() ? 'Ore per Dipendente — '+meseTxt : 'Le mie ore — '+meseTxt;
   var byD={};
   mR.forEach(function(t){
     if(!byD[t.userId]) byD[t.userId]={work:0,extra:0,ferie:0,mal:0,riposo:0,gg:{}};
-    var k=t.tipo==='straordinario'?'extra':(t.tipo==='malattia'?'mal':(t.tipo||'work'));
-    byD[t.userId][k]=(byD[t.userId][k]||0)+Number(t.ore||0);
+    if(t.tipo==='ferie') byD[t.userId].ferie=(byD[t.userId].ferie||0)+1;
+    else if(t.tipo==='malattia') byD[t.userId].mal=(byD[t.userId].mal||0)+1;
+    else if(t.tipo==='riposo') byD[t.userId].riposo=(byD[t.userId].riposo||0)+1;
+    else if(t.tipo==='straordinario') byD[t.userId].extra=(byD[t.userId].extra||0)+Number(t.ore||0);
+    else byD[t.userId].work=(byD[t.userId].work||0)+Number(t.ore||0);
     byD[t.userId].gg[t.data]=1;
   });
   var keys2=Object.keys(byD);
@@ -783,11 +786,11 @@ function renderStats() {
         var d=dipendenti.find(function(x){return String(x.id)===String(id);});
         var s=byD[id]; var tot=(s.work||0)+(s.extra||0);
         return '<tr><td class="td-name">'+(d?d.nome.trim():'—')+'</td><td>'+Object.keys(s.gg).length+'</td>'
-          +'<td class="td-ore">'+s.work.toFixed(2)+'h</td>'
-          +'<td style="color:#7b9fff;font-family:\'DM Mono\'">'+s.ferie.toFixed(2)+'h</td>'
-          +'<td style="color:var(--warning);font-family:\'DM Mono\'">'+s.mal.toFixed(2)+'h</td>'
-          +'<td style="color:var(--text2);font-family:\'DM Mono\'">'+s.riposo.toFixed(2)+'h</td>'
-          +'<td class="td-ore">'+tot.toFixed(2)+'h</td></tr>';
+          +'<td class="td-ore">'+fmtOre(s.work)+'</td>'
+          +'<td style="color:#7b9fff">'+s.ferie+'gg</td>'
+          +'<td style="color:var(--warning)">'+s.mal+'gg</td>'
+          +'<td style="color:var(--text2)">'+s.riposo+'gg</td>'
+          +'<td class="td-ore">'+fmtOre(tot)+'</td></tr>';
       }).join('')+'</tbody></table></div>';
   var mesi=[];
   for(var i=0;i<6;i++){var dd=new Date(anno,mese-i,1);mesi.push({m:dd.getMonth(),y:dd.getFullYear(),label:dd.toLocaleString('it-IT',{month:'long',year:'numeric'})});}
@@ -1086,10 +1089,10 @@ function stampaReport() {
         +'<td style="padding:2px 4px">'+nome+'</td>'
         +'<td style="padding:2px 4px;text-align:center">'+(t.inizio||'—')+'</td>'
         +'<td style="padding:2px 4px;text-align:center">'+(t.fine||'—')+'</td>'
-        +'<td style="padding:2px 4px;text-align:center">'+Number(t.ore||0).toFixed(2)+'</td>'
+        +'<td style="padding:2px 4px;text-align:center">'+(t.tipo==='ferie'||t.tipo==='malattia'||t.tipo==='riposo'?'—':fmtOre(Number(t.ore||0)))+'</td>'
         +'<td style="padding:2px 4px;text-align:center">'+(TL[t.tipo]||t.tipo)+'</td>'
         +'<td style="padding:2px 4px;max-width:80px;overflow:hidden;white-space:nowrap">'+(t.note||'')+'</td>'
-        +'<td style="padding:2px 4px;text-align:right;font-weight:700">'+(isLast?totG.toFixed(2)+'h':'')+'</td>'
+        +'<td style="padding:2px 4px;text-align:right;font-weight:700">'+(isLast?fmtOre(totG):'')+'</td>'
         +'</tr>';
     });
   });
@@ -1107,8 +1110,25 @@ function stampaReport() {
     +'</tr></thead><tbody>'+righe+'</tbody>'
     +'<tfoot><tr style="border-top:1.5px solid #000;background:#efefef">'
     +'<td colspan="7" style="padding:3px 5px;font-weight:700;font-size:9px">TOTALE MESE</td>'
-    +'<td style="padding:3px 5px;text-align:right;font-weight:700;font-size:11px">'+totMese.toFixed(2)+'h</td>'
+    +'<td style="padding:3px 5px;text-align:right;font-weight:700;font-size:11px">'+fmtOre(totMese)+'</td>'
     +'</tr></tfoot></table>';
+  // Calcolo recap finale
+  var totLavoro=0, totFerie=0, totMalattia=0, totRiposo=0;
+  tf.forEach(function(t){
+    if(t.tipo==='ferie') totFerie++;
+    else if(t.tipo==='malattia') totMalattia++;
+    else if(t.tipo==='riposo') totRiposo++;
+    else totLavoro+=Number(t.ore||0);
+  });
+  var recap='<div style="margin-top:10px;border-top:1.5px solid #000;padding-top:6px">'
+    +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Riepilogo</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:9px">'
+    +'<tr><td style="padding:2px 5px;font-weight:600">Ore lavorate</td><td style="padding:2px 5px;text-align:right;font-weight:700;color:#000">'+fmtOre(totLavoro)+'</td>'
+    +'<td style="padding:2px 5px;font-weight:600">Ferie</td><td style="padding:2px 5px;text-align:right;font-weight:700;color:#000">'+totFerie+' gg</td>'
+    +'<td style="padding:2px 5px;font-weight:600">Malattia</td><td style="padding:2px 5px;text-align:right;font-weight:700;color:#000">'+totMalattia+' gg</td>'
+    +'<td style="padding:2px 5px;font-weight:600">Riposo</td><td style="padding:2px 5px;text-align:right;font-weight:700;color:#000">'+totRiposo+' gg</td>'
+    +'</tr></table></div>';
+  html += recap;
   document.getElementById('printArea').innerHTML=html;
   window.print();
 }
@@ -1165,6 +1185,14 @@ function t2m(s){ if(!s||typeof s!=='string') return 0; var p=s.split(':'); retur
 function sum(a){ return a.reduce(function(s,t){ return s+Number(t.ore||0); },0); }
 function todayISO(){ return new Date().toISOString().split('T')[0]; }
 function fmtD(iso){ if(!iso) return '—'; var p=iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+// Converte ore decimali in formato h:mm (es. 7.5 -> 7:30)
+function fmtOre(dec){
+  if (!dec && dec!==0) return '—';
+  var h=Math.floor(dec);
+  var m=Math.round((dec-h)*60);
+  if(m===60){h++;m=0;}
+  return h+'h'+( m>0 ? (m<10?'0':'')+m+'m' : '');
+}
 
 function toast(msg,type) {
   type=type||'success';
