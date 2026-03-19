@@ -1120,14 +1120,15 @@ function stampaReport() {
     else if(t.tipo==='riposo') totRiposo++;
     else totLavoro+=Number(t.ore||0);
   });
-  var recap='<div style="margin-top:10px;border-top:1.5px solid #000;padding-top:6px">'
-    +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Riepilogo</div>'
-    +'<table style="width:100%;border-collapse:collapse;font-size:9px">'
-    +'<tr><td style="padding:2px 5px;font-weight:600">Ore lavorate</td><td style="padding:2px 5px;text-align:right;font-weight:700;color:#000">'+fmtOre(totLavoro)+'</td>'
-    +'<td style="padding:2px 5px;font-weight:600">Ferie</td><td style="padding:2px 5px;text-align:right;font-weight:700;color:#000">'+totFerie+' gg</td>'
-    +'<td style="padding:2px 5px;font-weight:600">Malattia</td><td style="padding:2px 5px;text-align:right;font-weight:700;color:#000">'+totMalattia+' gg</td>'
-    +'<td style="padding:2px 5px;font-weight:600">Riposo</td><td style="padding:2px 5px;text-align:right;font-weight:700;color:#000">'+totRiposo+' gg</td>'
-    +'</tr></table></div>';
+  var recap='<div style="margin-top:10px;border-top:1.5px solid #000;padding-top:6px;display:flex;gap:40px">'
+    +'<div>'
+    +'<div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px">Riepilogo</div>'
+    +'<table style="border-collapse:collapse;font-size:9px">'
+    +'<tr><td style="padding:2px 8px 2px 0;font-weight:600">Ore lavorate</td><td style="padding:2px 0;font-weight:700;color:#000;text-align:right">'+fmtOre(totLavoro)+'</td></tr>'
+    +'<tr><td style="padding:2px 8px 2px 0;font-weight:600">Ferie</td><td style="padding:2px 0;font-weight:700;color:#000;text-align:right">'+totFerie+' gg</td></tr>'
+    +'<tr><td style="padding:2px 8px 2px 0;font-weight:600">Malattia</td><td style="padding:2px 0;font-weight:700;color:#000;text-align:right">'+totMalattia+' gg</td></tr>'
+    +'<tr><td style="padding:2px 8px 2px 0;font-weight:600">Riposo</td><td style="padding:2px 0;font-weight:700;color:#000;text-align:right">'+totRiposo+' gg</td></tr>'
+    +'</table></div></div>';
   html += recap;
   document.getElementById('printArea').innerHTML=html;
   window.print();
