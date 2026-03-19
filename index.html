@@ -1185,7 +1185,7 @@ function formatTimeInput(el) {
 function t2m(s){ if(!s||typeof s!=='string') return 0; var p=s.split(':'); return (parseInt(p[0])||0)*60+(parseInt(p[1])||0); }
 function sum(a){ return a.reduce(function(s,t){ return s+Number(t.ore||0); },0); }
 function todayISO(){ return new Date().toISOString().split('T')[0]; }
-function fmtD(iso){ if(!iso) return '—'; var p=iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function fmtD(iso){ if(!iso) return '—'; var p=iso.split('-'); return p[2]+'/'+p[1]; }
 // Converte ore decimali in formato h:mm (es. 7.5 -> 7:30)
 function fmtOre(dec){
   if (!dec && dec!==0) return '—';
