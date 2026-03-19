@@ -764,7 +764,7 @@ function renderStats() {
   var oe=sum(mR.filter(function(t){return t.tipo==='straordinario';}));
   var gg=Object.keys(mR.reduce(function(acc,t){acc[t.data]=1;return acc;},{})).length;
   document.getElementById('statsGrid').innerHTML =
-    '<div class="big-stat"><div class="bs-val">'+ow.toFixed(1)+'h</div><div class="bs-label">Ore lavoro — '+meseTxt+'</div></div>'
+    '<div class="big-stat"><div class="bs-val">'+fmtOre(ow)+'</div><div class="bs-label">Ore lavoro — '+meseTxt+'</div></div>'
    +'<div class="big-stat"><div class="bs-val" style="color:var(--accent2)">'+fmtOre(oe)+'</div><div class="bs-label">Straordinari — '+meseTxt+'</div></div>'
    +'<div class="big-stat"><div class="bs-val" style="color:var(--text)">'+gg+'</div><div class="bs-label">Giorni con presenze</div></div>';
   document.getElementById('statsTableTitle').textContent = isAdmin() ? 'Ore per Dipendente — '+meseTxt : 'Le mie ore — '+meseTxt;
@@ -861,7 +861,7 @@ function updateOrePreview() {
   var tot=fMin-iMin;
   var nette=Math.max(0,tot/60-pausa);
   if (tot<=0) { val.textContent='Orario non valido'; prev.className='ore-preview error'; return; }
-  val.textContent=nette.toFixed(2)+'h';
+  val.textContent=fmtOre(nette);
   prev.className=pausa>0?'ore-preview warn':'ore-preview ok';
 }
 
