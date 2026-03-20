@@ -396,6 +396,46 @@ var editingId = null;
 var blockSave = false;
 
 // ── INIT ─────────────────────────────────
+// ── AUTO LOGOUT 5 MINUTI ────────────────
+var _inactivityTimer = null;
+var _INACTIVITY_MS = 5 * 60 * 1000; // 5 minuti
+
+function resetInactivityTimer() {
+  if (!currentUser) return;
+  clearTimeout(_inactivityTimer);
+  _inactivityTimer = setTimeout(function(){
+    if (!currentUser) return;
+    // Mostra avviso prima del logout
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#111118;border:1px solid rgba(255,71,71,.4);border-radius:18px;padding:28px 24px;max-width:320px;width:100%;text-align:center';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:1rem;font-weight:700;color:#ff4747;margin-bottom:8px';
+    title.textContent = 'Sessione scaduta';
+    var sub = document.createElement('div');
+    sub.style.cssText = 'font-size:.83rem;color:#8888a0;margin-bottom:22px';
+    sub.textContent = 'Sei stato disconnesso per inattività.';
+    var btn = document.createElement('button');
+    btn.style.cssText = 'padding:11px 24px;border:none;border-radius:10px;background:#e8ff47;color:#0a0a0f;font-size:.88rem;font-weight:700;cursor:pointer';
+    btn.textContent = 'OK — Torna al login';
+    btn.onclick = function(){
+      document.body.removeChild(overlay);
+      localStorage.clear(); sessionStorage.clear();
+      currentUser=null; timbrature=[]; dipendenti=[];
+      window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now();
+    };
+    box.appendChild(title); box.appendChild(sub); box.appendChild(btn);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  }, _INACTIVITY_MS);
+}
+
+// Eventi che resettano il timer
+['click','touchstart','keydown','mousemove','scroll'].forEach(function(ev){
+  document.addEventListener(ev, resetInactivityTimer, {passive:true});
+});
+
 window.addEventListener('resize', function(){
   if (!currentUser) return;
   var nav = document.getElementById('mobileNav');
@@ -414,6 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
       currentUser.ruolo = (currentUser.ruolo||'dipendente').toLowerCase().trim();
       showApp();
       loadData();
+      resetInactivityTimer();
     } catch(e) { showAuth(); }
   } else { showAuth(); }
 });
@@ -452,6 +493,7 @@ async function doLogin() {
     toast('Benvenuto '+currentUser.nome, 'success');
     showApp();
     loadData();
+    resetInactivityTimer();
   } else { toast(res.error||'Credenziali errate', 'error'); }
 }
 
@@ -501,6 +543,7 @@ function doLogout() {
   btnC.onclick = function(){ document.body.removeChild(overlay); };
   btnO.onclick = function(){
     document.body.removeChild(overlay);
+    clearTimeout(_inactivityTimer);
     localStorage.clear(); sessionStorage.clear();
     currentUser = null; timbrature = []; dipendenti = [];
     window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now();
