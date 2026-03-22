@@ -201,8 +201,10 @@ tr:last-child td{border:none}
 
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  html,body{background:#fff!important}
+  body::before{display:none!important}
   body>*:not(#printArea){display:none!important}
-  #printArea{display:block!important;position:fixed;inset:0;background:#fff;color:#000;font-family:Arial,sans-serif;font-size:9px;padding:8mm 10mm;z-index:99999}
+  #printArea{display:block!important;position:fixed;inset:0;background:#fff!important;color:#000;font-family:Arial,sans-serif;font-size:9px;padding:8mm 10mm;z-index:99999}
 }
 #printArea{display:none}
 </style>
@@ -398,7 +400,7 @@ var blockSave = false;
 // ── INIT ─────────────────────────────────
 // ── AUTO LOGOUT 5 MINUTI ────────────────
 var _inactivityTimer = null;
-var _INACTIVITY_MS = 5 * 60 * 1000; // 5 minuti
+var _INACTIVITY_MS = 10 * 60 * 1000; // 10 minuti
 
 function resetInactivityTimer() {
   if (!currentUser) return;
@@ -432,7 +434,7 @@ function resetInactivityTimer() {
 }
 
 // Eventi che resettano il timer
-['click','touchstart','keydown','mousemove','scroll'].forEach(function(ev){
+['click','touchstart','touchend','keydown','scroll'].forEach(function(ev){
   document.addEventListener(ev, resetInactivityTimer, {passive:true});
 });
 
