@@ -230,11 +230,11 @@ tr:last-child td{border:none}
 <body>
 
 <div class="loader-ov" id="loaderOv"><div class="spin spin-w" style="width:28px;height:28px;border-width:3px"></div><div class="loader-txt" id="loaderTxt">Caricamento...</div></div>
-<div id="toastWrap"></div>
+<div id="toastWrap" aria-live="polite" aria-atomic="false"></div>
 
-<div class="modal-overlay" id="modalOv">
+<div class="modal-overlay" id="modalOv" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
-    <div class="modal-title">Conferma eliminazione</div>
+    <div class="modal-title" id="modalTitle">Conferma eliminazione</div>
     <div class="modal-body" id="modalBody">Eliminare questa timbratura?</div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">Annulla</button>
@@ -308,7 +308,6 @@ tr:last-child td{border:none}
             </div>
             <div class="field"><label>Ora inizio *</label><input type="text" id="f_inizio" placeholder="HH:MM" maxlength="5" inputmode="numeric" onchange="onFormChange()" oninput="fmtTime(this);onFormChange()"></div>
             <div class="field"><label>Ora fine *</label><input type="text" id="f_fine" placeholder="HH:MM" maxlength="5" inputmode="numeric" onchange="onFormChange()" oninput="fmtTime(this);onFormChange()"></div>
-            <div class="field"><label>Pausa (ore)</label><input type="number" id="f_pausa" value="0" min="0" max="8" step="0.5" onchange="onFormChange()"></div>
             <div class="field"><label>Tipo *</label>
               <select id="f_tipo" onchange="onTipoChange()">
                 <option value="work">Lavoro Ordinario</option>
@@ -346,6 +345,7 @@ tr:last-child td{border:none}
               <select id="fl_tipo" onchange="aggiornaTutto()">
                 <option value="">Tutti</option>
                 <option value="work">Lavoro</option>
+                <option value="straordinario">Straordinario</option>
                 <option value="ferie">Ferie</option>
                 <option value="malattia">Malattia</option>
                 <option value="riposo">Riposo</option>
@@ -415,17 +415,25 @@ var currentUser = null;
 var editingId = null;
 var blockSave = false;
 
-// ── INIT ─────────────────────────────────
-// ── AUTO LOGOUT 5 MINUTI ────────────────
+// ── SICUREZZA: sanifica testo prima di inserirlo in innerHTML ──
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ── AUTO LOGOUT 10 MINUTI ────────────────
 var _inactivityTimer = null;
-var _INACTIVITY_MS = 10 * 60 * 1000; // 10 minuti
+var _INACTIVITY_MS = 10 * 60 * 1000;
 
 function resetInactivityTimer() {
   if (!currentUser) return;
   clearTimeout(_inactivityTimer);
   _inactivityTimer = setTimeout(function(){
     if (!currentUser) return;
-    // Mostra avviso prima del logout
     var overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
     var box = document.createElement('div');
@@ -451,7 +459,6 @@ function resetInactivityTimer() {
   }, _INACTIVITY_MS);
 }
 
-// Eventi che resettano il timer
 ['click','touchstart','touchend','keydown','scroll'].forEach(function(ev){
   document.addEventListener(ev, resetInactivityTimer, {passive:true});
 });
@@ -532,7 +539,6 @@ async function doRegister() {
   if (res.success) {
     toast('Account creato! Ora accedi.', 'success');
     document.getElementById('l_email').value = email;
-    document.getElementById('l_pwd').value = pwd;
     showAuthTab('login');
   } else { toast(res.error||'Errore registrazione', 'error'); }
 }
@@ -643,14 +649,13 @@ async function loadData() {
 
 function populateSelects() {
   if (isAdmin()) {
-    var opts = dipendenti.map(function(d){ return '<option value="'+d.id+'">'+d.nome.trim()+'</option>'; }).join('');
+    var opts = dipendenti.map(function(d){ return '<option value="'+escapeHtml(String(d.id))+'">'+escapeHtml(d.nome.trim())+'</option>'; }).join('');
     document.getElementById('f_dip').innerHTML = '<option value="">Seleziona...</option>'+opts;
     document.getElementById('fl_dip').innerHTML = '<option value="">Tutti</option>'+opts;
-    // Listener su f_dip per sincronizzare con fl_dip
     document.getElementById('f_dip').onchange = function(){ onDipChange(); };
   } else {
     var me = dipendenti.find(function(d){ return String(d.id)===String(currentUser.id); });
-    if (me) document.getElementById('f_dip').innerHTML = '<option value="'+me.id+'" selected>'+me.nome.trim()+'</option>';
+    if (me) document.getElementById('f_dip').innerHTML = '<option value="'+escapeHtml(String(me.id))+'" selected>'+escapeHtml(me.nome.trim())+'</option>';
   }
 }
 
@@ -742,15 +747,19 @@ function renderTabella() {
     var dip = dipendenti.find(function(d){ return String(d.id)===String(t.userId); });
     var nome = dip ? dip.nome.trim() : (t.nome||'—');
     var canEdit = isAdmin() || String(t.userId)===String(currentUser.id);
+    var safeId = escapeHtml(String(t.id));
     return '<tr>'
       +'<td class="td-date">'+fmtD(t.data)+'</td>'
-      +'<td class="td-name">'+nome+'</td>'
-      +'<td class="td-time">'+(t.inizio||'—')+' → '+(t.fine||'—')+'</td>'
+      +'<td class="td-name">'+escapeHtml(nome)+'</td>'
+      +'<td class="td-time">'+escapeHtml(t.inizio||'—')+' → '+escapeHtml(t.fine||'—')+'</td>'
       +'<td class="td-ore">'+fmtOre(Number(t.ore||0))+'</td>'
-      +'<td><span class="badge badge-'+(t.tipo||'work')+'">'+(TL[t.tipo]||t.tipo)+'</span></td>'
-      +'<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(t.note||'—')+'</td>'
+      +'<td><span class="badge badge-'+(t.tipo||'work')+'">'+(TL[t.tipo]||escapeHtml(t.tipo))+'</span></td>'
+      +'<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(t.note||'—')+'</td>'
       +'<td><div style="display:flex;gap:4px">'
-      +(canEdit?'<button class="icon-btn icon-edit" onclick="modificaEntry(\''+t.id+'\')">✏️</button><button class="icon-btn icon-del" onclick="eliminaEntry(\''+t.id+'\')">🗑</button>':'')
+      +(canEdit
+        ? '<button class="icon-btn icon-edit" aria-label="Modifica" onclick="modificaEntry(\''+safeId+'\')">✏️</button>'
+          +'<button class="icon-btn icon-del" aria-label="Elimina" onclick="eliminaEntry(\''+safeId+'\')">🗑</button>'
+        : '')
       +'</div></td></tr>';
   }).join('');
 }
@@ -762,14 +771,12 @@ function renderSidebar() {
   var fm = getFiltraMese();
   var meseCorr = oggi.substring(0,7);
 
-  // Ore oggi: solo se il mese sel è il corrente o nessun filtro
   var oR = (!fm || fm===meseCorr) ? tf.filter(function(t){ return t.data===oggi; }) : [];
   var sw_oggi = document.getElementById('sw_oggi');
   var sw_oggi_n = document.getElementById('sw_oggi_n');
   if (sw_oggi) sw_oggi.textContent = fmtOre(sum(oR));
   if (sw_oggi_n) sw_oggi_n.textContent = oR.length+' registrazioni';
 
-  // Ore mese: filtra per mese selezionato
   var mR;
   var lblMese = document.getElementById('lblMese');
   if (fm) {
@@ -803,7 +810,7 @@ function renderSidebar() {
     ? keys.map(function(id){
         var d = dipendenti.find(function(x){ return String(x.id)===String(id); });
         var gg = Object.keys(byD[id].gg).length;
-        return '<div class="dip-row"><span class="dip-name">'+(d?d.nome.trim():'—')+'</span><span class="dip-ore">'+fmtOre(byD[id].ore)+'</span><span class="dip-gg">'+gg+'gg</span></div>';
+        return '<div class="dip-row"><span class="dip-name">'+escapeHtml(d?d.nome.trim():'—')+'</span><span class="dip-ore">'+fmtOre(byD[id].ore)+'</span><span class="dip-gg">'+gg+'gg</span></div>';
       }).join('')
     : '<div class="empty" style="padding:10px 0"><div class="empty-msg">Nessun dato</div></div>';
 }
@@ -827,8 +834,8 @@ function renderStats() {
   var oe=sum(mR.filter(function(t){return t.tipo==='straordinario';}));
   var gg=Object.keys(mR.reduce(function(acc,t){acc[t.data]=1;return acc;},{})).length;
   document.getElementById('statsGrid').innerHTML =
-    '<div class="big-stat"><div class="bs-val">'+fmtOre(ow)+'</div><div class="bs-label">Ore lavoro — '+meseTxt+'</div></div>'
-   +'<div class="big-stat"><div class="bs-val" style="color:var(--accent2)">'+fmtOre(oe)+'</div><div class="bs-label">Straordinari — '+meseTxt+'</div></div>'
+    '<div class="big-stat"><div class="bs-val">'+fmtOre(ow)+'</div><div class="bs-label">Ore lavoro — '+escapeHtml(meseTxt)+'</div></div>'
+   +'<div class="big-stat"><div class="bs-val" style="color:var(--accent2)">'+fmtOre(oe)+'</div><div class="bs-label">Straordinari — '+escapeHtml(meseTxt)+'</div></div>'
    +'<div class="big-stat"><div class="bs-val" style="color:var(--text)">'+gg+'</div><div class="bs-label">Giorni con presenze</div></div>';
   document.getElementById('statsTableTitle').textContent = isAdmin() ? 'Ore per Dipendente — '+meseTxt : 'Le mie ore — '+meseTxt;
   var byD={};
@@ -848,7 +855,7 @@ function renderStats() {
       +keys2.map(function(id){
         var d=dipendenti.find(function(x){return String(x.id)===String(id);});
         var s=byD[id]; var tot=(s.work||0)+(s.extra||0);
-        return '<tr><td class="td-name">'+(d?d.nome.trim():'—')+'</td><td>'+Object.keys(s.gg).length+'</td>'
+        return '<tr><td class="td-name">'+escapeHtml(d?d.nome.trim():'—')+'</td><td>'+Object.keys(s.gg).length+'</td>'
           +'<td class="td-ore">'+fmtOre(s.work)+'</td>'
           +'<td style="color:#7b9fff">'+s.ferie+'gg</td>'
           +'<td style="color:var(--warning)">'+s.mal+'gg</td>'
@@ -862,29 +869,15 @@ function renderStats() {
     +mesi.map(function(item){
       var rows=tf.filter(function(t){var d=new Date(t.data);return d.getMonth()===item.m&&d.getFullYear()===item.y;});
       var rw=sum(rows.filter(function(t){return t.tipo==='work';}));
-      return '<tr><td class="td-name">'+item.label+'</td><td>'+rows.length+'</td><td class="td-ore">'+rw.toFixed(2)+'h</td><td class="td-ore">'+rw.toFixed(2)+'h</td></tr>';
+      return '<tr><td class="td-name">'+escapeHtml(item.label)+'</td><td>'+rows.length+'</td><td class="td-ore">'+rw.toFixed(2)+'h</td><td class="td-ore">'+rw.toFixed(2)+'h</td></tr>';
     }).join('')+'</tbody></table></div>';
 }
 
 // ── FORM ─────────────────────────────────
-function formatOrario(el) {
+function fmtTime(el) {
   var v = el.value.replace(/[^0-9]/g,'');
   if (v.length >= 3) v = v.substring(0,2)+':'+v.substring(2,4);
   el.value = v;
-}
-
-function formatTimeInput(el) {
-  var v = el.value.replace(/[^0-9]/g,'');
-  if (v.length >= 3) v = v.substring(0,2) + ':' + v.substring(2,4);
-  el.value = v;
-}
-
-function validateTime(val) {
-  if (!val) return false;
-  var m = val.match(/^(\d{1,2}):(\d{2})$/);
-  if (!m) return false;
-  var h=parseInt(m[1]), mm=parseInt(m[2]);
-  return h>=0&&h<=23&&mm>=0&&mm<=59;
 }
 
 function onFormChange() { updateOrePreview(); checkExisting(); checkOverlap(); }
@@ -893,14 +886,13 @@ function onTipoChange() {
   var tipo = document.getElementById('f_tipo').value;
   var inizio = document.getElementById('f_inizio');
   var fine = document.getElementById('f_fine');
-  var pausa = document.getElementById('f_pausa');
   if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo') {
     inizio.value='00:00'; fine.value='00:00';
-    inizio.disabled=true; fine.disabled=true; pausa.disabled=true;
-    inizio.style.opacity='0.4'; fine.style.opacity='0.4'; pausa.style.opacity='0.4';
+    inizio.disabled=true; fine.disabled=true;
+    inizio.style.opacity='0.4'; fine.style.opacity='0.4';
   } else {
-    inizio.disabled=false; fine.disabled=false; pausa.disabled=false;
-    inizio.style.opacity=''; fine.style.opacity=''; pausa.style.opacity='';
+    inizio.disabled=false; fine.disabled=false;
+    inizio.style.opacity=''; fine.style.opacity='';
     if (inizio.value==='00:00'&&fine.value==='00:00') { inizio.value=''; fine.value=''; }
   }
   onFormChange();
@@ -917,15 +909,14 @@ function updateOrePreview() {
   if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo') { val.textContent='0.00h'; prev.className='ore-preview ok'; return; }
   var inizio = document.getElementById('f_inizio').value;
   var fine = document.getElementById('f_fine').value;
-  var pausa = parseFloat(document.getElementById('f_pausa').value)||0;
   if (!inizio||!fine) { val.textContent='—'; prev.className='ore-preview'; return; }
   var iMin=t2m(inizio), fMin=t2m(fine);
   if (fMin<iMin) fMin+=1440;
   var tot=fMin-iMin;
-  var nette=Math.max(0,tot/60-pausa);
+  var nette=Math.max(0,tot/60);
   if (tot<=0) { val.textContent='Orario non valido'; prev.className='ore-preview error'; return; }
   val.textContent=fmtOre(nette);
-  prev.className=pausa>0?'ore-preview warn':'ore-preview ok';
+  prev.className='ore-preview ok';
 }
 
 function checkExisting() {
@@ -938,7 +929,7 @@ function checkExisting() {
   box.classList.add('visible');
   document.getElementById('existingList').innerHTML = list
     .sort(function(a,b){ return (a.inizio||'').localeCompare(b.inizio||''); })
-    .map(function(t){ return '<div class="existing-row"><span class="existing-time">'+(t.inizio||'—')+' → '+(t.fine||'—')+'</span><span class="existing-ore">'+Number(t.ore||0).toFixed(2)+'h</span></div>'; })
+    .map(function(t){ return '<div class="existing-row"><span class="existing-time">'+escapeHtml(t.inizio||'—')+' → '+escapeHtml(t.fine||'—')+'</span><span class="existing-ore">'+Number(t.ore||0).toFixed(2)+'h</span></div>'; })
     .join('');
 }
 
@@ -983,7 +974,6 @@ async function salva() {
   var inizio=document.getElementById('f_inizio').value;
   var fine=document.getElementById('f_fine').value;
   var tipo=document.getElementById('f_tipo').value;
-  var pausa=parseFloat(document.getElementById('f_pausa').value)||0;
   var note=document.getElementById('f_note').value.trim();
   if (!data||!userId) { toast('Compila tutti i campi obbligatori','warning'); return; }
   var ore;
@@ -995,9 +985,8 @@ async function salva() {
     if (fMin<iMin) fMin+=1440;
     var totMin=fMin-iMin;
     if (totMin<=0) { toast('Orario non valido','error'); return; }
-    ore=Math.max(0,totMin/60-pausa);
+    ore=Math.max(0,totMin/60);
   }
-  // Blocco ferie/malattia/riposo se ci sono ore quel giorno
   if (tipo==='ferie'||tipo==='malattia'||tipo==='riposo') {
     var oreEs=timbrature.filter(function(t){ return t.data===data&&String(t.userId)===String(userId)&&t.tipo==='work'&&t.id!==editingId; });
     if (oreEs.length) { toast('Impossibile: esistono già ore di lavoro in questa data','error'); return; }
@@ -1033,8 +1022,6 @@ function modificaEntry(id) {
   if (t.tipo==='work'||t.tipo==='straordinario') {
     document.getElementById('f_inizio').value=t.inizio;
     document.getElementById('f_fine').value=t.fine;
-    var pausa=Math.max(0,(t2m(t.fine)-t2m(t.inizio))/60-Number(t.ore||0));
-    document.getElementById('f_pausa').value=pausa.toFixed(1);
   }
   document.getElementById('f_note').value=t.note||'';
   document.getElementById('formTitle').textContent='Modifica Timbratura';
@@ -1051,12 +1038,17 @@ function eliminaEntry(id) {
   if (!t) return;
   if (!isAdmin()&&String(t.userId)!==String(currentUser.id)) { toast('Non puoi eliminare','error'); return; }
   var dip=dipendenti.find(function(d){ return String(d.id)===String(t.userId); });
-  document.getElementById('modalBody').textContent='Eliminare la timbratura di '+(dip?dip.nome:'—')+' del '+fmtD(t.data)+' ('+t.inizio+'–'+t.fine+')?';
+  document.getElementById('modalBody').textContent='Eliminare la timbratura di '+(dip?dip.nome:'—')+' del '+fmtD(t.data)+' ('+(t.inizio||'—')+'–'+(t.fine||'—')+')?';
   document.getElementById('modalConfirm').onclick=async function(){
     closeModal();
     var res=await api('delete',{id:id});
-    if (res.success) { toast('Eliminata','success'); await loadData(); }
-    else { timbrature=timbrature.filter(function(x){ return x.id!==id; }); aggiornaTutto(); toast('Eliminata','success'); }
+    if (res.success) {
+      toast('Eliminata','success');
+      await loadData();
+    } else {
+      // FIX: se l'API fallisce mostra errore reale (non falso successo)
+      toast(res.error||'Errore eliminazione','error');
+    }
   };
   document.getElementById('modalOv').classList.add('open');
 }
@@ -1069,9 +1061,8 @@ function resetForm() {
   document.getElementById('f_inizio').value='';
   document.getElementById('f_fine').value='';
   document.getElementById('f_tipo').value='work';
-  document.getElementById('f_pausa').value='0';
   document.getElementById('f_note').value='';
-  ['f_inizio','f_fine','f_pausa'].forEach(function(id){ var el=document.getElementById(id); el.disabled=false; el.style.opacity=''; });
+  ['f_inizio','f_fine'].forEach(function(id){ var el=document.getElementById(id); el.disabled=false; el.style.opacity=''; });
   editingId=null; blockSave=false;
   document.getElementById('formTitle').textContent='Nuova Timbratura';
   document.getElementById('formBadge').textContent='INSERIMENTO';
@@ -1145,24 +1136,24 @@ function stampaReport() {
     entries.sort(function(a,b){ return (a.inizio||'').localeCompare(b.inizio||''); });
     entries.forEach(function(t,idx){
       var dip=dipendenti.find(function(x){ return String(x.id)===String(t.userId); });
-      var nome=dip?dip.nome.trim():(t.nome||'—');
+      var nome=escapeHtml(dip?dip.nome.trim():(t.nome||'—'));
       var isLast=idx===entries.length-1;
       righe+='<tr style="border-bottom:1px solid #bbb;color:#000">'
-        +'<td style="padding:3px 5px;font-weight:'+(idx===0?'800':'400')+';color:#000">'+(idx===0?dataFmt:'')+'</td>'
+        +'<td style="padding:3px 5px;font-weight:'+(idx===0?'800':'400')+';color:#000">'+(idx===0?escapeHtml(dataFmt):'')+'</td>'
         +'<td style="padding:3px 5px;font-weight:600;color:#000">'+nome+'</td>'
-        +'<td style="padding:3px 5px;text-align:center;font-weight:600;color:#000">'+(t.inizio||'—')+'</td>'
-        +'<td style="padding:3px 5px;text-align:center;font-weight:600;color:#000">'+(t.fine||'—')+'</td>'
+        +'<td style="padding:3px 5px;text-align:center;font-weight:600;color:#000">'+escapeHtml(t.inizio||'—')+'</td>'
+        +'<td style="padding:3px 5px;text-align:center;font-weight:600;color:#000">'+escapeHtml(t.fine||'—')+'</td>'
         +'<td style="padding:3px 5px;text-align:center;font-weight:700;color:#000">'+(t.tipo==='ferie'||t.tipo==='malattia'||t.tipo==='riposo'?'—':fmtOre(Number(t.ore||0)))+'</td>'
-        +'<td style="padding:3px 5px;text-align:center;font-weight:600;color:#000">'+(TL[t.tipo]||t.tipo)+'</td>'
-        +'<td style="padding:3px 5px;max-width:80px;overflow:hidden;white-space:nowrap;color:#000">'+(t.note||'')+'</td>'
+        +'<td style="padding:3px 5px;text-align:center;font-weight:600;color:#000">'+(TL[t.tipo]||escapeHtml(t.tipo))+'</td>'
+        +'<td style="padding:3px 5px;max-width:80px;overflow:hidden;white-space:nowrap;color:#000">'+escapeHtml(t.note||'')+'</td>'
         +'<td style="padding:3px 5px;text-align:right;font-weight:800;color:#000">'+(isLast?fmtOre(totG):'')+'</td>'
         +'</tr>';
     });
   });
   var p='padding:2px 5px';
   var html='<div style="margin-bottom:6px;border-bottom:1.5px solid #000;padding-bottom:4px;display:flex;justify-content:space-between;align-items:flex-end">'
-    +'<div style="font-size:15px;font-weight:700;letter-spacing:.5px">REGISTRO PRESENZE — '+meseHeader+'</div>'
-    +'<div style="font-size:9px;color:#444">'+(isAdmin()?'Tutti i dipendenti':currentUser.nome)+' | Stampato il: '+new Date().toLocaleDateString('it-IT')+'</div>'
+    +'<div style="font-size:15px;font-weight:700;letter-spacing:.5px">REGISTRO PRESENZE — '+escapeHtml(meseHeader)+'</div>'
+    +'<div style="font-size:9px;color:#444">'+escapeHtml(isAdmin()?'Tutti i dipendenti':currentUser.nome)+' | Stampato il: '+new Date().toLocaleDateString('it-IT')+'</div>'
     +'</div>'
     +'<table style="width:100%;border-collapse:collapse;font-size:9px">'
     +'<thead><tr style="background:#efefef;border-bottom:1.5px solid #000;font-size:8px;text-transform:uppercase;letter-spacing:.3px">'
@@ -1175,7 +1166,6 @@ function stampaReport() {
     +'<td colspan="7" style="padding:3px 5px;font-weight:700;font-size:9px">TOTALE MESE</td>'
     +'<td style="padding:3px 5px;text-align:right;font-weight:700;font-size:11px">'+fmtOre(totMese)+'</td>'
     +'</tr></tfoot></table>';
-  // Calcolo recap finale
   var totLavoro=0, totFerie=0, totMalattia=0, totRiposo=0;
   tf.forEach(function(t){
     if(t.tipo==='ferie') totFerie++;
@@ -1197,59 +1187,11 @@ function stampaReport() {
   window.print();
 }
 
-// ── TIME INPUT FORMAT ───────────────────
-function fmtTime(el) {
-  var v = el.value.replace(/[^0-9]/g,'');
-  if (v.length >= 3) v = v.substring(0,2)+':'+v.substring(2,4);
-  el.value = v;
-}
-
-// ── TIME FORMAT ─────────────────────────
-function autoFormatTime(el) {
-  var v = el.value.replace(/[^0-9]/g, '');
-  if (v.length >= 3) v = v.substring(0,2) + ':' + v.substring(2,4);
-  el.value = v;
-  // Valida e colora bordo
-  var valid = /^([01]?\d|2[0-3]):[0-5]\d$/.test(v);
-  el.style.borderColor = v.length === 5 ? (valid ? 'var(--accent2)' : 'var(--danger)') : '';
-}
-
 // ── UTILITY ──────────────────────────────
-function fmtTime(el) {
-  var v = el.value.replace(/[^0-9]/g,'');
-  if (v.length >= 3) v = v.substring(0,2)+':'+v.substring(2,4);
-  el.value = v;
-}
-
-function formatTimeInput(el) {
-  var v = el.value.replace(/[^0-9]/g,'');
-  if (v.length >= 3) v = v.substring(0,2) + ':' + v.substring(2,4);
-  el.value = v;
-}
-
-function formatTimeInput(el) {
-  var v = el.value.replace(/[^0-9]/g,'');
-  if (v.length >= 3) v = v.substring(0,2)+':'+v.substring(2,4);
-  el.value = v;
-}
-
-function formatTimeInput(el) {
-  var v = el.value.replace(/[^0-9]/g,'');
-  if (v.length >= 3) v = v.substring(0,2)+':'+v.substring(2,4);
-  el.value = v;
-}
-
-function formatTimeInput(el) {
-  var v = el.value.replace(/[^0-9]/g, '');
-  if (v.length >= 3) v = v.substring(0,2) + ':' + v.substring(2,4);
-  el.value = v;
-}
-
 function t2m(s){ if(!s||typeof s!=='string') return 0; var p=s.split(':'); return (parseInt(p[0])||0)*60+(parseInt(p[1])||0); }
 function sum(a){ return a.reduce(function(s,t){ return s+Number(t.ore||0); },0); }
 function todayISO(){ return new Date().toISOString().split('T')[0]; }
 function fmtD(iso){ if(!iso) return '—'; var p=iso.split('-'); return p[2]+'/'+p[1]; }
-// Converte ore decimali in formato h:mm (es. 7.5 -> 7:30)
 function fmtOre(dec){
   if (!dec && dec!==0) return '—';
   var h=Math.floor(dec);
@@ -1257,13 +1199,14 @@ function fmtOre(dec){
   if(m===60){h++;m=0;}
   return h+'h'+( m>0 ? (m<10?'0':'')+m+'m' : '');
 }
-
 function toast(msg,type) {
   type=type||'success';
   var w=document.getElementById('toastWrap');
   var ic={success:'✅',error:'❌',warning:'⚠️'};
   var el=document.createElement('div'); el.className='toast '+type;
-  el.innerHTML='<span>'+ic[type]+'</span><span class="toast-msg">'+msg+'</span>';
+  var span=document.createElement('span'); span.textContent=ic[type]||'';
+  var msgSpan=document.createElement('span'); msgSpan.className='toast-msg'; msgSpan.textContent=msg;
+  el.appendChild(span); el.appendChild(msgSpan);
   w.appendChild(el);
   setTimeout(function(){ el.style.animation='toastOut .3s ease forwards'; setTimeout(function(){ el.remove(); },320); },3500);
 }
