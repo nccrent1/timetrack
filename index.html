@@ -381,6 +381,11 @@ tr:last-child td{border:none}
         <div class="stats-grid" id="statsGrid"></div>
         <div class="card"><div class="card-header"><span class="card-title" id="statsTableTitle">Ore per Dipendente</span></div><div id="statsTable"></div></div>
         <div class="card"><div class="card-header"><span class="card-title">Ultimi 6 Mesi</span></div><div id="statsMonthly"></div></div>
+        <div class="card" id="gestDipCard" style="display:none">
+          <div class="card-header"><span class="card-title">Gestione Dipendenti</span><span class="card-badge">ATTIVI / DISATTIVATI</span></div>
+          <div style="font-size:.78rem;color:var(--text2);margin-bottom:10px">I dipendenti disattivati non compaiono più negli elenchi e non possono accedere all'app. Lo storico delle loro ore resta visibile nei riepiloghi dei mesi in cui hanno lavorato.</div>
+          <div id="gestDipList"></div>
+        </div>
       </div>
     </div>
 
@@ -598,6 +603,7 @@ function showApp() {
   document.getElementById('swDipWidget').style.display = admin ? '' : 'none';
   document.getElementById('fl_dip_wrap').style.display = admin ? '' : 'none';
   document.getElementById('f_dip_wrap').style.display = admin ? '' : 'none';
+  document.getElementById('gestDipCard').style.display = admin ? '' : 'none';
   document.getElementById('f_data').valueAsDate = new Date();
 }
 
@@ -628,6 +634,7 @@ async function loadData() {
     if (uRes.success) {
       dipendenti = uRes.users || [];
       populateSelects();
+      renderGestDip();
     } else {
       toast('Errore utenti: '+(uRes.error||'?'), 'error');
     }
@@ -649,13 +656,48 @@ async function loadData() {
 
 function populateSelects() {
   if (isAdmin()) {
-    var opts = dipendenti.map(function(d){ return '<option value="'+escapeHtml(String(d.id))+'">'+escapeHtml(d.nome.trim())+'</option>'; }).join('');
+    var attivi = dipendenti.filter(function(d){ return d.attivo !== false; });
+    var opts = attivi.map(function(d){ return '<option value="'+escapeHtml(String(d.id))+'">'+escapeHtml(d.nome.trim())+'</option>'; }).join('');
     document.getElementById('f_dip').innerHTML = '<option value="">Seleziona...</option>'+opts;
     document.getElementById('fl_dip').innerHTML = '<option value="">Tutti</option>'+opts;
     document.getElementById('f_dip').onchange = function(){ onDipChange(); };
   } else {
     var me = dipendenti.find(function(d){ return String(d.id)===String(currentUser.id); });
     if (me) document.getElementById('f_dip').innerHTML = '<option value="'+escapeHtml(String(me.id))+'" selected>'+escapeHtml(me.nome.trim())+'</option>';
+  }
+}
+
+// ── GESTIONE DIPENDENTI (attiva/disattiva) ──
+function renderGestDip() {
+  if (!isAdmin()) return;
+  var box = document.getElementById('gestDipList');
+  if (!box) return;
+  var lista = dipendenti.filter(function(d){ return (d.ruolo||'dipendente') !== 'admin'; });
+  if (!lista.length) { box.innerHTML = '<div class="empty"><div class="empty-msg">Nessun dipendente</div></div>'; return; }
+  lista = lista.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome); });
+  box.innerHTML = lista.map(function(d){
+    var att = d.attivo !== false;
+    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border2)">'
+      +'<span style="font-weight:600;font-size:.88rem;'+(att?'':'color:var(--text2);text-decoration:line-through')+'">'+escapeHtml(d.nome.trim())+'</span>'
+      +'<span style="display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:.72rem;font-weight:700;color:'+(att?'var(--accent)':'var(--danger)')+'">'+(att?'ATTIVO':'DISATTIVATO')+'</span>'
+      +'<button class="btn btn-ghost" style="font-size:.75rem;padding:5px 12px" onclick="toggleDipAttivo(\''+escapeHtml(String(d.id))+'\','+(att?'false':'true')+')">'+(att?'Disattiva':'Riattiva')+'</button>'
+      +'</span></div>';
+  }).join('');
+}
+
+async function toggleDipAttivo(id, attivo) {
+  var d = dipendenti.find(function(x){ return String(x.id)===String(id); });
+  showLoader('Aggiornamento...');
+  var res = await api('set_user_active', { id: id, attivo: attivo ? '1' : '0' });
+  hideLoader();
+  if (res.success) {
+    if (d) d.attivo = attivo;
+    populateSelects();
+    renderGestDip();
+    toast((d?d.nome.trim():'Dipendente')+(attivo?' riattivato':' disattivato'), 'success');
+  } else {
+    toast('Errore: '+(res.error||'?'), 'error');
   }
 }
 
