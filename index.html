@@ -262,12 +262,7 @@ tr:last-child td{border:none}
       <div class="field"><label>Nome completo</label><input type="text" id="r_nome" placeholder="Mario Rossi"></div>
       <div class="field"><label>Email</label><input type="email" id="r_email" placeholder="nome@azienda.com"></div>
       <div class="field"><label>Password</label><input type="password" id="r_pwd" placeholder="Minimo 6 caratteri"></div>
-      <div class="field" style="margin-bottom:8px"><label>Ruolo</label></div>
-      <div class="role-selector">
-        <div class="role-card selected" id="rcAdmin" onclick="selectRole('admin')"><div class="role-icon">👑</div><div class="role-name">Admin</div><div class="role-desc">Vede tutti</div></div>
-        <div class="role-card" id="rcDip" onclick="selectRole('dipendente')"><div class="role-icon">👤</div><div class="role-name">Dipendente</div><div class="role-desc">Solo se stesso</div></div>
-      </div>
-      <input type="hidden" id="r_ruolo" value="admin">
+      <div style="font-size:.78rem;color:#8888a0;margin-bottom:10px">Il nuovo account dovrà essere attivato dall'amministratore prima del primo accesso.</div>
       <button class="btn btn-accent btn-full" id="regBtn" onclick="doRegister()" style="margin-top:6px">Crea account</button>
     </div>
   </div>
@@ -502,14 +497,6 @@ function showAuthTab(tab) {
   document.getElementById('authSub').textContent = isLogin ? 'Bentornato' : 'Registra il tuo profilo';
 }
 
-function selectRole(role) {
-  document.getElementById('r_ruolo').value = role;
-  document.getElementById('rcAdmin').classList.toggle('selected', role==='admin');
-  document.getElementById('rcAdmin').classList.remove('sel-dip');
-  document.getElementById('rcDip').classList.toggle('selected', role==='dipendente');
-  document.getElementById('rcDip').classList.toggle('sel-dip', role==='dipendente');
-}
-
 async function doLogin() {
   var email = document.getElementById('l_email').value.trim();
   var pwd = document.getElementById('l_pwd').value;
@@ -522,6 +509,7 @@ async function doLogin() {
     currentUser = res.user;
     currentUser.ruolo = (currentUser.ruolo||'dipendente').toLowerCase().trim();
     localStorage.setItem('tt_user', JSON.stringify(currentUser));
+    if (res.token) localStorage.setItem('tt_token', res.token);
     toast('Benvenuto '+currentUser.nome, 'success');
     showApp();
     loadData();
@@ -533,16 +521,15 @@ async function doRegister() {
   var nome = document.getElementById('r_nome').value.trim();
   var email = document.getElementById('r_email').value.trim();
   var pwd = document.getElementById('r_pwd').value;
-  var ruolo = document.getElementById('r_ruolo').value;
   if (!nome) { toast('Inserisci il nome','warning'); return; }
   if (!email) { toast('Inserisci la email','warning'); return; }
   if (pwd.length < 6) { toast('Password minimo 6 caratteri','warning'); return; }
   var btn = document.getElementById('regBtn');
   btn.innerHTML = '<span class="spin"></span>'; btn.disabled = true;
-  var res = await api('add_user', {nome:nome, email:email, password:pwd, ruolo:ruolo});
+  var res = await api('add_user', {nome:nome, email:email, password:pwd});
   btn.innerHTML = 'Crea account'; btn.disabled = false;
   if (res.success) {
-    toast('Account creato! Ora accedi.', 'success');
+    toast(res.pending ? 'Account creato! Verrà attivato dall\'amministratore.' : 'Account creato! Ora accedi.', 'success');
     document.getElementById('l_email').value = email;
     showAuthTab('login');
   } else { toast(res.error||'Errore registrazione', 'error'); }
@@ -617,12 +604,30 @@ async function api(action, params) {
   try {
     var url = new URL(API_URL);
     url.searchParams.set('action', action);
+    var tok = localStorage.getItem('tt_token');
+    if (tok) url.searchParams.set('token', tok);
     Object.keys(params).forEach(function(k){
       if (params[k] !== undefined && params[k] !== null) url.searchParams.set(k, String(params[k]));
     });
     var resp = await fetch(url.toString());
-    return await resp.json();
+    var res = await resp.json();
+    if (res && res.code === 'AUTH_REQUIRED') forceRelogin();
+    return res;
   } catch(err) { return {success:false, error:'Errore connessione: '+err.message}; }
+}
+
+var _reloginShown = false;
+function forceRelogin() {
+  if (_reloginShown) return;
+  _reloginShown = true;
+  clearTimeout(_inactivityTimer);
+  localStorage.removeItem('tt_user');
+  localStorage.removeItem('tt_token');
+  currentUser = null; timbrature = []; dipendenti = [];
+  hideLoader();
+  showAuth();
+  toast('Sessione scaduta. Accedi di nuovo.', 'warning');
+  setTimeout(function(){ _reloginShown = false; }, 2000);
 }
 
 // ── LOAD DATA ────────────────────────────
